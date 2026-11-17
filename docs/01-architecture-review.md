@@ -5,6 +5,8 @@
 **Scope:** The seven items from the brief's "First task" (see [00-project-brief.md](00-project-brief.md)) plus a recommended revision-1 architecture.
 **Not in scope yet:** schematics, HDL, firmware.
 
+> **Update 2026-11-18.** The owner adopted D-01 to D-17 with clarifications; see [02-rev1-baseline.md](02-rev1-baseline.md). During sheet 1 (Stage 2) the data transceiver changed from SN74LVC16T245 to the bus-hold variant **SN74LVCH16T245**; see [stage2/sheet1-design-notes.md](stage2/sheet1-design-notes.md). This review is otherwise kept as the Stage 1 record.
+
 Evidence tags (`[V]`, `[Vs]`, `[M]`, `[D]`, `[K]`, `[A]`, `[E]`, TBV) and source IDs (`S1`…) are defined in [sources.md](sources.md). Anything tagged `[K]`, `[A]` or TBV must be closed before the relevant schematic sheet is frozen.
 
 ---
@@ -595,4 +597,4 @@ Planned content (nothing drawn until you approve this review):
 - **Default states:** pull-ups and pull-downs that hold every Zorro output inactive while the FPGA is unconfigured.
 - **Probing:** test points on /AS, /SLAVEn, DOE, E7M, /CFGINn, /CFGOUTn, /INT2 and READ.
 - **Interfaces:** hierarchical labels to the FPGA sheet with named nets (`ZB_A[1..23]`, `LD[0..15]`, `ZB_AS_N` …).
-- **Checks:** symbols verified against TI datasheets (pinouts quoted on the sheet). Run ERC with kicad-cli 10.0.3 and report the results without claiming validation.
+- **Checks:** symbols verified against TI datasheets (pinouts quoted on the sheet). Run ERC with kicad-cli 10.0.8 and report the results without claiming validation. **Done:** see [stage2/](stage2/).

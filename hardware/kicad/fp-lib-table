@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "a2000-bridgeboard") (type "KiCad") (uri "${KIPRJMOD}/lib/a2000-bridgeboard.pretty") (options "") (descr "Project footprints"))
+)

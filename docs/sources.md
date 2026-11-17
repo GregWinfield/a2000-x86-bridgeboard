@@ -62,6 +62,17 @@ Prices are snapshots taken through search results on 2026-11-18. They are indica
 | S30 | RS Components Radxa X4 4 GB listings, `https://uk.rs-online.com/web/p/rock-sbc-boards/0329065`, `.../0329066` | [Vs]. 4 GB no-eMMC £62.22 (indicative). 4 GB/32 GB £65.34 ex VAT, out of stock until 2026-01-22 at time of index. AliExpress ≈ USD 60 |
 | S31 | DFRobot LattePanda Mu, `https://www.dfrobot.com/product-2820.html` | [Vs]. N100 module, 9–20 V input. Launch USD 139. Lite carrier USD 39 |
 
+## Stage 2 (sheet 1) datasheets: downloaded and read directly, 2026-11-18
+
+| ID | Source | How used |
+|---|---|---|
+| S45 | TI SN74LVC16244A data sheet, SCAS699C (Aug 2003, rev. June 2014), `https://www.ti.com/lit/ds/symlink/sn74lvc16244a.pdf` | [V]. DGG pinout; tpd ≤ 4.1 ns at 3.3 V ±0.3 V (−40 to 85 °C); inputs 5.5 V-tolerant at any VCC; Ioff |
+| S46 | TI SN74LVCH16T245 data sheet, SCES635B (rev. Apr 2015), `https://www.ti.com/lit/ds/symlink/sn74lvch16t245.pdf`; plus SN74LVC16T245 SCES636B (rev. Apr 2015) for pinout comparison | [V]. Pinout (identical in both, checked by diff); function table; DIR/OE referenced to VCCA; VCC isolation; Ioff; bus-hold (no pull resistors; IBHLO 900 µA at 5.5 V read from the rendered table); switching at VCCA 3.3 V / VCCB 5 V; OE pull-up recommendation |
+| S47 | TI SN74LVC2T45 data sheet, SCES516N (rev. June 2024), `https://www.ti.com/lit/ds/symlink/sn74lvc2t45.pdf` | [V]. DCT/DCU pinout; DIR function; VCC isolation; Ioff; A→B tPLH ≤ 4.4 ns / tPHL ≤ 4.0 ns at VCCA 3.3 V, VCCB 5 V |
+| S48 | TI SN74LVC07A data sheet, SCAS595W (rev. Oct 2016), `https://www.ti.com/lit/ds/symlink/sn74lvc07a.pdf` | [V]. PW pinout; open-drain; 5.5 V-tolerant I/O; Ioff; tpd ≤ 3.6 ns at 3.3 V |
+| S49 | Lattice MachXO2 Family Data Sheet FPGA-DS-02056-4.7 (2026), `https://www.latticesemi.com/view_document?document_id=38834` | [V]. I/O tri-stated with weak pull-down before and during configuration; IPU/IPD 26–309 / 30–305 µA; tREFRESH 1.4 ms (XO2-2000), 2.4 ms (XO2-4000); tPD 7.24 ns (−4, best case, LVCMOS25 8 mA, 0 pF); PLL fIN ≥ 7 MHz; TQFP-144 = 111 GPIO (Table 4.4). Supersedes the [K] entry S44 |
+| S50 | = S10, used for the sheet-1 timing rules | [V] |
+
 ## Standards / general references (not fetched in this review)
 
 | ID | Source | How used |

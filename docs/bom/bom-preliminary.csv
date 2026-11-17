@@ -1,7 +1,7 @@
 Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-off),Source,Unit AUD low,Unit AUD high,Status,Notes
 1,FPGA,Zorro/SRAM/SPI logic,Lattice,LCMXO2-2000HC-4TG144C,TQFP-144,1,"USD 6.29-6.53 (LCSC, low stock); EUR 16.28 (DigiKey DE)",S20,10.00,29.00,Vs,52-week factory lead time quoted; buy early. Migration: LCMXO2-4000HC-4TG144C (TBV)
 2,SRAM,Shared memory 512 KB,ISSI,IS61WV25616EDBLL-10TLI,TSOP-II-44,1,"USD 2.65 (LCSC, 869 stock); USD 6.17 (Farnell)",S24,4.00,10.00,Vs,256K x 16; 10 ns; 2.4-3.6 V
-3,Bus interface,D0-D15 5V<->3.3V transceiver (VCC isolation),Texas Instruments,SN74LVC16T245DGGR,TSSOP-48,1,"USD 0.70 (LCSC); USD 1.08-3.85 (others)",S26,1.10,6.00,Vs,VCCA=+3V3 (LD bus); VCCB=+5V_BUS (Zorro)
+3,Bus interface,D0-D15 5V<->3.3V transceiver with bus-hold (VCC isolation),Texas Instruments,SN74LVCH16T245DGGR,TSSOP-48,1,"not checked; LVC16T245 (no bus-hold) USD 0.70-3.85 used as proxy",S26/S46,1.10,6.00,E,Sheet 1 U103. Bus-hold variant chosen because the Zorro data bus floats between cycles (TI: inputs must not float). VCCA=+3V3 (LD bus); VCCB=+5V_BUS
 4,Bus interface,Address/control input buffers (5V-tolerant),Texas Instruments or Nexperia,SN74LVC16244ADGGR / 74LVC16244ADGG,TSSOP-48,2,not checked,E,0.80,1.60,E,32 channels total; 31 used + CDAC
 5,Bus interface,/SLAVEn and /CFGOUTn driver at 5 V levels,Texas Instruments,SN74LVC2T45DCTR,VSSOP-8,1,not checked,E,0.30,0.80,E,Dual supply; fixed direction A->B
 6,Bus interface,Open-drain /INT2 /INT6 XRDY (+DNP /OVR /DTACK),Texas Instruments or Nexperia,SN74LVC07APWR,TSSOP-14,1,not checked,E,0.30,0.80,E,5V-tolerant open-drain outputs (Ioff) [K]
@@ -33,3 +33,4 @@ Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-o
 32,x86,Radxa X4 4 GB LPDDR5 (no eMMC),Radxa,RS866-D4H1 (RS 329-065),SBC,1,"GBP 62.22 (RS UK, indicative); about USD 60 (AliExpress)",S30,95.00,125.00,Vs,8 GB = RS866-D8H1 at USD 265.99 (Apr 2026) = about AUD 410+ (S29); not included
 33,x86,NVMe M.2 2230 SSD 256 GB,Various,TBD,M.2 2230,1,not checked,E,50.00,100.00,E,2026 NAND prices elevated
 34,x86,X4 active cooler (heatsink + fan),Radxa or equivalent,TBD,accessory,1,not checked,E,15.00,30.00,E,Height affects slot clearance
+35,Bus interface,22R series damping arrays for D0-D15 (RN101-RN104),Yageo,YC164-JR-0722RL (TBV),0603x4 convex,4,not checked,E,0.10,0.30,E,Value TBV by SI measurement (C-07)

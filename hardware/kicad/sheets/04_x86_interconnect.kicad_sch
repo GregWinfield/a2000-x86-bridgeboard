@@ -1,0 +1,27 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "e67207f7-7393-5d2f-ad5e-a5a5f4d24a88")
+	(paper "A3")
+	(title_block
+		(title "x86 SBC interconnect (Radxa X4 in Rev 1)")
+		(date "2026-11-18")
+		(rev "A (draft)")
+		(company "A2000 x86 Bridgeboard project")
+		(comment 1 "Sheet 4 of 6. PLACEHOLDER: not yet designed (Stage 2+).")
+		(comment 4 "Licence: CERN-OHL-S-2.0")
+	)
+	(lib_symbols)
+	(text "PLACEHOLDER - 4 x86 SBC interconnect (Radxa X4 in Rev 1)\n\nPlanned: generic host link (SPI + IRQ + ATTN + JTAG option) through isolating translators powered from\nthe SBC's own 3.3 V. Kept SBC-agnostic so a different x86 board can replace the Radxa X4 (ER-4)."
+		(exclude_from_sim no)
+		(at 25.4 25.4 0)
+		(effects
+			(font
+				(size 2 2)
+			)
+			(justify left top)
+		)
+		(uuid "a89919c7-de5b-5f9b-ab77-c6057643f6fe")
+	)
+)

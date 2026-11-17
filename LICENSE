@@ -1,0 +1,21 @@
+A2000 x86 Bridgeboard - licensing summary
+==========================================
+
+This repository uses two licences, chosen in decision D-13
+(docs/02-rev1-baseline.md):
+
+  Original hardware designs: CERN-OHL-S-2.0 (strongly reciprocal)
+    hardware/**   KiCad schematics, symbols, footprints, future PCB files
+    full text: LICENSES/CERN-OHL-S-2.0.txt
+    Source Location (CERN-OHL-S section 4): https://github.com/GregWinfield/a2000-x86-bridgeboard
+
+  Original HDL, firmware, software and tools: MIT
+    hdl/**, firmware/**, software/**, tools/**
+    full text: LICENSES/MIT.txt
+
+  Documentation (docs/**) is provided under CERN-OHL-S-2.0 as part of the
+  hardware design documentation, unless a file states otherwise.
+
+Third-party material keeps its own licence. See NOTICE.md.
+
+SPDX identifiers: CERN-OHL-S-2.0, MIT

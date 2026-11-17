@@ -1,0 +1,27 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "ce2c958b-3dc5-5731-89d1-25691e5817cd")
+	(paper "A3")
+	(title_block
+		(title "Shared SRAM & arbitration")
+		(date "2026-11-18")
+		(rev "A (draft)")
+		(company "A2000 x86 Bridgeboard project")
+		(comment 1 "Sheet 3 of 6. PLACEHOLDER: not yet designed (Stage 2+).")
+		(comment 4 "Licence: CERN-OHL-S-2.0")
+	)
+	(lib_symbols)
+	(text "PLACEHOLDER - 3 Shared SRAM & arbitration\n\nPlanned: IS61WV25616EDBLL-10TLI 256K x 16 SRAM on local bus LD[15:0], SA[17:0], /CE /OE /WE /UB /LB.\nDo not start until sheet 1 open concerns are reviewed (docs/stage2/sheet1-design-notes.md)."
+		(exclude_from_sim no)
+		(at 25.4 25.4 0)
+		(effects
+			(font
+				(size 2 2)
+			)
+			(justify left top)
+		)
+		(uuid "7cd86cf9-822e-57bc-977d-bfb91ec8ad76")
+	)
+)

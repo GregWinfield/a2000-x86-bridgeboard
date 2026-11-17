@@ -1,0 +1,885 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "d39b100b-95e7-5bd7-a013-57e2f39bf9ef")
+	(paper "A3")
+	(title_block
+		(title "A2000 x86 Bridgeboard: top level")
+		(date "2026-11-18")
+		(rev "A (draft)")
+		(company "A2000 x86 Bridgeboard project")
+		(comment 1 "Zorro II bridgeboard carrying a removable x86 SBC (Rev 1: Radxa X4).")
+		(comment 2 "Hierarchy follows the brief: sheets 1-6. Only sheet 1 is drawn (Stage 2).")
+		(comment 3 "TEMPORARY PWR_FLAGs on +3V3/+5V_BUS until sheet 5 exists.")
+		(comment 4 "Licence: CERN-OHL-S-2.0")
+	)
+	(lib_symbols)
+	(text "Sheet-1 interface pins are intentionally unconnected at this level until sheet 2 (FPGA) is drawn.\nERC reports for these are expected and listed in docs/stage2/sheet1-erc-report.md."
+		(exclude_from_sim no)
+		(at 50.8 187.96 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "8a61c2d9-2ce0-5182-b35b-ff216265d73c")
+	)
+	(text "+3V3 and +5V_BUS are sourced by sheet 5 (not yet drawn). TEMPORARY PWR_FLAGs on sheet 1\ndeclare them driven so ERC can check sheet 1; remove them when sheet 5 exists."
+		(exclude_from_sim no)
+		(at 228.6 238.76 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "a332af88-6e9e-5312-bb22-ef7502f39eec")
+	)
+	(sheet
+		(at 228.6 121.92)
+		(size 106.68 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "465a192b-ccaa-561a-b133-c22057d3346d")
+		(property "Sheetname" "5 Power regulation & protection"
+			(at 228.6 121.16 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "sheets/05_power.kicad_sch"
+			(at 228.6 142.84 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 228.6 152.4)
+		(size 106.68 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "7bf3128f-d2c5-5dd0-a836-55b28c07890f")
+		(property "Sheetname" "6 Interrupts, diagnostics & programming"
+			(at 228.6 151.64 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "sheets/06_irq_diag_prog.kicad_sch"
+			(at 228.6 173.32 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 228.6 60.96)
+		(size 106.68 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "a235a479-9950-53fe-8be0-44518fb1e97a")
+		(property "Sheetname" "3 Shared SRAM & arbitration"
+			(at 228.6 60.2 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "sheets/03_sram.kicad_sch"
+			(at 228.6 81.88 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 228.6 91.44)
+		(size 106.68 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "af9050ec-e616-5aef-a7fc-e9ef6cacc591")
+		(property "Sheetname" "4 x86 SBC interconnect (Radxa X4 in Rev 1)"
+			(at 228.6 90.68 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "sheets/04_x86_interconnect.kicad_sch"
+			(at 228.6 112.36 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 50.8 30.48)
+		(size 71.12 149.86)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "bbf301a1-7620-5067-8552-9ec8e0397bab")
+		(property "Sheetname" "1 Zorro II interface & AutoConfig"
+			(at 50.8 29.72 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "sheets/01_zorro_interface.kicad_sch"
+			(at 50.8 180.94 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "ZB_A1" output
+			(at 121.92 33.02 0)
+			(uuid "dd2dd233-75a9-5491-b0b2-9b80ce032658")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A2" output
+			(at 121.92 35.56 0)
+			(uuid "b56bcc48-8640-5537-a50c-e466749369d6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A3" output
+			(at 121.92 38.1 0)
+			(uuid "472f4da5-da31-5764-aad4-a33b46782bd6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A4" output
+			(at 121.92 40.64 0)
+			(uuid "b1088d5e-8a1e-579b-b86b-f2cbb063953d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A5" output
+			(at 121.92 43.18 0)
+			(uuid "b581e199-5f4a-5855-8eae-dfa5c8779ec7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A6" output
+			(at 121.92 45.72 0)
+			(uuid "99e8d9be-3d32-57c9-b4c7-54537a4f1519")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A7" output
+			(at 121.92 48.26 0)
+			(uuid "4e497c38-ef8b-5844-bf4d-ca95efd8bd4d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A8" output
+			(at 121.92 50.8 0)
+			(uuid "dc27726b-111b-532d-abf5-cc24e3c54ed4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A9" output
+			(at 121.92 53.34 0)
+			(uuid "06f2f03e-e61d-5914-a543-8832283c8f57")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A10" output
+			(at 121.92 55.88 0)
+			(uuid "abd5426a-8c01-5515-8066-0a0d2f268f41")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A11" output
+			(at 121.92 58.42 0)
+			(uuid "5991aa48-11ca-54ae-959d-5a405bd7557a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A12" output
+			(at 121.92 60.96 0)
+			(uuid "36740a3f-db16-5e9c-ba05-1b9d90b936c4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A13" output
+			(at 121.92 63.5 0)
+			(uuid "eb9230e1-6d12-50eb-9055-9ab57a285589")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A14" output
+			(at 121.92 66.04 0)
+			(uuid "ee98c800-7353-539b-83e4-b26b145cb7f6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A15" output
+			(at 121.92 68.58 0)
+			(uuid "24de0791-7ed0-595e-a399-3a51e8dcf200")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A16" output
+			(at 121.92 71.12 0)
+			(uuid "7a0e817e-4a3e-5e84-83bb-8fe509188091")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A17" output
+			(at 121.92 73.66 0)
+			(uuid "9806d13b-a49a-5fc3-940f-10aee91c0c69")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A18" output
+			(at 121.92 76.2 0)
+			(uuid "69128c18-6ed8-5405-8c94-cac63f03ce56")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A19" output
+			(at 121.92 78.74 0)
+			(uuid "9dd4bc1d-9cfb-524a-8c75-6984f4ad66ef")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A20" output
+			(at 121.92 81.28 0)
+			(uuid "9156fc3f-1130-5dbc-9e9e-fef9e1cc5904")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A21" output
+			(at 121.92 83.82 0)
+			(uuid "f7566346-5c92-5990-bc3c-4ca18e6da68e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A22" output
+			(at 121.92 86.36 0)
+			(uuid "c5b324f4-e3b6-51bd-ac70-f7d7a62f78e2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_A23" output
+			(at 121.92 88.9 0)
+			(uuid "24deb150-b440-5e43-b94f-52048826b59f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_AS_N" output
+			(at 121.92 91.44 0)
+			(uuid "80fbaefd-f7f8-5954-af5f-6398a914c6e6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_BUSRST_N" output
+			(at 121.92 93.98 0)
+			(uuid "9f0fe5ba-fd57-5149-856c-a2a95d23c436")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_CDAC" output
+			(at 121.92 96.52 0)
+			(uuid "f2248093-9d71-5524-9abb-8a1c479064ca")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_CFGIN_N" output
+			(at 121.92 99.06 0)
+			(uuid "6e626ec7-337e-5c4a-81c0-95a1e59f4ab5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_DOE" output
+			(at 121.92 101.6 0)
+			(uuid "00b626e7-02a0-5fdb-9d00-5f82e2e851b6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_E7M" output
+			(at 121.92 104.14 0)
+			(uuid "45dc54be-d34e-586a-9779-9eac4f51b76a")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_LDS_N" output
+			(at 121.92 106.68 0)
+			(uuid "6811ac29-7ad9-5c26-aefa-442e7b1f9f25")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_READ" output
+			(at 121.92 109.22 0)
+			(uuid "92ee32f9-0c29-5764-8c80-4c3d47516924")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZB_UDS_N" output
+			(at 121.92 111.76 0)
+			(uuid "bab9fe69-0cb8-5384-a46a-3fba6266731b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD0" bidirectional
+			(at 121.92 114.3 0)
+			(uuid "5125e897-0c00-5b66-b5d4-567c5105f359")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD1" bidirectional
+			(at 121.92 116.84 0)
+			(uuid "ebf9cf3d-831f-5de9-a134-34490f1d6047")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD2" bidirectional
+			(at 121.92 119.38 0)
+			(uuid "0093b79f-8337-5a34-b827-cb3a38098f67")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD3" bidirectional
+			(at 121.92 121.92 0)
+			(uuid "bf6c2dde-6dda-5905-a405-eaeb7a7649d7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD4" bidirectional
+			(at 121.92 124.46 0)
+			(uuid "8263ce6d-a127-5880-9749-89b6ea272285")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD5" bidirectional
+			(at 121.92 127 0)
+			(uuid "2ad08346-3dd4-53ba-965a-4b2934c878b0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD6" bidirectional
+			(at 121.92 129.54 0)
+			(uuid "12ec2156-2f94-5f4a-87e9-aea725eb39a7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD7" bidirectional
+			(at 121.92 132.08 0)
+			(uuid "0ba1f769-38ae-54c7-8c84-e7fb2c5d24a6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD8" bidirectional
+			(at 121.92 134.62 0)
+			(uuid "a5a07f8f-1bad-5592-ad0a-a0ae5a29c0f1")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD9" bidirectional
+			(at 121.92 137.16 0)
+			(uuid "7af1b528-0b91-583b-89ce-541e57368e8c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD10" bidirectional
+			(at 121.92 139.7 0)
+			(uuid "6c45559a-32fd-57d3-84e9-424965425201")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD11" bidirectional
+			(at 121.92 142.24 0)
+			(uuid "22ccae1d-ffe6-5111-82ce-f9788115be35")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD12" bidirectional
+			(at 121.92 144.78 0)
+			(uuid "54c4486a-3e30-5fd9-8c43-b9220c3b17b5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD13" bidirectional
+			(at 121.92 147.32 0)
+			(uuid "e96e0483-a331-5464-a1da-47b82978fcb5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD14" bidirectional
+			(at 121.92 149.86 0)
+			(uuid "42feddc5-56b7-5fb2-bbc2-f7f5746887a8")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LD15" bidirectional
+			(at 121.92 152.4 0)
+			(uuid "5cde3bc6-a8db-5706-9a80-2275d6f24fab")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_CFGOUT_N" input
+			(at 121.92 154.94 0)
+			(uuid "7b4cb392-c3fd-5a1d-9967-0d97071bdb22")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_DBUF_DIR" input
+			(at 121.92 157.48 0)
+			(uuid "9430e7e3-f9bd-5d22-8e50-6148e6cdaf34")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_DBUF_OE_N" input
+			(at 121.92 160.02 0)
+			(uuid "d8d620bc-1191-5218-afeb-c6c65d7bd5e8")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_DTACK_N" input
+			(at 121.92 162.56 0)
+			(uuid "42b348ce-a68b-5ed7-8828-67eb95268077")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_INT2_N" input
+			(at 121.92 165.1 0)
+			(uuid "3b551893-9b99-568b-b9ed-85d4922467d2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_INT6_N" input
+			(at 121.92 167.64 0)
+			(uuid "8a1b4177-2998-5774-bdab-7d537ec14bd6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_OVR_N" input
+			(at 121.92 170.18 0)
+			(uuid "69bed040-6baf-597c-b56f-0ae9048da64f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_SLAVE_N" input
+			(at 121.92 172.72 0)
+			(uuid "1876f703-88c0-5b3e-a874-435f0de8ed6e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_XRDY" input
+			(at 121.92 175.26 0)
+			(uuid "ea609424-2250-5fa1-b6be-498d43fdef77")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 228.6 30.48)
+		(size 106.68 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "c35ea252-a5b6-5722-8220-996bce893d14")
+		(property "Sheetname" "2 FPGA & configuration"
+			(at 228.6 29.72 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "sheets/02_fpga.kicad_sch"
+			(at 228.6 51.4 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+)
