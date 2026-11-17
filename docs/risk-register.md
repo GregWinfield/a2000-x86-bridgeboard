@@ -1,0 +1,48 @@
+# Engineering risk and unknowns register
+
+**Status:** maintained document. Revision A, 2026-11-18 (Stage 1).
+
+Ratings: Impact and Likelihood are scored **H/M/L**. Status is one of Open, Mitigating, Closed or Accepted. Evidence tags are defined in [sources.md](sources.md).
+
+**Rules.**
+- A risk is **Closed** only with evidence: a measurement, datasheet reference or test log.
+- Items marked ⚠ are safety or bus-timing issues that the brief requires us to stop and flag.
+
+| ID | Area | Risk / unknown | Evidence so far | Imp | Lik | Mitigation / next action | Stage | Status |
+|---|---|---|---|---|---|---|---|---|
+| R-01 | Host link | PC-side bandwidth limited to ≤ 1.216 MB/s theoretical (≈ 1 MB/s practical), with ≈ 1–2 ms per request/response | RP2040 USB → N100 USB2 port 6 (full speed) [V S1 sh.21]; FS bulk limit [K S40] | H | Certain | Batch transfers in the protocol. Keep 4 spare FPGA I/O on the expansion header for a plug-in USB-HS SPI bridge. Benchmark in Stage 4 | 3–4 | Accepted (rev 1) |
+| R-02 | Host link | RP2040 only powered in S0 and held in reset by PLTRST#, so the link drops on every reboot/sleep and the RP2040 cannot supervise the X4 | [V S1 sh.21, sh.9, sh.26] | M | Certain | FPGA treats the link as volatile and reports loss. X4 power is controlled by the FPGA through the eFuse. `X4_S0_SENSE` from header 3.3 V | 2–4 | Mitigating |
+| R-03 | X4 behaviour | X4 may not power on automatically when 12 V appears (no documented "restore on AC loss"). Without it, the carrier cannot start the X4 | Radxa BIOS docs list only WOL and RTC wake [V S4] | H | M | **Bench test first:** apply 12 V at J10, observe; inspect BIOS menus (Chipset/PCH "State after G3"). Fallbacks: RTC wake; WOL; as a last resort an opto across the power button (board modification, avoid) | 1 | Open |
+| R-04 | X4 hardware | J10 pitch or population may vary by board revision (forum mentions 2.0 mm) | Docs say 2.54 mm [V S2]; forum [Vs S9] | M | M | Inspect the actual board before choosing a mating connector. Use a lead with a swappable board-end housing | 1 | Open |
+| R-05 ⚠ | Safety | J10 and USB-C VBUS share `ADP12V_IN` with no switch. While the carrier feeds J10, the X4's USB-C receptacle is live at 12 V; a charger plugged in would see back-voltage | [V S1 sh.26] | M | L | eFuse reverse-current blocking protects the A2000 [Vs S27]. Mechanical cover over the X4 USB-C port, warning label, documented rule. **Needs owner acceptance** | 3, 6 | Open |
+| R-06 | Power | A2000 PSU 12 V capacity and regulation vary: 8 A system limit per Haynie, but one unverified report of a 3 A +12 V variant; ageing; replacement PSUs | [V S14]; [Vs S15 unverified] | H | M | Mandatory verification procedure (architecture §8.6). eFuse ILIM and UVLO. INA226 telemetry. Delayed X4 start to avoid disk spin-up overlap | 1, 3 | Open |
+| R-07 | Power | Absolute maximum input voltage of the X4 not published | X4 has SMBJ18CA TVS on `ADP12V_IN` [V S1 sh.26] | M | L | eFuse OVLO ≈ 13.8 V. Measure the A2000 12 V at light load (cross-regulation can drift high) | 1, 3 | Mitigating |
+| R-08 | Mechanical | X4 height (USB 16.2 mm above its PCB; ≈ 23.8 mm stack) exceeds single-slot clearance; A2000 slot pitch, card length/height and bracket unverified | [M S7]; pitch 0.8 in [A] | M | H | Accept two-slot occupancy (D-08). Measure a real A2000 and obtain the A2000 Tech Ref mechanical drawings. Extract X4 mounting holes from STEP | 6 | Open |
+| R-09 | Thermal | N100 in a closed A2000 with weak airflow: throttling, fan noise | PL1 = 6 W default [Vs S8] | M | M | Active cooler. Closed-case soak test with temperature logging. BIOS power limits | 5–6 | Open |
+| R-10 | Mechanical | X4 ports (RJ45/USB/HDMI) are inside the case; rear-panel pass-through doubtful | [M S7] heights vs slot openings [A] | L | H | Wi-Fi plus panel-mount extension leads. RDP/remote access over the bridge or network | 6 | Open |
+| R-11 ⚠ | Bus / AutoConfig | If the FPGA is not configured when Kickstart scans AutoConfig, the card is missed and **its /CFGOUTn stays negated, blocking all downstream boards** | /CFGOUTn semantics [V S10 02C7] | H | L (MachXO2) / M (iCE40) | Instant-on MachXO2. Confirm config time (DS1035/TN1204). Measure A2000 reset-release to the first $E8 access with a logic analyser | 1–2 | Mitigating |
+| R-12 ⚠ | Bus timing | /SLAVEn must assert ≤ 35 ns after /AS↓ and negate ≤ 50 ns after /AS↑ | [V S10 029C] | H | M | Combinational decode path (≈ 13–19 ns estimate). FPGA timing constraint. Scope verification at the edge connector | 2 | Open |
+| R-13 ⚠ | Bus timing | No numeric DOE timing found; risk of data-bus contention if we drive too early | [V S10 02A0], no numbers | H | M | Gate transceiver OE combinationally with DOE·READ·selected (VA2000 practice [V S12]). Measure DOE relative to /AS on a real A2000 | 2 | Open |
+| R-14 | Signal levels | 3.3 V logic levels into 5 V TTL/NMOS inputs; noise margin | [K] | L | L | Dual-supply translators drive full 5 V on data and /SLAVEn and /CFGOUTn. Inputs through 5 V-tolerant LVC | 2 | Mitigating |
+| R-15 | Address map | Where expansion.library places >64 KB non-memory boards (the $E9 area or the 8 MB space) is unverified; 512 KB mode consumes 8 MB-space capacity | [V S10 02C8] er_Flags bit 7; behaviour [K] | M | M | Default 64 KB I/O mode; 512 KB mode optional. Test on KS 1.3 / 2.04 / 3.1 / 3.2 with and without 8 MB RAM boards | 2 | Open |
+| R-16 | Coherency | 68030/040/060 caches and write buffers on accelerators can break shared-memory coherency | [K] | H | M | Driver maps board non-cacheable and serialises before doorbells. Test on 68000, 68030 and 68040/060 systems | 5 | Open |
+| R-17 | Registers | Zorro II memory-space reads assert both byte strobes, so byte-read side effects misfire | [V S10 02A2] | M | M | Register design rule: no read side-effects. Semaphores are write-claim/read-verify | 2 | Mitigating |
+| R-18 | AutoConfig | Manufacturer ID choice: risk of collision with real products | [K] | L | M | Prototype ID 2011 ($07DB) TBV; final ID before release (D-14) | 2 | Open |
+| R-19 | Software | Windows 10 Pro out of support (2025-10-14; consumer ESU to 2026-10-13); X4 Windows 10 driver support unverified | [K S43] | M | H | Decide edition (D-06): Win 11 Pro or Win 10 IoT Enterprise LTSC 2021. Verify Radxa/Intel drivers | 5 | Open |
+| R-20 | End goal | RDP inside Workbench: a 68k client (rdesktop / RDesktopMUI, ~2005–07) existed. Compatibility with modern Windows RDP (legacy security layer, NLA off) and usable performance on a 7 MHz 68000 doubtful | [Vs S17] | H | H | Stage 5 study. Alternative "Janus-style" screen push: x86 side converts and diffs frames, Amiga blits from shared SRAM | 5 | Open |
+| R-21 | Supply / cost | X4 price volatile (8 GB 3.3× since 2024), stock-outs | [V S29]; [Vs S30] | M | H | Support the 4 GB SKU. Keep a rev-2 alternative (LattePanda Mu). Buy the prototype X4 early | 1 | Open |
+| R-22 | Supply | MachXO2 stock shallow at low-cost sellers; 52-week factory lead time quoted | [Vs S20] | M | M | Buy prototype FPGAs early (≥ 3). Verify 2000HC/4000HC TQ144 pin migration. iCE40HX4K kept as documented alternative | 1–2 | Open |
+| R-23 | Data integrity | Switching the A2000 off without a Windows shutdown can corrupt the filesystem | [K] | M | M | Amiga-side "shutdown PC" command and tool. Windows tuned for resilience. Optional hold-up circuit in rev 2 | 5 | Open |
+| R-24 | EMC / SI | Long card, fast LVC edges, ribbon to X4, mixed grounds | [K] | M | M | 4-layer PCB, series termination, GND-interleaved ribbon, ≤ 25 MHz SPI, slew-rate control in FPGA | 6 | Open |
+| R-25 | Licensing | Accidental derivation from AmiGUS (CC BY-NC-ND) or third-party code inside VA2000 | [V S12, S13] | M | L | Re-derive from Commodore and datasheet facts. Keep MIT notices for VA2000-derived items. No AmiGUS-derived artwork | all | Mitigating |
+| R-26 | Compatibility | Janus register-level compatibility needs Janus hardware documentation not found | [Vs S16] | L | H | Defer (D-17). Collect "Janus Developer" documentation if compatibility becomes a goal | 5+ | Accepted |
+| R-27 | Mechanical / power | X4 header 3.3 V is used as a reference supply only (µA); accidental loading or a wiring error could brown out the X4 | [V S1 sh.21] | L | L | Never power carrier logic from header pins 1/17/2/4; enforce in schematic review checklist | 4 | Mitigating |
+| R-28 | Assembly | TPS25947 is a 2 × 2 mm QFN: hard for hand assembly | [Vs S27] | L | M | Stencil + hot air, or PCBA. Alternative eFuse in a larger package if needed | 3, 6 | Open |
+| R-29 | Timing / FPGA | MachXO2 PLL minimum input frequency may be too close to E7M (7.09 MHz PAL) to rely on | [K] | L | M | Do not depend on a PLL locked to E7M. Run a 50 MHz core clock (oscillator or internal OSC) with synchronisers plus the combinational /SLAVEn path | 2 | Mitigating |
+| R-30 | Unknown | RP2040 PL022 SPI chip-select behaviour between frames (mode 0) | [K] | L | M | Firmware-driven CS or SPI mode 3; prove in Stage 4 | 4 | Open |
+
+## Change log
+
+| Date | Change |
+|---|---|
+| 2026-11-18 | Initial register (Stage 1 architecture review) |

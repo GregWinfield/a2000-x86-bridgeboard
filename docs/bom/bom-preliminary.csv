@@ -1,0 +1,35 @@
+Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-off),Source,Unit AUD low,Unit AUD high,Status,Notes
+1,FPGA,Zorro/SRAM/SPI logic,Lattice,LCMXO2-2000HC-4TG144C,TQFP-144,1,"USD 6.29-6.53 (LCSC, low stock); EUR 16.28 (DigiKey DE)",S20,10.00,29.00,Vs,52-week factory lead time quoted; buy early. Migration: LCMXO2-4000HC-4TG144C (TBV)
+2,SRAM,Shared memory 512 KB,ISSI,IS61WV25616EDBLL-10TLI,TSOP-II-44,1,"USD 2.65 (LCSC, 869 stock); USD 6.17 (Farnell)",S24,4.00,10.00,Vs,256K x 16; 10 ns; 2.4-3.6 V
+3,Bus interface,D0-D15 5V<->3.3V transceiver (VCC isolation),Texas Instruments,SN74LVC16T245DGGR,TSSOP-48,1,"USD 0.70 (LCSC); USD 1.08-3.85 (others)",S26,1.10,6.00,Vs,VCCA=+3V3 (LD bus); VCCB=+5V_BUS (Zorro)
+4,Bus interface,Address/control input buffers (5V-tolerant),Texas Instruments or Nexperia,SN74LVC16244ADGGR / 74LVC16244ADGG,TSSOP-48,2,not checked,E,0.80,1.60,E,32 channels total; 31 used + CDAC
+5,Bus interface,/SLAVEn and /CFGOUTn driver at 5 V levels,Texas Instruments,SN74LVC2T45DCTR,VSSOP-8,1,not checked,E,0.30,0.80,E,Dual supply; fixed direction A->B
+6,Bus interface,Open-drain /INT2 /INT6 XRDY (+DNP /OVR /DTACK),Texas Instruments or Nexperia,SN74LVC07APWR,TSSOP-14,1,not checked,E,0.30,0.80,E,5V-tolerant open-drain outputs (Ioff) [K]
+7,X4 isolation,RP2040 link / JTAG isolating translators,Texas Instruments,SN74AVC4T774PWR,TSSOP-16,3,USD 0.42-1.65,S26,0.65,2.60,Vs,B-side VCC = X4 header 3.3 V (P3V3_S)
+8,Power entry,12 V eFuse (OVLO/UVLO/ILIM/soft-start/reverse block),Texas Instruments,TPS25947 (variant TBD),VQFN-HR 2x2 mm,1,USD 1.29-2.17 (Mouser),S27,2.00,3.40,Vs,Variant choice: fixed 13.8 V clamp vs adjustable OVLO
+9,Power entry,12 V input fuse (about 5 A slow-blow),Littelfuse or equivalent,TBD (SMD Nano2 class or ATO + holder),TBD,1,not checked,E,1.00,4.00,E,Rating finalised on power sheet
+10,Power entry,12 V TVS,Littelfuse/Vishay/Bourns,SMBJ15A class,SMB,1,not checked,E,0.30,0.80,E,Clamp must stay below eFuse 28 V abs max
+11,Power entry,5 V TVS,Littelfuse/Vishay/Bourns,SMBJ5.0A class,SMB,1,not checked,E,0.30,0.80,E,
+12,Power entry,5 V PTC fuse (0.75-1 A hold),Littelfuse/Bourns,1812 PTC class,1812,1,not checked,E,0.30,0.80,E,
+13,Power entry,5 V reverse-polarity P-MOSFET,Diodes Inc. or equivalent,DMG2305UX class,SOT-23,1,not checked,E,0.20,0.60,E,
+14,Power entry,3.3 V 1 A LDO,Diodes Inc. or equivalent,AP7361C-33E class,SOT-223,1,not checked,E,0.40,1.20,E,Dissipation about 0.43 W at 0.25 A
+15,Power entry,12 V bulk capacitor 100 uF 25 V polymer,Panasonic/Kemet or equivalent,TBD,SMD,2,not checked,E,0.50,1.50,E,
+16,Telemetry,12 V current/voltage monitor (I2C),Texas Instruments,INA226AIDGSR,VSSOP-10,1,not checked,E,2.30,4.70,E,Recommended on prototypes (D-11)
+17,Telemetry,Current shunt 10 mOhm 1% 1 W,Various,TBD,2512,1,not checked,E,0.40,1.00,E,
+18,Clock,50 MHz 3.3 V CMOS oscillator (optional; internal OSC alternative),Various,TBD,3.2x2.5 mm,1,not checked,E,0.00,2.50,E,Low = DNP
+19,Connectors,4-pin peripheral power PCB header ("Molex 8981" style),TE/Molex or equivalent,TBD,THT,1,not checked,E,1.00,3.00,E,Pin numbering TBV against A2000 harness
+20,Connectors,X4 GPIO: 2x20 2.54 mm box header + 40-way IDC ribbon (<=15 cm) with 2 sockets,Various,TBD,THT/cable,1,not checked,E,3.00,8.00,E,Ribbon keeps X4 swappable (D-07)
+21,Connectors,X4 power lead: 2-pin 2.54 mm crimp housing (>=3 A) + carrier header + 18-20 AWG wire,Molex KK 254 family (TBV) or equivalent,TBD,cable,1,not checked,E,2.00,5.00,E,Check J10 pitch on actual board (R-04)
+22,Connectors,FPGA JTAG header,Various,TBD (2x5 1.27 mm or 1x6 2.54 mm),THT/SMD,1,not checked,E,0.50,1.50,E,
+23,Connectors,Debug/expansion header (4 FPGA I/O + power),Various,TBD 1x8 2.54 mm,THT,1,not checked,E,0.30,0.50,E,Future plug-in USB-HS SPI bridge
+24,User I/O,4-position DIP switch,Various,TBD,SMD/THT,1,not checked,E,0.80,2.00,E,Mode / IRQ level / X4 auto-start / JTAG source
+25,User I/O,Status LED + resistor,Various,TBD,0805,6,not checked,E,0.17,0.33,E,3V3 power (hard-wired) + 5 FPGA-driven
+26,Passives,Decoupling and misc passives (about 80 parts),Various,TBD,0402/0603/0805,1,not checked,E,4.00,10.00,E,
+27,Passives,Test points (about 16; bare pads low / Keystone high),Keystone or pads,TBD,THT/SMD,1,not checked,E,0.00,3.00,E,
+28,Mechanical,M2.5 standoffs + screws for X4,Various,TBD (height >= 6 mm),hardware,4,not checked,E,0.75,1.50,E,Hole positions from STEP model (Stage 6)
+29,PCB,"Carrier PCB 4-layer, ENIG, bevelled gold fingers (share of 5-off order)",JLCPCB/PCBWay or equivalent,TBD (size TBD ~200x110 mm),PCB,1,not checked,E,25.00,50.00,E,Gold-finger + bevel options add cost
+30,Mechanical,A2000 Zorro card bracket,Custom,TBD,metal or printed,1,not checked,E,5.00,20.00,E,Dimensions TBV (R-08)
+31,Mechanical,X4 USB-C port cover (printed) + warning label,Custom,TBD,printed,1,not checked,E,0.00,2.00,E,Mitigation for R-05
+32,x86,Radxa X4 4 GB LPDDR5 (no eMMC),Radxa,RS866-D4H1 (RS 329-065),SBC,1,"GBP 62.22 (RS UK, indicative); about USD 60 (AliExpress)",S30,95.00,125.00,Vs,8 GB = RS866-D8H1 at USD 265.99 (Apr 2026) = about AUD 410+ (S29); not included
+33,x86,NVMe M.2 2230 SSD 256 GB,Various,TBD,M.2 2230,1,not checked,E,50.00,100.00,E,2026 NAND prices elevated
+34,x86,X4 active cooler (heatsink + fan),Radxa or equivalent,TBD,accessory,1,not checked,E,15.00,30.00,E,Height affects slot clearance

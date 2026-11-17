@@ -1,0 +1,31 @@
+# KiCad
+*-backups/
+*.kicad_prl
+fp-info-cache
+*.lck
+~*.lck
+_autosave-*
+\#auto_saved_files\#
+*.bak
+*.sch-bak
+*-cache.lib
+
+# Generated outputs (commit release artefacts deliberately, not by accident)
+hardware/kicad/**/outputs/
+hardware/kicad/**/production/
+
+# FPGA build outputs (Lattice Diamond)
+hdl/**/impl*/
+hdl/**/*.jed
+hdl/**/*.bit
+!hdl/releases/**
+
+# Editors / OS
+.vscode/
+*.swp
+Thumbs.db
+.DS_Store
+
+# Python
+__pycache__/
+.venv/
