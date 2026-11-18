@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MIT
-"""Generate the Rev-A KiCad project skeleton and sheet 1 (Zorro II interface).
+"""Generate the KiCad project: root sheet, sheet 1 (Zorro II interface), sheet 3 (shared SRAM).
 
 usage: python -I tools/kicad/gen_project.py <repo_root>
 
 Bootstrap only. After the generated files have been edited in KiCad, the
 .kicad_sch files are authoritative; do not re-run this over them blindly.
-All IC pin numbers below were transcribed from the TI datasheets listed in the
-symbol Datasheet fields and docs/stage2/sheet1-design-notes.md (section 2).
+All IC pin numbers below were transcribed from the datasheets listed in the symbol
+Datasheet fields: TI parts per docs/stage2/sheet1-design-notes.md (section 2), the ISSI
+SRAM per docs/stage2/sheet3-design-notes.md (section 2).
 """
 from __future__ import annotations
 
@@ -21,6 +22,8 @@ from kisch import (FP_VERSION, GEN_VERSION, LIB, PROJECT, Pin, Schematic, StdSym
 KICAD_SYM = Path(r"C:\Program Files\KiCad\10.0\share\kicad\symbols")
 DATE = "2026-11-18"
 REV = "B (draft)"
+DATE3 = "2026-11-19"
+REV3 = "A (draft)"
 COMPANY = "A2000 x86 Bridgeboard project"
 LICENCE = "CERN-OHL-S-2.0"
 
@@ -204,6 +207,34 @@ ZNET.update({9: "Z_SLAVE_N", 11: "Z_CFGOUT_N", 12: "Z_CFGIN_N", 17: "Z_OVR_N", 1
              67: "Z_D13", 68: "Z_READ", 69: "Z_D12", 70: "Z_LDS_N", 71: "Z_D11", 72: "Z_UDS_N", 74: "Z_AS_N",
              75: "Z_D0", 76: "Z_D10", 77: "Z_D1", 78: "Z_D9", 79: "Z_D2", 80: "Z_D8", 81: "Z_D3", 82: "Z_D7",
              83: "Z_D4", 84: "Z_D6", 86: "Z_D5", 92: "Z_E7M", 93: "Z_DOE", 94: "Z_BUSRST_N"})
+
+
+def sym_is61wv25616():
+    # ISSI IS61/64WV25616EDBLL datasheet Rev. A2 (2020-07-14), 44-pin TSOP (Type II) pin configuration:
+    # 1-5 A0-A4, 6 CE, 7-10 I/O0-3, 11 VDD, 12 GND, 13-16 I/O4-7, 17 WE, 18-27 A5-A14, 28 NC,
+    # 29-32 I/O8-11, 33 VDD, 34 GND, 35-38 I/O12-15, 39 LB, 40 UB, 41 OE, 42-44 A15-A17
+    anum = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5", 5: "18", 6: "19", 7: "20", 8: "21", 9: "22", 10: "23",
+            11: "24", 12: "25", 13: "26", 14: "27", 15: "42", 16: "43", 17: "44"}
+    ionum = {0: "7", 1: "8", 2: "9", 3: "10", 4: "13", 5: "14", 6: "15", 7: "16",
+             8: "29", 9: "30", 10: "31", 11: "32", 12: "35", 13: "36", 14: "37", 15: "38"}
+    pins = []
+    for i in range(18):
+        pins.append(Pin(anum[i], f"A{i}", "input", -15.24, 30.48 - 2.54 * i, 0, 5.08))
+    for k, (num, name) in enumerate((("6", "~{CE}"), ("41", "~{OE}"), ("17", "~{WE}"), ("40", "~{UB}"), ("39", "~{LB}"))):
+        pins.append(Pin(num, name, "input", -15.24, -17.78 - 2.54 * k, 0, 5.08))
+    for i in range(16):
+        y = (30.48 - 2.54 * i) if i < 8 else (7.62 - 2.54 * (i - 8))
+        pins.append(Pin(ionum[i], f"I/O{i}", "bidirectional", 15.24, y, 180, 5.08))
+    pins.append(Pin("28", "NC", "no_connect", 15.24, -22.86, 180, 5.08))
+    pins += [Pin("11", "VDD", "power_in", -2.54, 38.1, 270, 2.54), Pin("33", "VDD", "power_in", 2.54, 38.1, 270, 2.54),
+             Pin("12", "GND", "power_in", -2.54, -35.56, 90, 2.54), Pin("34", "GND", "power_in", 2.54, -35.56, 90, 2.54)]
+    return SymbolDef(
+        "IS61WV25616EDBLL_TSOP2", "U", "IS61WV25616EDBLL-10TLI", "Package_SO:TSOP-II-44_10.16x18.41mm_P0.8mm",
+        "https://www.issi.com/WW/pdf/61-64WV25616EDBLL.pdf",
+        "256K x 16 asynchronous SRAM, 10 ns, VDD 2.4-3.6 V, per-byte ECC, TSOP-II-44 (ISSI datasheet Rev. A2)",
+        pins, rects={1: [(-10.16, 35.56, 10.16, -33.02)]},
+        extra_props={"Manufacturer": "ISSI", "MPN": "IS61WV25616EDBLL-10TLI"},
+        keywords="sram 4Mbit 256k x16 asynchronous", ref_at=(-10.16, 37.0), value_at=(-10.16, -34.0))
 
 
 def sym_zorro():
@@ -749,6 +780,119 @@ def build_sheet1(repo: Path, root_uuid: str, sheet_uuid: str, syms, std):
     return sch
 
 
+# ============================================================================ sheet 3
+SHEET3_LABELS = ([f"SA{i}" for i in range(18)] + ["SRAM_CE_N", "SRAM_OE_N", "SRAM_WE_N", "SRAM_UB_N", "SRAM_LB_N"]
+                 + [f"LD{i}" for i in range(16)])
+
+
+def build_sheet3(root_uuid: str, sheet_uuid: str, syms, std):
+    sch = Schematic("sheet3", "A3", "Shared SRAM (local-bus memory)", REV3, DATE3,
+                    ["Sheet 3 of 6 (Stage 3, rev A). NOT VALIDATED: design review pending.",
+                     "512 KB SRAM on the shared local bus LD[15:0]; address and control from the FPGA (sheet 2).",
+                     "Pin data: ISSI IS61/64WV25616EDBLL datasheet Rev. A2 (2020-07-14)",
+                     f"Licence: {LICENCE}. See docs/stage2/sheet3-design-notes.md"],
+                    COMPANY, f"/{root_uuid}/{sheet_uuid}")
+    R, C, TP = std["R"], std["C"], std["TP"]
+    P3, GNDS = std["+3V3"], std["GND"]
+    pwr_n = [0]
+
+    def pwr(sym, x, y, rot=0, val_at=None, hide_value=False):
+        pwr_n[0] += 1
+        name = sym.value if isinstance(sym, SymbolDef) else sym.name
+        vat = val_at if val_at else (x, y - 3.6) if name != "GND" else (x, y + 5.0)
+        return sch.place(sym, f"#PWR{300 + pwr_n[0]:04d}", name, x, y, rot, val_at=vat, hide_value=hide_value,
+                         ref_at=(x, y + 3))
+
+    # ---------------- U301 SRAM
+    us = syms["IS61WV25616"]
+    ux, uy = 127.0, 114.3
+    U301 = sch.place(us, "U301", "IS61WV25616EDBLL-10TLI", ux, uy, ref_at=(ux - 10.16, uy - 37.0),
+                     val_at=(ux - 10.16, uy + 43.18), ref_just="left", val_just="left")
+    for i in range(18):                                   # address: SA[i] -> A[i] (permutable at layout)
+        pt = U301.p(next(p_.num for p_ in us.pins if p_.name == f"A{i}"))
+        sch.wire(pt, (pt[0] - 10.16, pt[1]))
+        sch.hlabel(f"SA{i}", "input", (pt[0] - 10.16, pt[1]), "left")
+    for name, net in (("~{CE}", "SRAM_CE_N"), ("~{OE}", "SRAM_OE_N"), ("~{WE}", "SRAM_WE_N"), ("~{UB}", "SRAM_UB_N"),
+                      ("~{LB}", "SRAM_LB_N")):
+        pt = U301.p(next(p_.num for p_ in us.pins if p_.name == name))
+        sch.wire(pt, (pt[0] - 10.16, pt[1]))
+        sch.hlabel(net, "input", (pt[0] - 10.16, pt[1]), "left")
+    for i in range(16):                                   # data: LD[i] -> I/O[i] (permutable within a byte lane)
+        pt = U301.p(next(p_.num for p_ in us.pins if p_.name == f"I/O{i}"))
+        sch.wire(pt, (pt[0] + 10.16, pt[1]))
+        sch.hlabel(f"LD{i}", "bidirectional", (pt[0] + 10.16, pt[1]), "right")
+    sch.noconnect(U301.p("28"))
+    # power pins: both VDD to +3V3, both GND to GND
+    for a_, b_, sym_ in (("11", "33", P3), ("12", "34", GNDS)):
+        pa, pb = U301.p(a_), U301.p(b_)
+        sch.wire(pa, pb)
+        sch.wire(pb, (pb[0] + 5.08, pb[1]))
+        sch.junction(pb)
+        pwr(sym_, pb[0] + 5.08, pb[1], hide_value=(sym_ is GNDS))
+    sch.text("U301 data lines may be permuted WITHIN a byte lane at layout (LD0-LD7 with I/O0-I/O7,\n"
+             "LD8-LD15 with I/O8-I/O15) and the address lines in any order: every access from both sides\n"
+             "goes through the same wiring. Byte lanes must stay with /LB and /UB.",
+             (ux - 30.48, uy + 48.26), 1.27)
+
+    # ---------------- safe-state pull-ups: deselected and write-inhibited while the FPGA is blank
+    sch.text("SAFE STATE. MachXO2 I/O are tri-stated with a weak pull-DOWN (IPD 30-305 uA) before and during\n"
+             "configuration, and during a JTAG reload (Lattice FPGA-DS-02056-4.7). R301 holds /CE high (SRAM\n"
+             "deselected: outputs Hi-Z, no write) and R302 holds /WE high (no write even if /CE were low):\n"
+             "node >= 3.0 V - 2.2k x 305 uA = 2.33 V > VIH 2.0 V (ISSI Rev. A2). Contents survive an FPGA reload.",
+             (215.9, 30.48), 1.27)
+    for k, (ref, net) in enumerate((("R301", "SRAM_CE_N"), ("R302", "SRAM_WE_N"))):
+        x, y = 228.6 + 22.86 * k, 50.8
+        r = sch.place(R, ref, "2.2k", x, y, 0, footprint="Resistor_SMD:R_0603_1608Metric", props={"Spec": "0603 1% 0.1 W"},
+                      ref_at=(x + 1.8, y - 1.3), val_at=(x + 1.8, y + 1.3), ref_just="left", val_just="left")
+        pwr(P3, *r.p("1"))
+        b = r.p("2")
+        sch.wire(b, (b[0], b[1] + 5.08))
+        sch.hlabel(net, "input", (b[0], b[1] + 5.08), "right")
+
+    # ---------------- decoupling
+    sch.text("DECOUPLING: one 100 nF per VDD pin at the pin (PCB), 10 uF bulk next to U301.",
+             (215.9, 76.2), 1.27)
+    for i, (ref, val, note) in enumerate((("C301", "100n", "U301 VDD pin 11"), ("C302", "100n", "U301 VDD pin 33"),
+                                          ("C303", "10u", "bulk, U301"))):
+        x, y = 228.6 + 12.7 * i, 88.9
+        fp = "Capacitor_SMD:C_0805_2012Metric" if val == "10u" else "Capacitor_SMD:C_0603_1608Metric"
+        spec = "0805 X5R 16 V" if val == "10u" else "0603 X7R 25 V"
+        c = sch.place(C, ref, val, x, y, 0, footprint=fp, props={"Spec": spec, "Note": note},
+                      ref_at=(x + 2.5, y - 1.3), val_at=(x + 2.5, y + 1.3), ref_just="left", val_just="left")
+        pwr(P3, *c.p("1"))
+        pwr(GNDS, *c.p("2"), hide_value=True)
+
+    # ---------------- test points (bring-up timing: SRAM access waveforms, measurement M-11)
+    sch.text("TEST POINTS: SRAM access timing at U301 (tAA, /WE pulse, address setup and hold).", (215.9, 111.76), 1.27)
+    for k, net in enumerate(("SRAM_CE_N", "SRAM_OE_N", "SRAM_WE_N", "SA0", "LD0")):
+        x, y = 228.6 + 20.32 * k, 127.0
+        tp = sch.place(TP, f"TP{301 + k}", "TestPoint", x, y, 0, footprint="TestPoint:TestPoint_Pad_D1.5mm",
+                       in_bom=False, ref_at=(x + 1.6, y - 4.2), val_at=(x + 1.6, y - 2.6), hide_value=True, ref_just="left")
+        p_ = tp.p("1")
+        sch.wire(p_, (p_[0], p_[1] + 3.81))
+        sch.hlabel(net, "bidirectional" if net.startswith("LD") else "input", (p_[0], p_[1] + 3.81), "right")
+    x, y = 228.6 + 20.32 * 5, 127.0
+    tp = sch.place(TP, "TP306", "TestPoint", x, y, 0, footprint="TestPoint:TestPoint_Pad_D1.5mm", in_bom=False,
+                   ref_at=(x + 1.6, y - 4.2), val_at=(x + 1.6, y - 2.6), hide_value=True, ref_just="left")
+    pwr(GNDS, *tp.p("1"))
+
+    # ---------------- design notes block
+    sch.text(
+        "DESIGN NOTES (summary; full analysis in docs/stage2/sheet3-design-notes.md)\n"
+        "1. One copy of the shared memory: the Amiga reaches it through Zorro cycles, the PC through the RP2040 SPI\n"
+        "   link (sheet 4). The FPGA arbiter decides who may access the memory at each instant; queues and interrupts\n"
+        "   in the FPGA decide who has work to do. U301 is the only memory; there is no dual-port RAM.\n"
+        "2. U301 shares LD[15:0] with U103's A port (sheet 1) and the FPGA. At most one of them drives LD at a time\n"
+        "   (proven in HDL: hdl/formal/fv_shm.v X2/X3). Every U301 control pin comes straight from one FPGA flip-flop.\n"
+        "3. Timing: -10 part (tAA 10 ns, tPWE1 8 ns, tSD 6 ns). FPGA accesses use 2-4 clocks of 20 ns, so every AC\n"
+        "   limit has at least one clock of margin (docs/stage2/sheet3-timing-budget.md).\n"
+        "4. Interfaces: SA0-SA17, SRAM_* from sheet 2 (FPGA, not yet drawn); LD0-LD15 to sheet 1 and sheet 2.\n"
+        "   +3V3 from sheet 5 (not yet drawn). No other supply: U301 is on the carrier 3.3 V only.\n"
+        "5. Not yet validated: an ERC-clean result does not imply electrical or timing correctness.",
+        (25.4, 200.66), 1.27)
+    return sch
+
+
 # ============================================================================ root + placeholders
 SHEETS = [
     (1, "01_zorro_interface.kicad_sch", "1 Zorro II interface & AutoConfig"),
@@ -780,10 +924,10 @@ def build_placeholder(n, root_uuid, sheet_uuid, title):
     return sch
 
 
-def build_root(root_uuid, sheet_uuids, sheet1_pins, std, syms):
-    sch = Schematic("root", "A3", "A2000 x86 Bridgeboard: top level", REV, DATE,
+def build_root(root_uuid, sheet_uuids, sheet1_pins, std, syms, sheet3_pins=None):
+    sch = Schematic("root", "A3", "A2000 x86 Bridgeboard: top level", REV, DATE3,
                     ["Zorro II bridgeboard carrying a removable x86 SBC (Rev 1: Radxa X4).",
-                     "Hierarchy follows the brief: sheets 1-6. Only sheet 1 is drawn (Stage 2).",
+                     "Hierarchy follows the brief: sheets 1-6. Sheets 1 and 3 are drawn (Stages 2-3).",
                      "TEMPORARY PWR_FLAGs on +3V3/+5V_BUS until sheet 5 exists.", f"Licence: {LICENCE}"],
                     COMPANY, f"/{root_uuid}")
     sch.uuid = root_uuid
@@ -809,12 +953,33 @@ def build_root(root_uuid, sheet_uuids, sheet1_pins, std, syms):
                 f"\t\t(instances\n\t\t\t(project {q(PROJECT)}\n\t\t\t\t(path {q('/' + root_uuid)}\n"
                 f"\t\t\t\t\t(page {q(str(n + 1))})\n\t\t\t\t)\n\t\t\t)\n\t\t)\n\t)")
     sch.raw(sheet_block(1, SHEETS[0][1], SHEETS[0][2], x0, y0, w, h, "\n".join(pins) + "\n"))
-    for k, (n, fname, title) in enumerate(SHEETS[1:]):
-        sch.raw(sheet_block(n, fname, title, 228.6, 30.48 + 30.48 * k, 106.68, 20.32))
-    sch.text("Sheet-1 interface pins are intentionally unconnected at this level until sheet 2 (FPGA) is drawn.\n"
-             "ERC reports for these are expected and listed in docs/stage2/sheet1-erc-report.md.", (50.8, y0 + h + 7.62), 1.27)
+    # sheet-1 LD pins: joined to sheet 3 with labels (the local bus is shared by U103 and U301)
+    for i, (name, shape) in enumerate(sheet1_pins):
+        if name.startswith("LD"):
+            py = y0 + 2.54 * (i + 1)
+            sch.wire((x0 + w, py), (x0 + w + 7.62, py))
+            sch.label(name, (x0 + w + 7.62, py), "right")
+    # sheet 3 with pins on its left edge
+    if sheet3_pins:
+        x3, y3, w3 = 165.1, 30.48, 45.72
+        h3 = 2.54 * (len(sheet3_pins) + 2)
+        p3 = []
+        for i, (name, shape) in enumerate(sheet3_pins):
+            py = y3 + 2.54 * (i + 1)
+            p3.append(f"\t\t(pin {q(name)} {shape}\n\t\t\t(at {f(x3)} {f(py)} 180)\n\t\t\t(uuid {q(U('root/pin3/' + name))})\n"
+                      f"\t\t\t(effects\n\t\t\t\t(font\n\t\t\t\t\t(size 1.27 1.27)\n\t\t\t\t)\n\t\t\t\t(justify left)\n\t\t\t)\n\t\t)")
+            if name.startswith("LD"):
+                sch.wire((x3, py), (x3 - 7.62, py))
+                sch.label(name, (x3 - 7.62, py), "left")
+        sch.raw(sheet_block(3, SHEETS[2][1], SHEETS[2][2], x3, y3, w3, h3, "\n".join(p3) + "\n"))
+    others = [t for t in SHEETS[1:] if not (sheet3_pins and t[0] == 3)]
+    for k, (n, fname, title) in enumerate(others):
+        sch.raw(sheet_block(n, fname, title, 279.4, 30.48 + 30.48 * k, 106.68, 20.32))
+    sch.text("Sheet-1 and sheet-3 interface pins to the FPGA are intentionally unconnected at this level until\n"
+             "sheet 2 (FPGA) is drawn; LD0-LD15 join sheet 1 (U103 A port) and sheet 3 (U301). ERC reports for the\n"
+             "open pins are expected and listed in docs/stage2/sheet3-erc-report.md.", (50.8, y0 + h + 7.62), 1.27)
     sch.text("+3V3 and +5V_BUS are sourced by sheet 5 (not yet drawn). TEMPORARY PWR_FLAGs on sheet 1\n"
-             "declare them driven so ERC can check sheet 1; remove them when sheet 5 exists.", (228.6, 238.76), 1.27)
+             "declare them driven so ERC can check sheets 1 and 3; remove them when sheet 5 exists.", (279.4, 238.76), 1.27)
     return sch
 
 
@@ -824,7 +989,7 @@ def main(repo: Path):
     (kdir / "lib" / f"{LIB}.pretty").mkdir(parents=True, exist_ok=True)
     syms = {"LVC16244": sym_lvc16244(), "LVCH16T245": sym_lvch16t245(), "LVC8T245": sym_lvc8t245(),
             "LVC07A": sym_lvc07a(), "LVC1G00": sym_lvc1g00(), "LVC32A": sym_lvc32a(), "TPS3808": sym_tps3808(),
-            "ZORRO": sym_zorro(), "+5V_BUS": sym_power("+5V_BUS")}
+            "ZORRO": sym_zorro(), "+5V_BUS": sym_power("+5V_BUS"), "IS61WV25616": sym_is61wv25616()}
     write_symbol_lib(kdir / "lib" / f"{LIB}.kicad_sym", list(syms.values()))
     write_zorro_footprint(kdir / "lib" / f"{LIB}.pretty" / "Zorro2_Edge_2x50_P2.54mm.kicad_mod")
     std = {"R": StdSymbol(KICAD_SYM / "Device.kicad_sym", "Device", "R"),
@@ -850,9 +1015,18 @@ def main(repo: Path):
         grp = 0 if n[0].startswith("ZB_") else 1 if n[0].startswith("LD") else 2
         return (grp, [int(s) if s.isdigit() else s for s in re.split(r"(\d+)", n[0])])
     s1pins.sort(key=order)
+    s3 = build_sheet3(root_uuid, sheet_uuids[3], syms, std)
+    s3.write(kdir / "sheets" / SHEETS[2][1])
+    seen3, s3pins = set(), []
+    for m in re.finditer(r'\(hierarchical_label "([^"]+)"\n\t\t\(shape (\w+)\)', "\n".join(s3.items)):
+        if m.group(1) not in seen3:
+            seen3.add(m.group(1))
+            s3pins.append((m.group(1), m.group(2)))
+    s3pins.sort(key=lambda n: (SHEET3_LABELS.index(n[0]), 0))
     for n, fname, title in SHEETS[1:]:
-        build_placeholder(n, root_uuid, sheet_uuids[n], title).write(kdir / "sheets" / fname)
-    root = build_root(root_uuid, sheet_uuids, s1pins, std, syms)
+        if n != 3:
+            build_placeholder(n, root_uuid, sheet_uuids[n], title).write(kdir / "sheets" / fname)
+    root = build_root(root_uuid, sheet_uuids, s1pins, std, syms, s3pins)
     root.write(kdir / f"{PROJECT}.kicad_sch", "\t(sheet_instances\n\t\t(path \"/\"\n\t\t\t(page \"1\")\n\t\t)\n\t)")
     (kdir / "sym-lib-table").write_text(
         f"(sym_lib_table\n\t(version 7)\n\t(lib (name \"{LIB}\") (type \"KiCad\") (uri \"${{KIPRJMOD}}/lib/{LIB}.kicad_sym\") "
@@ -867,6 +1041,7 @@ def main(repo: Path):
     (kdir / f"{PROJECT}.kicad_pro").write_text(json.dumps(pro, indent=2) + "\n", encoding="utf-8")
     print("sheet-1 interface pins:", len(s1pins))
     print("placed symbols on sheet 1:", len(s1.placed))
+    print("sheet-3 interface pins:", len(s3pins), "placed symbols on sheet 3:", len(s3.placed))
 
 
 if __name__ == "__main__":

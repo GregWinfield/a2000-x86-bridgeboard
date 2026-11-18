@@ -186,10 +186,13 @@ def main(path):
     check(en_ok_drivers == ["U108", "U109"], f"EN_OK open-drain drivers {en_ok_drivers}")
 
     # ---- decoupling -------------------------------------------------------------------------
-    n3 = sum(1 for r, p, _ in nets.get("+3V3", []) if r.startswith("C"))
-    n5 = sum(1 for r, p, _ in nets.get("+5V_BUS", []) if r.startswith("C"))
+    # sheet-1 references only (C1xx, U1xx): other sheets on the same rails are audited separately
+    def s1(r, prefix):
+        return r.startswith(prefix + "1") and len(r) == len(prefix) + 3
+    n3 = sum(1 for r, p, _ in nets.get("+3V3", []) if s1(r, "C"))
+    n5 = sum(1 for r, p, _ in nets.get("+5V_BUS", []) if s1(r, "C"))
     for r, cp in comps.items():
-        if r.startswith("C"):
+        if s1(r, "C"):
             nn = {net_of(r, "1"), net_of(r, "2")}
             check(("GND" in nn) and (nn & {"+3V3", "+5V_BUS"}), f"{r} must sit between a rail and GND: {nn}")
     # one 100 nF per supply pin: +3V3 pins = U101 4 + U102 4 + U103 VCCA 2 + U104 VCCA 1 + U105 1 + U106 1
@@ -197,7 +200,7 @@ def main(path):
     check(n3 == 17, f"+3V3 decoupling count {n3} (expected 16x100n + 1x10u = 17)")
     check(n5 == 5, f"+5V_BUS decoupling count {n5} (expected 4x100n + 1x10u = 5)")
     for rail, pins in (("+3V3", 16), ("+5V_BUS", 4)):
-        ic_pins = sum(1 for r, p, t in nets.get(rail, []) if r.startswith("U") and t == "power_in")
+        ic_pins = sum(1 for r, p, t in nets.get(rail, []) if s1(r, "U") and t == "power_in")
         check(ic_pins == pins, f"{rail}: {ic_pins} IC supply pins (expected {pins})")
 
     # ---- test points ---------------------------------------------------------------------------
