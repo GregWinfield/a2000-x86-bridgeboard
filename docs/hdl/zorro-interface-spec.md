@@ -2,7 +2,7 @@
 
 **Status:** revision B, 2026-11-18.
 - The RTL now exists in [../../hdl/rtl/](../../hdl/rtl/) (MIT, D-13).
-- The verification suite (simulation, formal, netlist checks) is written but **not yet executed** (§11).
+- The verification suite (simulation, formal, netlist checks) **passes** (2026-11-18, [verification-results.md](verification-results.md)).
 - Post-place-and-route timing (G-STA) is pending.
 
 **Target:** Lattice LCMXO2-2000HC-4TG144C (D-02).
@@ -123,7 +123,7 @@ care_lo  = ~(configured & mode_b)               // mode B compares A23..A19 only
 
 and 25 ns on /CFGINn → ZF_CFGOUT_N.
 
-**Gate G-STA** (conditions in [../stage2/sheet1-timing-budget.md](../stage2/sheet1-timing-budget.md) §9) must report:
+**Gate G-STA** (conditions in [../stage2/sheet1-timing-budget.md](../stage2/sheet1-timing-budget.md) §9). The exploratory Diamond run of 2026-11-19 meets every constraint, worst 14.79 ns ([../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md)). The final run must report:
 - every one of these paths, at the slow corner, both edges, at 10 pF load;
 - the minimum delays needed by the hazard inequality.
 
@@ -245,7 +245,7 @@ $48 alone also configures. A /BERR during the configuring write cancels it.
 | /BUSRST | Negated | Negated (driven) | Released | Isolated |
 | Shut up | Never | Asserted | Released | Isolated |
 
-## 11. Verification (written; **execution pending**, gate G-SIM)
+## 11. Verification (gate G-SIM: **passed 2026-11-18**, [verification-results.md](verification-results.md))
 
 Run everything with `bash hdl/run_checks.sh` (OSS CAD Suite on PATH or `OSS_CAD_SUITE` set). The run fails on any `ASSERT-FAIL` line. Requirement-to-evidence map: [verification-matrix.md](verification-matrix.md).
 

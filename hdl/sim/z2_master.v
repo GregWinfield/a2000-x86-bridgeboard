@@ -210,6 +210,28 @@ module z2_master #(
         end
     endtask
 
+    // Illegal cycle: the address changes while /AS is asserted (robustness: the card must not
+    // hold XRDY for a cycle its FSM has already ignored, or the bus would hang).
+    task raw_addr_change;
+        input [23:1] addr1;
+        input [23:1] addr2;
+        input real   t_change;
+        input real   as_len;
+        begin
+            @(posedge clk7);
+            in_cycle = 1'b1; cur_addr = addr1;
+            A = addr1; READ = 1'b1;
+            #(setup_ns + 5.0);
+            AS_N = 1'b0; UDS_N = 1'b0; LDS_N = 1'b0; t_as = $realtime;
+            #(t_change);
+            A = addr2; cur_addr = addr2;
+            #(as_len - t_change);
+            AS_N = 1'b1; UDS_N = 1'b1; LDS_N = 1'b1; t_asn = $realtime;
+            #(150.0);
+            in_cycle = 1'b0;
+        end
+    endtask
+
     // Arbitrary-timing cycle (abort / early /AS release / bus-error robustness).
     // All times are relative to /AS assertion; the address is stable setup_ns before /AS.
     task raw_cycle;

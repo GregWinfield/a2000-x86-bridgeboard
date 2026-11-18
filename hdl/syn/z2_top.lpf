@@ -10,16 +10,18 @@ BLOCK RESETPATHS ;
 BLOCK ASYNCPATHS ;
 FREQUENCY PORT "clk_core" 50.000000 MHz ;
 
-# ---------------- /SLAVEn: assertion (from /AS and from the late-address case) and release
-MAXDELAY FROM PORT "ZB_AS_N"   TO PORT "ZF_SLAVE_N" 18.000000 ns ;
-MAXDELAY FROM PORT "ZB_A[16]"  TO PORT "ZF_SLAVE_N" 18.000000 ns ;
-MAXDELAY FROM PORT "ZB_A[17]"  TO PORT "ZF_SLAVE_N" 18.000000 ns ;
-MAXDELAY FROM PORT "ZB_A[18]"  TO PORT "ZF_SLAVE_N" 18.000000 ns ;
-MAXDELAY FROM PORT "ZB_A[19]"  TO PORT "ZF_SLAVE_N" 18.000000 ns ;
-MAXDELAY FROM PORT "ZB_A[20]"  TO PORT "ZF_SLAVE_N" 18.000000 ns ;
-MAXDELAY FROM PORT "ZB_A[21]"  TO PORT "ZF_SLAVE_N" 18.000000 ns ;
-MAXDELAY FROM PORT "ZB_A[22]"  TO PORT "ZF_SLAVE_N" 18.000000 ns ;
-MAXDELAY FROM PORT "ZB_A[23]"  TO PORT "ZF_SLAVE_N" 18.000000 ns ;
+# ---------------- /SLAVEn: assertion (from /AS and from the late-address case) and release.
+# MIN 0 ns makes TRACE's hold analysis report each path's MINIMUM delay (slack = delay), which the
+# C-02 hazard inequality needs (docs/stage2/sheet1-hazard-analysis.md section 4.2).
+MAXDELAY FROM PORT "ZB_AS_N"   TO PORT "ZF_SLAVE_N" 18.000000 ns MIN 0.000000 ns ;
+MAXDELAY FROM PORT "ZB_A[16]"  TO PORT "ZF_SLAVE_N" 18.000000 ns MIN 0.000000 ns ;
+MAXDELAY FROM PORT "ZB_A[17]"  TO PORT "ZF_SLAVE_N" 18.000000 ns MIN 0.000000 ns ;
+MAXDELAY FROM PORT "ZB_A[18]"  TO PORT "ZF_SLAVE_N" 18.000000 ns MIN 0.000000 ns ;
+MAXDELAY FROM PORT "ZB_A[19]"  TO PORT "ZF_SLAVE_N" 18.000000 ns MIN 0.000000 ns ;
+MAXDELAY FROM PORT "ZB_A[20]"  TO PORT "ZF_SLAVE_N" 18.000000 ns MIN 0.000000 ns ;
+MAXDELAY FROM PORT "ZB_A[21]"  TO PORT "ZF_SLAVE_N" 18.000000 ns MIN 0.000000 ns ;
+MAXDELAY FROM PORT "ZB_A[22]"  TO PORT "ZF_SLAVE_N" 18.000000 ns MIN 0.000000 ns ;
+MAXDELAY FROM PORT "ZB_A[23]"  TO PORT "ZF_SLAVE_N" 18.000000 ns MIN 0.000000 ns ;
 
 # ---------------- XRDY (60 ns limit after /AS; released on /AS negation and on /BERR)
 MAXDELAY FROM PORT "ZB_AS_N"   TO PORT "ZF_XRDY" 18.000000 ns ;
@@ -44,6 +46,11 @@ MAXDELAY FROM PORT "ZB_LDS_N"  TO PORT "ZF_DBUF_OE_N" 18.000000 ns ;
 # ---------------- /CFGOUTn follows /CFGINn (not timing critical)
 MAXDELAY FROM PORT "ZB_CFGIN_N" TO PORT "ZF_CFGOUT_N" 25.000000 ns ;
 
+# ---------------- output loading for timing (Diamond default is 0 pF). Each FPGA output drives one
+# LVC input: SN74LVC8T245 A port Cio 8.5 pF typ (S53), SN74LVC32A Ci 5 pF (S55), LVCH16T245 DIR
+# 4-5 pF x 2 (S46), plus trace and test pad. 15 pF is a conservative bound for all of them.
+OUTPUT ALLPORTS LOAD 15.000000 pF ;
+
 # ---------------- I/O standards (sheet-1 nets; no FPGA pulls: board resistors define the defaults)
 IOBUF PORT "ZF_SLAVE_N"   IO_TYPE=LVCMOS33 DRIVE=8 SLEWRATE=FAST PULLMODE=NONE ;
 IOBUF PORT "ZF_XRDY"      IO_TYPE=LVCMOS33 DRIVE=8 SLEWRATE=FAST PULLMODE=NONE ;
@@ -64,7 +71,8 @@ IOBUF PORT "ZB_DOE"       IO_TYPE=LVCMOS33 PULLMODE=NONE ;
 IOBUF PORT "ZB_CFGIN_N"   IO_TYPE=LVCMOS33 PULLMODE=NONE ;
 IOBUF PORT "ZB_BUSRST_N"  IO_TYPE=LVCMOS33 PULLMODE=NONE ;
 IOBUF PORT "ZB_BERR_N"    IO_TYPE=LVCMOS33 PULLMODE=NONE ;
-IOBUF PORT "ZB_E7M"       IO_TYPE=LVCMOS33 PULLMODE=NONE ;
+# ZB_E7M is unused in Stage 2 and removed by synthesis; re-enable its IOBUF when it gains a load:
+# IOBUF PORT "ZB_E7M"       IO_TYPE=LVCMOS33 PULLMODE=NONE ;
 IOBUF PORT "LD[0]"        IO_TYPE=LVCMOS33 DRIVE=8 PULLMODE=NONE ;
 # LD[1..15], ZB_A[1..23]: same as above (add when the pinout is frozen)
 

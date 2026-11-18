@@ -9,5 +9,7 @@ synth -top z2_decode -lut 4
 opt_clean -purge
 tee -o build/decode_stat.txt stat
 tee -a build/decode_stat.txt ltp -noff
-write_verilog -noattr build/decode_lut.v
+# -noexpr: keep every LUT as a $lut instance so sim/models/lut_rand.v gives it a delay
+# (without it, LUTs are written as zero-delay assign expressions).
+write_verilog -noattr -noexpr build/decode_lut.v
 write_json build/decode_lut.json

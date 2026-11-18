@@ -133,8 +133,14 @@ module tb_z2;
     always @(negedge Z_AS_N) c2_reported = 1'b0;
 
     // C5  /SLAVEn: no false assertion; <= 35 ns assertion; <= 50 ns release; no glitch
+    real t_as_rise = -1.0e9;                                // last /AS negation at the slot
+    always @(posedge Z_AS_N) t_as_rise = $realtime;
+    // For a selected address /SLAVEn may still fall up to the path delay after a runt /AS has
+    // been released (it is a delayed copy of /AS); for an unselected address it may never fall.
+    real T_SLAG;
+    initial T_SLAG = 4.9 + FPGA_TMAX + 6.4 + 2.0;          // U102 + FPGA + U104 + R117/load
     always @(negedge Z_SLAVE_N)
-        if ($realtime > 1.0 && !(exp_sel && (Z_AS_N === 1'b0))) begin
+        if ($realtime > 1.0 && !(exp_sel && ((Z_AS_N === 1'b0) || (($realtime - t_as_rise) <= T_SLAG)))) begin
             if (char_mode) false_slave = false_slave + 1;
             else fail("C5a false /SLAVEn assertion (unselected address or /AS negated)");
         end
@@ -158,8 +164,13 @@ module tb_z2;
             fail("C5d /SLAVEn glitched high during a selected cycle");
 
     // C6  XRDY: only for selected cycles in gated mode; <= 60 ns after /AS; released after /AS; bounded
+    // C6a allows the card's path delay: XRDY may still assert just after a runt /AS has
+    // been released (U102 + FPGA + U107 + U105 + edge), but never for an unselected cycle.
+    real T_XLAG;
+    initial T_XLAG = 4.9 + FPGA_TMAX + 3.8 + 3.6 + 2.0;
     always @(negedge Z_XRDY)
-        if (!(exp_sel && !r_zw && (Z_AS_N === 1'b0)) && !char_mode) fail("C6a XRDY held for an unselected cycle, in zero-wait mode or outside /AS");
+        if (!(exp_sel && !r_zw && ((Z_AS_N === 1'b0) || (($realtime - t_as_rise) <= T_XLAG))) && !char_mode)
+            fail("C6a XRDY held for an unselected cycle, in zero-wait mode or outside /AS (+ path delay)");
     always @(negedge Z_AS_N) begin : c6b
         reg e;
         e = exp_sel && !r_zw;
@@ -371,6 +382,11 @@ module tb_z2;
             m.raw_cycle(B[23:1] | 23'h5, 1'b0, 2'b11, 30.0 + 50.0 * k, 25.0 * k, 400.0, 0.0, 400.0);
             exp_sel = 1'b0;
         end
+        // T8b: address changes from unselected to selected while /AS is held 3 us (illegal).
+        // The FSM ignored the cycle at START, so XRDY must not be held (C6d bounds it).
+        exp_sel = 1'b1;
+        m.raw_addr_change((B[23:1] ^ 23'h400000), (B[23:1] | 23'h4), 200.0, 3000.0);
+        exp_sel = 1'b0;
         relax = 1'b0;
         rd16(B + 24'h0, d); expect16("MAGIC after aborted cycles", d, 16'h4252);
 

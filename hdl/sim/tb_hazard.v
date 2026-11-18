@@ -23,12 +23,15 @@ module tb_hazard;
     wire         as_n_f;
 
     // input buffers: per-bit random transport delay, redrawn per trial
+    reg corner = 1'b0;                                // E3: address buffers at max, /AS buffer at min
     genvar g;
     generate for (g = 0; g < 9; g = g + 1) begin : buf_ch
         real d = 2.0;
         reg  q;
         wire i = (g == 8) ? as_n_slot : a_slot[16 + (g % 8)];
-        always @(redraw) d = BUF_MIN + (BUF_MAX - BUF_MIN) * (($random & 32'h7FFFFFFF) % 100000) / 100000.0;
+        always @(redraw)
+            if (corner) d = (g == 8) ? BUF_MIN : BUF_MAX;
+            else        d = BUF_MIN + (BUF_MAX - BUF_MIN) * (($random & 32'h7FFFFFFF) % 100000) / 100000.0;
         always @(i) q <= #(d) i;
         if (g == 8) begin : as_b assign as_n_f = q; end
         else        begin : a_b  assign a_f[16 + g] = q; end
@@ -102,8 +105,35 @@ module tb_hazard;
         end
         care_lo = 1'b1;
 
-        // ---------------- E2: setup sweep, unselected target address
-        for (s = -8; s <= 14; s = s + 2) begin
+        // ---------------- E2a: WORST CASE. Previous address selected; the next differs in ONE bit
+        // only, so the select term falls only when that single bit's path has settled.
+        // /AS asserts 'setup' ns after that bit changes at the slot.
+        for (s = -8; s <= 20; s = s + 2) begin
+            setup = s;
+            fails = 0;
+            for (t = 0; t < N; t = t + 1) begin
+                -> redraw;
+                cmp = $random;
+                as_n_slot = 1'b1;
+                a_slot = cmp;                                // previous cycle: the selected window
+                #(40.0);
+                q = cmp ^ (8'h01 << ($random & 7));          // one bit different: not selected
+                g_slave = 0; armed_mon = 1'b1;
+                a_slot    <= #(10.0) q;                      // the single bit changes at t0 + 10
+                as_n_slot <= #(10.0 + setup) 1'b0;           // /AS 'setup' ns after it
+                #(10.0 + setup + 80.0);
+                if (slave_n !== 1'b1) g_slave = g_slave + 1;
+                armed_mon = 1'b0;
+                if (g_slave) fails = fails + 1;
+                as_n_slot = 1'b1;
+                #(40.0);
+            end
+            $display("E2a single-bit worst case, slot setup %0d ns: %0d / %0d trials with a false /SLAVEn", s, fails, N);
+        end
+
+        // ---------------- E2b: random unselected next address, 0-10 ns skew between bits;
+        // 'setup' is measured from the LAST bit to change (realistic, optimistic distribution)
+        for (s = -8; s <= 8; s = s + 2) begin
             setup = s;
             fails = 0;
             for (t = 0; t < N; t = t + 1) begin
@@ -123,10 +153,48 @@ module tb_hazard;
                 as_n_slot = 1'b1;
                 #(40.0);
             end
-            $display("E2 slot setup %0d ns: %0d / %0d trials with a false /SLAVEn", s, fails, N);
+            $display("E2b random address, slot setup %0d ns: %0d / %0d trials with a false /SLAVEn", s, fails, N);
         end
 
-        $display("TB_RESULT %s tb_hazard errors=%0d (E2 is a characterisation, see the table above)",
+        // ---------------- E3: deterministic model corner (every LUT at LUT_MAX, address buffers at
+        // BUF_MAX, /AS buffer at BUF_MIN); each address bit in turn; 0.5 ns setup steps.
+        // The smallest failure-free setup is the model's worst-case requirement S_req.
+        corner = 1'b1;
+        begin : e3
+            real lmin_save, req, worst;
+            integer bit;
+            reg ok;
+            lmin_save = LUT_MIN; LUT_MIN = LUT_MAX;
+            worst = -100.0;
+            for (bit = 0; bit < 8; bit = bit + 1) begin
+                req = 99.0;
+                for (s = 40; s >= -10; s = s - 1) begin       // setup = s / 2 ns, scanned downwards
+                    setup = s / 2.0;
+                    -> redraw;
+                    cmp = 8'hA5; care_lo = 1'b1;
+                    as_n_slot = 1'b1; a_slot = cmp;
+                    #(60.0);
+                    g_slave = 0; armed_mon = 1'b1;
+                    a_slot    <= #(10.0) (cmp ^ (8'h01 << bit));
+                    as_n_slot <= #(10.0 + setup) 1'b0;
+                    #(15.0 + setup + 80.0);
+                    if (slave_n !== 1'b1) g_slave = g_slave + 1;
+                    armed_mon = 1'b0;
+                    ok = (g_slave == 0);
+                    if (ok) req = setup;
+                    as_n_slot = 1'b1;
+                    #(60.0);
+                end
+                $display("E3 corner, A%0d changing: false /SLAVEn for setup < %0.1f ns", 16 + bit, req);
+                if (req > worst) worst = req;
+            end
+            $display("E3 model worst case: S_req = %0.1f ns (LUT incl. routing %0.2f ns, buffers %0.2f/%0.2f ns)",
+                     worst, LUT_MAX, BUF_MIN, BUF_MAX);
+            LUT_MIN = lmin_save;
+        end
+        corner = 1'b0;
+
+        $display("TB_RESULT %s tb_hazard errors=%0d (E2/E3 are characterisations, see the tables above)",
                  (errors == 0) ? "PASS" : "FAIL", errors);
         $finish;
     end
