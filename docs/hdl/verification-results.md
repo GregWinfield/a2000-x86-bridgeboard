@@ -73,3 +73,6 @@ All defects were in the verification code. **The RTL committed in 704ea69 needed
 | 4 | Hazard E1–E3 too optimistic | `write_verilog` printed LUTs as zero-delay expressions, so the random-delay LUT model was never used | `write_verilog -noexpr`; all hazard results re-run (§2) |
 | 5 | E2 looked optimistic | Random multi-bit targets let the select term fall early | Added E2a (single-bit worst case) and E3 (deterministic corner) |
 | 6 | Coverage gap (mutation M4b) | No test changed the address during /AS | Added T8b |
+| 7 | Formal basecase failed after a 2026-11-19 RTL edit | A `//` comment placed mid-line in the `initial` block commented out four initial values. Simulation passed because the power-on reset clears those registers; formal starts from the declared initial state | Line fixed; full suite re-run: ALL HDL CHECKS PASSED |
+
+Post-place-and-route timing (Lattice Diamond) is recorded separately in [../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md).

@@ -32,11 +32,11 @@ Evidence tags follow [../sources.md](../sources.md). This document supersedes §
 | 1 | J101 → U102 trace | 0.3 | [E] |
 | 2 | U102 A→Y | 4.1 | [V S45] |
 | 3 | U102 → FPGA trace | 0.5 | [E] |
-| 4 | **FPGA /AS → ZF_SLAVE_N** (also A16–A23 → ZF_SLAVE_N) | **18.0** | Allocation, G-STA |
+| 4 | **FPGA /AS → ZF_SLAVE_N** (also A16–A23 → ZF_SLAVE_N) | **18.0** allocation; **STA: 8.84** (worst of the commercial and industrial grades, 15 pF, auto-placed pins) | [sheet1-sta-results.md](sheet1-sta-results.md) |
 | 5 | FPGA → U104 trace | 0.5 | [E] |
 | 6 | **U104 A→B** (rev A was the LVC2T45 at tPHL 4.0 / tPLH 4.4) | 4.4 | [V S53] (one figure for both edges) |
 | 7 | R117 22 Ω + slot load to threshold | 2.0 | [E] |
-| | **Total, assertion and negation** | **29.8** | Margin **5.2 ns** to 35 and 20.2 ns to 50 |
+| | **Total, assertion and negation** | **29.8** (allocation); **20.6 with STA** | Margin 5.2 → **14.4 ns** to 35; 29.4 ns to 50 |
 | | Total with the FPGA datasheet floor (7.24 ns) | 19.0 | Not a bound: best case only |
 
 **Effect of the C-04 change.** U104's ~OE (CARD_EN_N) is static during operation, so it is **not** in this path. It changes only:
@@ -52,11 +52,11 @@ The replacement costs +0.4 ns against the old part's tPHL, reducing the margin f
 | Stage | Max (ns) | Note |
 |---|---|---|
 | U102 + traces | 5.1 | |
-| FPGA /AS → ZF_XRDY | 18.0 | Allocation, G-STA |
+| FPGA /AS → ZF_XRDY | 18.0 (STA: 9.10) | Allocation; [sheet1-sta-results.md](sheet1-sta-results.md) |
 | **U107 (rev B gate)** | 3.8 | [V S55] |
 | U105 + trace | 4.1 | [V S48] |
 | Fall to threshold (motherboard pull-up) | 2.0 | [E] |
-| **Total** | **33.0** | Margin **27 ns** (rev A: ≈ 29 ns total) |
+| **Total** | **33.0** (allocation); **24.1 with STA** | Margin **27 → 35.9 ns** (rev A: ≈ 29 ns total) |
 
 **Release paths.**
 - XRDY is released by /AS negation, /BERR assertion, or the FSM `hold_q` dropping.
@@ -71,7 +71,7 @@ Release is triggered by any of: /AS negation, /UDS and /LDS both negated, DOE ne
 | Stage | Max (ns) |
 |---|---|
 | U102 + traces | 5.1 |
-| FPGA (any of the six inputs) → ZF_DBUF_OE_N | 18.0 (allocation) |
+| FPGA (any of the six inputs) → ZF_DBUF_OE_N | 18.0 (allocation); STA worst 12.78 (/LDS) |
 | U107 | 3.8 |
 | U103 OE→B disable | 6.3 |
 | **Total** | **33.2** |
@@ -171,8 +171,8 @@ MC68000 RMW cycle [V S57 §4.1.3/§5.1.3]. "→ card" shows the rev B FSM action
 | Budget | Status |
 |---|---|
 | Buffer and gate contributions (all parts) | **Verified** from datasheets |
-| /SLAVEn 29.8 / 35 ns; XRDY 33.0 / 60 ns; release 33.2 ns | **Budgeted** with the 18 ns FPGA allocation (not proven) |
-| FPGA share | **Open:** G-STA (Diamond not installed yet) |
-| Hazard setup S_req | **Model worst case 11.0 ns** (tb_hazard E3); G-STA + M-7 |
+| /SLAVEn 29.8 / 35 ns; XRDY 33.0 / 60 ns; release 33.2 ns | Budgeted with the allocation; **with STA: 20.6, 24.1 and 28.0 ns** ([sheet1-sta-results.md](sheet1-sta-results.md)) |
+| FPGA share | **STA run 2026-11-19 (exploratory, Diamond-placed pins): every path ≤ 14.79 ns against 18 ns**, at the −4 commercial (85 °C) and industrial (100 °C) grades with 15 pF. Final G-STA at the sheet-2 pinout |
+| Hazard setup S_req | **STA: 15.2 ns conservative, 8.9–9.2 ns same corner**; model 11.0 ns. M-7 pass ≥ 18.2 ns |
 | RMW turnaround (≥ 398 ns margin), direction guards, write capture | Designed and analysed. **Simulation passes; formal guard properties proven** (2026-11-18) |
 | A2000 DOE / auto-DTACK behaviour in RMW | **Assumed**; M-3 and M-10 |

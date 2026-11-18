@@ -2,7 +2,7 @@
 
 **Status:** Stage 2, **revision B**, 2026-11-18. **Not electrically or mechanically validated.**
 - ERC shows only the expected interface and tie-off items ([sheet1-erc-report.md](sheet1-erc-report.md)). The netlist audit passes (418 checks).
-- Neither proves the design works. The HDL verification suite **passes** (gate G-SIM, 2026-11-18, [../hdl/verification-results.md](../hdl/verification-results.md)). Post-place-and-route timing (G-STA) and hardware measurements are still open.
+- Neither proves the design works. The HDL verification suite **passes** (gate G-SIM, 2026-11-18, [../hdl/verification-results.md](../hdl/verification-results.md)). Exploratory post-place-and-route STA (Diamond) passes ([sheet1-sta-results.md](sheet1-sta-results.md)). The final G-STA run at the sheet-2 pinout and the hardware measurements are still open.
 
 **Files:**
 - Schematic: [hardware/kicad/sheets/01_zorro_interface.kicad_sch](../../hardware/kicad/sheets/01_zorro_interface.kicad_sch) (KiCad 10.0.8). PDF: [sheet1-schematic.pdf](sheet1-schematic.pdf).
@@ -20,7 +20,7 @@ Evidence tags follow [../sources.md](../sources.md).
 | C-05 | Keep XRDY gating; prove the buffer is never enabled for an invalid cycle and direction changes cannot cause contention | U107 ORs CARD_EN_N into U103 /OE, XRDY and /INTx. HDL read enable is qualified by the data strobes and /BERR. Registered DIR with guard intervals. Assertions, simulation and formal properties written |
 | **C-13 (new)** | RMW with /AS held across read and write | FSM driven by data-strobe phases. Read drive drops at the read strobe's negation (S7), long before R/W falls (S14) |
 | (found during rev B) | — | **/BERR is now buffered into the FPGA** (U102 channel moved from CDAC). Haynie's A2000 notes require a card to monitor /BERR and tri-state its bus drivers [V S52] |
-| C-01, C-02 | STA; hazard analysis and simulation | Constraints and STA script ready (G-STA pending: Diamond). Hazard analysis done. Simulations and formal proofs **run and pass**. Model worst-case address setup 11.0 ns |
+| C-01, C-02 | STA; hazard analysis and simulation | **Exploratory Diamond STA passes** (worst 14.79 ns against 18 ns; [sheet1-sta-results.md](sheet1-sta-results.md)). Hazard analysis done. Simulations and formal proofs run and pass. Setup requirement 15.2 ns (conservative) |
 
 ## 1. What this sheet does
 
@@ -89,10 +89,10 @@ Land patterns are TBV against the TI package drawings before layout.
 
 | Path | Limit | Budget (rev B) | Status |
 |---|---|---|---|
-| /AS → /SLAVEn assert / negate | 35 / 50 ns | 29.8 ns (U104 now 4.4 ns) | FPGA 18 ns allocation **unproven**: G-STA |
-| /AS → XRDY negated | 60 ns | 33.0 ns (+ U107) | as above |
-| Buffer release on /AS, DS, DOE, READ, /BERR | #29A 187 ns; RMW ≥ 431 ns | 33.2 ns | as above |
-| Address setup at the slot (hazard) | — | Required **11.0 ns** at the model's worst corner (tb_hazard E3) | G-STA + M-7 ([sheet1-hazard-analysis.md](sheet1-hazard-analysis.md)) |
+| /AS → /SLAVEn assert / negate | 35 / 50 ns | 29.8 ns (allocation); **20.6 ns with STA** | STA passes (exploratory; final at the sheet-2 pinout) |
+| /AS → XRDY negated | 60 ns | 33.0 ns (allocation); **24.1 ns with STA** | as above |
+| Buffer release on /AS, DS, DOE, READ, /BERR | #29A 187 ns; RMW ≥ 431 ns | 33.2 ns (allocation); **28.0 ns with STA** | as above |
+| Address setup at the slot (hazard) | — | **15.2 ns** conservative from STA (8.9–9.2 ns same corner) | M-7: pass ≥ 18.2 ns ([sheet1-sta-results.md](../stage2/sheet1-sta-results.md) §4) |
 | CARD_EN_N (C-04) | Not in any bus-cycle path | Static during operation; changes inside /BUSRST or on a fault | — |
 
 ## 5. Power-off isolation and back-feed (ER-3)
@@ -203,8 +203,8 @@ Unchanged from revision A: 100 pads, 1.524 × 5.0 mm on 2.54 mm pitch, matching 
 
 | ID | Concern | Severity | Status / resolution |
 |---|---|---|---|
-| **C-01** ⚠ | FPGA share (18 ns allocation) of the /SLAVEn, XRDY and buffer paths is unproven | High | **Open.** G-STA in Lattice Diamond under the conditions of [sheet1-timing-budget.md](sheet1-timing-budget.md) §9. LPF and script ready |
-| **C-02** ⚠ | Late address, skew, transitions near /AS → false /SLAVEn | High | **Mitigated by design; verified at model level:** netlist structure check PASS, gate-level E1 0/800, formal F4/F12 proven. Model worst-case slot setup 11.0 ns. Closure needs G-STA minimum/maximum delays and M-7 |
+| **C-01** ⚠ | FPGA share of the /SLAVEn, XRDY and buffer paths | High | **Exploratory STA passes** (Diamond 3.14, −4, commercial 85 °C and industrial 100 °C, 15 pF): worst 14.79 ns against 18 ns; /AS → /SLAVEn 8.84 ns; /SLAVEn total 20.6 of 35 ns ([sheet1-sta-results.md](sheet1-sta-results.md)). **Open until rerun at the sheet-2 pinout** (G-STA) and M-1/M-2 |
+| **C-02** ⚠ | Late address, skew, transitions near /AS → false /SLAVEn | High | Mitigated by design; structure verified on the Yosys **and Diamond** netlists; E1 0/800; formal F4/F12 proven. STA setup requirement **15.2 ns** conservative (8.9–9.2 ns same corner). **Open until M-7** (pass ≥ 18.2 ns) |
 | **C-03** ⚠ | Unpowered or non-operational carrier: /SLAVEn and /CFGOUTn | **High** (owner) | **Resolved by design in rev B** (§6). tb_chain S1–S10 and tb_z2 T0/T14–T18 **pass**. Open: M-8, M-9 on hardware |
 | C-04 | U104 behaviour at start-up | **Medium** (owner) | **Resolved by design:** OE-gated LVC8T245; /SLAVEn budget recalculated, 29.8 ns. Verify M-6, M-9 |
 | **C-05** ⚠ | No numeric DOE timing; buffer enable and direction safety | Medium | Design: XRDY-gated; enable qualified by DOE, strobes, READ, /BERR, registered DIR and guards. Assertions C1/C2/DIR monitor **pass**; formal F1/F2/F5/F8/F9 **proven**; mutations M1/M2 caught. M-3 open |
@@ -232,7 +232,7 @@ Unchanged from revision A: 100 pads, 1.524 × 5.0 mm on 2.54 mm pitch, matching 
 | M-4 | No /BERR during AutoConfig or register access | TP113, BERR_EVENTS register | Never asserted |
 | M-5 | XRDY negation in XRDY-gated mode | TP111, TP101 | ≤ 60 ns; released for non-selected cycles |
 | M-6 | Power-up/down, unprogrammed FPGA | TP102, TP109, TP110, TP111, TP118 | No assertion of /SLAVEn, /INTx, XRDY; /CFGOUTn passes |
-| M-7 | Address setup to /AS at the slot (A16–A23) | J101 | Recorded; ≥ S_req + 3 ns (hazard analysis) |
+| M-7 | Address setup to /AS at the slot (A16–A23) | J101 | **≥ 18.2 ns** (conservative STA S_req + 3 ns); 12.2–18.2 ns only on the same-corner basis |
 | **M-8** | Backplane terminations, A2000 off, no cards: each slot's /CFGOUTn to GND and /SLAVEn to +5 V | J101 sockets | ≈ 1 kΩ each (RP607 / RP800) |
 | **M-9** | Power-on: +3V3, +5V_BUS, EN_OK, CARD_EN_N against /BUSRST | TP119, TP118, TP112 | CARD_EN_N falls only while /BUSRST is asserted; record the EN_OK delay and the A2000 reset length |
 | **M-10** | TAS on SCRATCH0 from the Amiga; logic analyser on /AS, /UDS//LDS, READ, DOE, XRDY, ZF_DBUF_OE_N, ZF_DBUF_DIR | TPs + FPGA debug header | B-port enable ends before READ falls; RMW_CYCLES increments; result correct |

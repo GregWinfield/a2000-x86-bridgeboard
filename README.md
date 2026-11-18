@@ -7,7 +7,7 @@ An open-source, modern successor to the Commodore A2386SX bridgeboard. It is a g
 | Stage | Description | State |
 |---|---|---|
 | 1 | Architecture review | **Done**: decisions adopted as the [Rev 1 baseline](docs/02-rev1-baseline.md) (2026-11-18) |
-| 2 | Zorro II minimum system | **Sheet 1 revision B, in review** (card-enable gating, RMW-capable HDL): [schematic PDF](docs/stage2/sheet1-schematic.pdf), [design notes](docs/stage2/sheet1-design-notes.md), [timing budget](docs/stage2/sheet1-timing-budget.md), [hazard analysis](docs/stage2/sheet1-hazard-analysis.md), [ERC report](docs/stage2/sheet1-erc-report.md), [HDL spec](docs/hdl/zorro-interface-spec.md), [RTL and testbenches](hdl/). HDL verification **passes** (G-SIM); STA pending (G-STA) |
+| 2 | Zorro II minimum system | **Sheet 1 revision B, in review** (card-enable gating, RMW-capable HDL): [schematic PDF](docs/stage2/sheet1-schematic.pdf), [design notes](docs/stage2/sheet1-design-notes.md), [timing budget](docs/stage2/sheet1-timing-budget.md), [hazard analysis](docs/stage2/sheet1-hazard-analysis.md), [ERC report](docs/stage2/sheet1-erc-report.md), [HDL spec](docs/hdl/zorro-interface-spec.md), [RTL and testbenches](hdl/). HDL verification **passes** (G-SIM); exploratory Diamond STA **passes** ([STA results](docs/stage2/sheet1-sta-results.md)); final G-STA at the sheet-2 pinout |
 | 3 | Shared memory, SPI, interrupts | Waits for gate G-SHEET1 (owner review of sheet 1 revision B) |
 | 4 | RP2040 firmware + Windows test utility | – |
 | 5 | Integration, drivers, RDP investigation | – |

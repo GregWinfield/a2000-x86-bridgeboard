@@ -32,10 +32,14 @@ MachXO2 is supported by **Lattice Diamond only**; Lattice Radiant does not suppo
 1. Sign in to, or create, a Lattice account at latticesemi.com.
 2. Download **Diamond 3.14 64-bit for Windows** (about 1.6 GB; Windows 10/11 64-bit) from the Diamond page.
 3. Request the free **node-locked** licence: Diamond page → "Request Node-locked License" → Lattice licensing portal. It asks for the PC's **Ethernet MAC address**. `getmac /v` in a Command Prompt lists it: twelve hex digits of a physical adapter. The licence is annual and must be regenerated after a year.
-4. Run the installer and give it the licence file when asked. Lattice: "place the .lic file in the directory specified during installation".
-5. Run the STA flow from the Diamond Tcl console: `cd hdl/syn; source diamond_sta.tcl`. The script still needs checking on its first run. Record the TRACE results in `docs/stage2/sheet1-timing-budget.md` §9.
+4. Run the installer and give it the licence file when asked. Lattice: "place the .lic file in the directory specified during installation". On this project's PC the file is `C:\lscc\diamond\3.14\license\FNP License-LicenseFile.lic`, and **`LM_LICENSE_FILE` was not set** by the installer.
+5. From Git Bash, run `bash hdl/syn/run_diamond.sh <space-free work dir> [LCMXO2-2000HC-4TG144C|…I]`. It sets `LM_LICENSE_FILE` for the run only, then copies the sources to the work directory, because Lattice tools mishandle spaces in paths. It runs `diamond_sta.tcl` through `pnmainc.exe` and prints the `twr_summary.py` table.
+6. Check the final-gate structure on Diamond's netlist with `python -I hdl/syn/check_diamond_gates.py <work>/work/impl1/z2_sta_impl1_mapvo.vo`.
+7. Record the results in `docs/stage2/sheet1-sta-results.md`.
 
-**Until sheet 2 fixes the FPGA pinout**, Diamond places the I/O itself. That run is exploratory: it shows whether the 18 ns allocation is realistic. Gate G-STA proper needs the final pin assignment.
+**Status.** The exploratory run of 2026-11-19 passes every constraint (worst 14.79 ns against 18 ns) at both grades with 15 pF loads ([../docs/stage2/sheet1-sta-results.md](../docs/stage2/sheet1-sta-results.md)).
+
+**Until sheet 2 fixes the FPGA pinout**, Diamond places the I/O itself. That run is exploratory: it shows the 18 ns allocation is realistic. Gate G-STA proper needs the final pin assignment.
 
 ## Model assumptions (read before trusting a pass)
 

@@ -65,9 +65,9 @@ hold:   t_h,slot  >= (t_bufAS,max + t_AS->gate,max) - (t_bufA,min + t_sel,min)
 | Term | Value | Source |
 |---|---|---|
 | t_bufA,max − t_bufAS,min | 4.1 − 1.1 = 3.0 ns, plus trace mismatch ±0.5 ns = **3.5 ns** | [V S45], [E] |
-| t_sel,max: FPGA address pin → final-gate input | Yosys mapping: **3 LUT levels** (A17, A18, A21–A23), 2 levels (A16, A19, A20). At 2.5 ns per level incl. routing [A]: 7.5 ns | [D] netlist; [A] delay; **G-STA** |
-| t_AS→gate,min: /AS pin → final-gate input | Direct to the final gate (0 decode levels) | [D] netlist; **G-STA** (minimum / hold analysis) |
-| **Required slot setup** | **11.0 ns** at the model's worst corner (tb_hazard E3, equal to the inequality: 4.9 + 3 × 2.5 − 1.4). Monte-Carlo: 0 failures from 8 ns. Revision B's first hand estimate, ≈ 8.5 ns, was optimistic | [D] model; G-STA |
+| t_sel,max: FPGA address pin → /SLAVEn pin | **STA: 14.19 ns** (A16, industrial, slow); Yosys 3 LUT levels | [V] Diamond TRACE ([sheet1-sta-results.md](sheet1-sta-results.md)) |
+| t_AS→gate,min: /AS pin → /SLAVEn pin | **STA: 2.48 ns** minimum (fast model); 8.84 ns maximum | [V] Diamond TRACE |
+| **Required slot setup** | **15.2 ns conservative** (slow maximum − fast minimum), **8.9–9.2 ns same corner**. Model corner 11.0 ns (tb_hazard E3) | [D] from STA |
 | Available at the CPU | Address valid ≥ **30 ns** before /AS (#11, MC68000 8 MHz part) | [V S57] |
 | Available at the slot | 30 ns minus the unknown A2000 address-vs-/AS buffer skew | **M-7** |
 | Hold available at the CPU | Address valid ≥ **40 ns** after /AS negation (#13) | [V S57] |
@@ -114,13 +114,13 @@ Transport delays preserve every glitch, so the model is pessimistic. The LUT and
 | `check_decode_structure.py` on the Yosys netlist | **PASS** (13/13) |
 | tb_z2 T6, tb_hazard E1–E3 | **Run, PASS** (E2/E3 characterisations, §5) |
 | Formal F4, F12 (SymbiYosys) | **Proven** (k-induction, with F1–F16) |
-| Diamond minimum/maximum path delays, post-map structure check (G-STA) | **Pending:** needs Lattice Diamond and its free licence |
+| Diamond minimum/maximum path delays, post-map structure check (G-STA) | **Done, exploratory** (Diamond-placed pins): [sheet1-sta-results.md](sheet1-sta-results.md). Structure check on Diamond's netlist PASS. Final at the sheet-2 pinout |
 | M-7 slot address setup, scope | **Pending:** hardware, after gate G-PSU |
 
 ## 8. Result
 
 - **Shown by structure, netlist check, gate-level simulation and formal proof:** /SLAVEn, XRDY and the data-buffer enable cannot assert while /AS is negated at the FPGA. The data buffers cannot be enabled by any decode transient.
-- **Conditionally:** for a stable address, /SLAVEn asserts only for a selected address **provided the slot address setup is at least S_req**. S_req = 11.0 ns at the model's worst corner; the design value comes from G-STA, the available value from M-7.
+- **Conditionally:** for a stable address, /SLAVEn asserts only for a selected address **provided the slot address setup is at least S_req = 15.2 ns** (conservative STA bound; 8.9–9.2 ns on the same corner). M-7 must show ≥ 18.2 ns, or ≥ 12.2 ns accepted on the same-corner basis.
 - **Not yet demonstrated:**
   - the numeric S_req;
   - the A2000 setup;

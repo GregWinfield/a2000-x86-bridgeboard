@@ -79,7 +79,8 @@ module z2_core #(
         match_en = 1'b0; care_lo = 1'b1; cmp = 8'hE8;
         sel_q = 1'b0; tgt_ac = 1'b0; ph_any = 1'b0; ph_two = 1'b0; ph_rd = 1'b0; held = 1'b0; addr_q = 23'd0;
         dir_q = 1'b0; dir_req = 1'b0; oe_rd_q = 1'b0; oe_wr_q = 1'b0; hold_q = 1'b1; ld_oe = 1'b0; ld_dout = 16'h0000;
-        oe_idle_cnt = 3'd7; dir_cnt = 3'd7; wr_cnt = 3'd0; wd_cnt = 8'd0; wd_trip = 1'b0; wd_flag = 1'b0;
+        oe_idle_cnt = 3'd0; dir_cnt = 3'd0; wr_cnt = 3'd0; wd_cnt = 8'd0; wd_trip = 1'b0; wd_flag = 1'b0;
+        // (guard counters start at the GSR value 0 and saturate during the 15-clock por)
         zero_wait = 1'b0; irq_en = 1'b0; int_sel = 1'b0; irq_pend = 1'b0; led_r = 4'd0;
         scratch0 = 16'h0000; scratch1 = 16'h0000; zcycles = 16'h0000; waitstats = 16'h0000;
         wdog_events = 16'h0000; rmw_cycles = 16'h0000; berr_events = 16'h0000; ticks = 16'h0000;
