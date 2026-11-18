@@ -173,6 +173,6 @@ MC68000 RMW cycle [V S57 §4.1.3/§5.1.3]. "→ card" shows the rev B FSM action
 | Buffer and gate contributions (all parts) | **Verified** from datasheets |
 | /SLAVEn 29.8 / 35 ns; XRDY 33.0 / 60 ns; release 33.2 ns | **Budgeted** with the 18 ns FPGA allocation (not proven) |
 | FPGA share | **Open:** G-STA (Diamond not installed yet) |
-| Hazard setup S_req | **Estimated** at ≈ 8.5 ns; G-STA + M-7 |
-| RMW turnaround (≥ 398 ns margin), direction guards, write capture | **Designed and analysed.** Simulation and formal proofs written, not yet run |
+| Hazard setup S_req | **Model worst case 11.0 ns** (tb_hazard E3); G-STA + M-7 |
+| RMW turnaround (≥ 398 ns margin), direction guards, write capture | Designed and analysed. **Simulation passes; formal guard properties proven** (2026-11-18) |
 | A2000 DOE / auto-DTACK behaviour in RMW | **Assumed**; M-3 and M-10 |

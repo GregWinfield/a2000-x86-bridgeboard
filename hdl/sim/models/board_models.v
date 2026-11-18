@@ -38,6 +38,7 @@ module m_dly #(
             else if (`DLY_MODE == 2) d = TMIN;
             else                     d = TMIN + (TMAX - TMIN) * (($random(s) & 32'h7FFFFFFF) % 100000) / 100000.0;
         end
+        initial #(0.001) q = a[g];          // static inputs (e.g. pulled-up nets) never change
         always @(a[g]) q <= #(d) a[g];      // transport delay: pulses are preserved
         assign y[g] = q;
     end endgenerate

@@ -120,5 +120,6 @@ module card_sheet1 #(
     m_en_window #(.TMIN(TCO_MIN), .TMAX(TCO_MAX)) u_ldw (.en(dut.ld_oe & fpga_on), .w(fpga_ld_drv));
     assign ld_conflict = fpga_ld_drv & a_drv;
     always @(posedge ld_conflict)
-        $display("ASSERT-FAIL %0t LD contention: FPGA and U103 A port both enabled", $realtime);
+        if ($realtime > 1.0)                 // ignore X resolution at time 0
+            $display("ASSERT-FAIL %0t LD contention: FPGA and U103 A port both enabled", $realtime);
 endmodule

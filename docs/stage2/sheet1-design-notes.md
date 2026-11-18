@@ -2,7 +2,7 @@
 
 **Status:** Stage 2, **revision B**, 2026-11-18. **Not electrically or mechanically validated.**
 - ERC shows only the expected interface and tie-off items ([sheet1-erc-report.md](sheet1-erc-report.md)). The netlist audit passes (418 checks).
-- Neither proves the design works. The HDL verification suite is written but **not yet executed** (§9, C-16).
+- Neither proves the design works. The HDL verification suite **passes** (gate G-SIM, 2026-11-18, [../hdl/verification-results.md](../hdl/verification-results.md)). Post-place-and-route timing (G-STA) and hardware measurements are still open.
 
 **Files:**
 - Schematic: [hardware/kicad/sheets/01_zorro_interface.kicad_sch](../../hardware/kicad/sheets/01_zorro_interface.kicad_sch) (KiCad 10.0.8). PDF: [sheet1-schematic.pdf](sheet1-schematic.pdf).
@@ -20,7 +20,7 @@ Evidence tags follow [../sources.md](../sources.md).
 | C-05 | Keep XRDY gating; prove the buffer is never enabled for an invalid cycle and direction changes cannot cause contention | U107 ORs CARD_EN_N into U103 /OE, XRDY and /INTx. HDL read enable is qualified by the data strobes and /BERR. Registered DIR with guard intervals. Assertions, simulation and formal properties written |
 | **C-13 (new)** | RMW with /AS held across read and write | FSM driven by data-strobe phases. Read drive drops at the read strobe's negation (S7), long before R/W falls (S14) |
 | (found during rev B) | — | **/BERR is now buffered into the FPGA** (U102 channel moved from CDAC). Haynie's A2000 notes require a card to monitor /BERR and tri-state its bus drivers [V S52] |
-| C-01, C-02 | STA; hazard analysis and simulation | Constraints and STA script ready; hazard analysis written; simulations written. **Execution pending** (§9) |
+| C-01, C-02 | STA; hazard analysis and simulation | Constraints and STA script ready (G-STA pending: Diamond). Hazard analysis done. Simulations and formal proofs **run and pass**. Model worst-case address setup 11.0 ns |
 
 ## 1. What this sheet does
 
@@ -92,7 +92,7 @@ Land patterns are TBV against the TI package drawings before layout.
 | /AS → /SLAVEn assert / negate | 35 / 50 ns | 29.8 ns (U104 now 4.4 ns) | FPGA 18 ns allocation **unproven**: G-STA |
 | /AS → XRDY negated | 60 ns | 33.0 ns (+ U107) | as above |
 | Buffer release on /AS, DS, DOE, READ, /BERR | #29A 187 ns; RMW ≥ 431 ns | 33.2 ns | as above |
-| Address setup at the slot (hazard) | — | Required ≈ 8.5 ns [E] | G-STA + M-7 ([sheet1-hazard-analysis.md](sheet1-hazard-analysis.md)) |
+| Address setup at the slot (hazard) | — | Required **11.0 ns** at the model's worst corner (tb_hazard E3) | G-STA + M-7 ([sheet1-hazard-analysis.md](sheet1-hazard-analysis.md)) |
 | CARD_EN_N (C-04) | Not in any bus-cycle path | Static during operation; changes inside /BUSRST or on a fault | — |
 
 ## 5. Power-off isolation and back-feed (ER-3)
@@ -157,7 +157,7 @@ Land patterns are TBV against the TI package drawings before layout.
 
 ### 6.4 Behaviour by state (C-03 demonstration)
 
-"Sim" names the scenario in [../../hdl/sim/tb_chain.v](../../hdl/sim/tb_chain.v) (chain of three slots) or [../../hdl/sim/tb_z2.v](../../hdl/sim/tb_z2.v) that checks it. **The simulations are written but not yet run.**
+"Sim" names the scenario in [../../hdl/sim/tb_chain.v](../../hdl/sim/tb_chain.v) (chain of three slots) or [../../hdl/sim/tb_z2.v](../../hdl/sim/tb_z2.v) that checks it. **All listed scenarios pass** (2026-11-18, [../hdl/verification-results.md](../hdl/verification-results.md)).
 
 | State | EN_OK | ZF_ARM | U104 | /SLAVEn | /CFGOUTn | AutoConfig result | Sim |
 |---|---|---|---|---|---|---|---|
@@ -204,10 +204,10 @@ Unchanged from revision A: 100 pads, 1.524 × 5.0 mm on 2.54 mm pitch, matching 
 | ID | Concern | Severity | Status / resolution |
 |---|---|---|---|
 | **C-01** ⚠ | FPGA share (18 ns allocation) of the /SLAVEn, XRDY and buffer paths is unproven | High | **Open.** G-STA in Lattice Diamond under the conditions of [sheet1-timing-budget.md](sheet1-timing-budget.md) §9. LPF and script ready |
-| **C-02** ⚠ | Late address, skew, transitions near /AS → false /SLAVEn | High | **Mitigated by design** (structure S1–S5). Closure needs G-STA minimum/maximum delays and M-7. Simulations and formal properties written, not run |
-| **C-03** ⚠ | Unpowered or non-operational carrier: /SLAVEn and /CFGOUTn | **High** (owner) | **Resolved by design in rev B** (§6). Verification: tb_chain S1–S10, tb_z2 T0/T14–T18 (not run), M-8, M-9 |
+| **C-02** ⚠ | Late address, skew, transitions near /AS → false /SLAVEn | High | **Mitigated by design; verified at model level:** netlist structure check PASS, gate-level E1 0/800, formal F4/F12 proven. Model worst-case slot setup 11.0 ns. Closure needs G-STA minimum/maximum delays and M-7 |
+| **C-03** ⚠ | Unpowered or non-operational carrier: /SLAVEn and /CFGOUTn | **High** (owner) | **Resolved by design in rev B** (§6). tb_chain S1–S10 and tb_z2 T0/T14–T18 **pass**. Open: M-8, M-9 on hardware |
 | C-04 | U104 behaviour at start-up | **Medium** (owner) | **Resolved by design:** OE-gated LVC8T245; /SLAVEn budget recalculated, 29.8 ns. Verify M-6, M-9 |
-| **C-05** ⚠ | No numeric DOE timing; buffer enable and direction safety | Medium | Design: XRDY-gated; enable qualified by DOE, strobes, READ, /BERR, registered DIR and guards. Assertions C1, C2, the DIR monitor and formal F1/F2/F8/F9 written. M-3 |
+| **C-05** ⚠ | No numeric DOE timing; buffer enable and direction safety | Medium | Design: XRDY-gated; enable qualified by DOE, strobes, READ, /BERR, registered DIR and guards. Assertions C1/C2/DIR monitor **pass**; formal F1/F2/F5/F8/F9 **proven**; mutations M1/M2 caught. M-3 open |
 | C-06 | U103 bus-hold load on D0–D15 | Low | Unchanged |
 | C-07 | 22 Ω values are placeholders | Low | Unchanged |
 | C-08 | Edge-connector mechanics | Medium | Unchanged |
@@ -215,10 +215,10 @@ Unchanged from revision A: 100 pads, 1.524 × 5.0 mm on 2.54 mm pitch, matching 
 | C-10 | A blank FPGA blocks downstream AutoConfig | – | **Closed by the rev B design:** a blank FPGA leaves the card transparent. Verification as C-03 |
 | C-11 | Z3 machines untested | Low | Unchanged |
 | C-12 | Temporary PWR_FLAGs on sheet 1 | Low | Unchanged |
-| **C-13** ⚠ | RMW cycles: /AS held across read and write | Medium | **Resolved in the HDL by design** ([sheet1-timing-budget.md](sheet1-timing-budget.md) §7). tb_z2 T4/T5/T7 written. M-10 on hardware |
+| **C-13** ⚠ | RMW cycles: /AS held across read and write | Medium | **Resolved in the HDL by design and verified in simulation** (tb_z2 T4/T5/T7/T10 pass; mutation M1 caught). M-10 on hardware |
 | C-14 | FPGA I/O budget at 110 of 111 after rev B | Medium | At sheet 2, do not route ZF_OVR_N / ZF_DTACK_N to the FPGA, giving 108 of 111 ([../pin-assignment-matrix.md](../pin-assignment-matrix.md) §4) |
 | C-15 | Backplane terminations verified only for A2000 Rev 6 | Medium | M-8 per target machine |
-| C-16 ⚠ | **Verification not executed.** Simulation, formal and structure checks need the OSS CAD Suite (downloaded, SHA-256 checked, not yet run). STA needs Lattice Diamond | High (process) | Owner decision; gate **G-SIM** ([../02-rev1-baseline.md](../02-rev1-baseline.md) §4) |
+| C-16 | Verification not executed | – | **Closed 2026-11-18:** `hdl/run_checks.sh` → ALL HDL CHECKS PASSED ([../hdl/verification-results.md](../hdl/verification-results.md)). STA remains under C-01 / G-STA |
 
 ⚠ = unresolved electrical or bus-timing issue under brief §10. **No timing claim is made.** Zero-wait operation stays disabled (ER-2). The schematic is **not** approved for manufacture.
 

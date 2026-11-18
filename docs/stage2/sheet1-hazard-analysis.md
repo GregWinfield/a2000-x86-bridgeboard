@@ -4,7 +4,7 @@
 - the FPGA minimum and maximum path delays (gate **G-STA**, Lattice Diamond);
 - the address-to-/AS setup actually present at an A2000 slot (measurement **M-7**).
 
-The checks that produce evidence are written (§7) but have **not yet been executed**, because the simulator toolchain has not been run on this machine. Nothing here is claimed as proven until those runs and the gate are complete.
+The simulation, netlist and formal checks were **executed on 2026-11-18** and pass ([../hdl/verification-results.md](../hdl/verification-results.md)). The required setup below is a **model** result; it becomes a design number only with G-STA.
 
 Evidence tags follow [../sources.md](../sources.md).
 
@@ -65,14 +65,14 @@ hold:   t_h,slot  >= (t_bufAS,max + t_AS->gate,max) - (t_bufA,min + t_sel,min)
 | Term | Value | Source |
 |---|---|---|
 | t_bufA,max − t_bufAS,min | 4.1 − 1.1 = 3.0 ns, plus trace mismatch ±0.5 ns = **3.5 ns** | [V S45], [E] |
-| t_sel,max: FPGA address pin → final-gate input | ≈ 7 ns: input buffer plus 2–3 LUT levels with routing | [E] **G-STA** |
-| t_AS→gate,min: /AS pin → final-gate input | ≈ 1.5–2 ns | [E] **G-STA** (minimum / hold analysis) |
-| **Required slot setup** | **≈ 8.5 ns** | [E], to be recomputed from STA |
+| t_sel,max: FPGA address pin → final-gate input | Yosys mapping: **3 LUT levels** (A17, A18, A21–A23), 2 levels (A16, A19, A20). At 2.5 ns per level incl. routing [A]: 7.5 ns | [D] netlist; [A] delay; **G-STA** |
+| t_AS→gate,min: /AS pin → final-gate input | Direct to the final gate (0 decode levels) | [D] netlist; **G-STA** (minimum / hold analysis) |
+| **Required slot setup** | **11.0 ns** at the model's worst corner (tb_hazard E3, equal to the inequality: 4.9 + 3 × 2.5 − 1.4). Monte-Carlo: 0 failures from 8 ns. Revision B's first hand estimate, ≈ 8.5 ns, was optimistic | [D] model; G-STA |
 | Available at the CPU | Address valid ≥ **30 ns** before /AS (#11, MC68000 8 MHz part) | [V S57] |
 | Available at the slot | 30 ns minus the unknown A2000 address-vs-/AS buffer skew | **M-7** |
 | Hold available at the CPU | Address valid ≥ **40 ns** after /AS negation (#13) | [V S57] |
 
-The A2000 buffers the address and /AS on separate paths. If the slot setup is ≥ 15 ns, the estimated margin is ≈ 6 ns. The hold requirement, ≈ 10 ns by the same estimate, is far inside the 40 ns guarantee.
+The A2000 buffers the address and /AS on separate paths, so the slot setup is unknown until M-7. If it is ≥ 15 ns, the model margin is ≈ 4 ns. If M-7 or G-STA shows less than 3 ns margin, apply §6 (O1, then O3). The hold requirement is far inside the 40 ns guarantee.
 
 ### 4.3 If the inequality were violated
 
@@ -85,12 +85,12 @@ The A2000 buffers the address and /AS on separate paths. If the slot setup is �
 
 ## 5. Transitions near /AS: what the testbenches do
 
-| Test | Model | Expected |
+| Test | Model | Expected → **result (2026-11-18)** |
 |---|---|---|
-| tb_z2 T6 (RTL, board models) | Previous cycle often selected. Next address unselected, differing in 1–3 high bits. Slot setup 20/10/5 ns plus 0–15 ns per-bit spread. U101/U102 skew from the datasheet range | **Pass/fail:** no false /SLAVEn, /SLAVEn ≤ 35 ns for selected cycles, no glitch |
-| tb_z2 T6 characterisation | Setup 2/0/−5 ns, no spread | Counts reported, not failed. Shows the dependency on setup at RTL level (buffer skew only) |
-| tb_hazard E1 (gate level) | Yosys LUT netlist. Every LUT has a random 0.3–2.5 ns transport delay [A]. Buffers 1.4–4.9 ns. Address wandering through the selected code with /AS negated | **Pass/fail:** zero assertions of /SLAVEn, XRDY or buffer enable |
-| tb_hazard E2 (gate level) | /AS asserted s ns after the last address bit settles; s = −8…+14 ns | Table of false /SLAVEn rate against s. Gives the model's required setup, to compare with §4.2 |
+| tb_z2 T6 (RTL, board models) | Previous cycle often selected. Next address unselected, differing in 1–3 high bits. Slot setup 20/10/5 ns plus 0–15 ns per-bit spread. U101/U102 skew from the datasheet range | No false /SLAVEn, ≤ 35 ns, no glitch → **PASS** in 12 runs (8 seeds, 4 delay corners) |
+| tb_z2 T6 characterisation | Setup 2/0/−5 ns, no spread | Counts → 0 false at 2 ns; 0 or 60/60 at 0 ns (depends on drawn skew); 60/60 at −5 ns |
+| tb_hazard E1 (gate level) | Yosys LUT netlist (`write_verilog -noexpr`). Every LUT has a random 0.3–2.5 ns transport delay [A]. Buffers 1.4–4.9 ns. Address wandering through the selected code with /AS negated | Zero assertions → **PASS: 0 of 800 trials** for /SLAVEn, XRDY and the buffer enable |
+| tb_hazard E2a/E2b, E3 (gate level) | E2a: single changed bit (worst pattern). E2b: random unselected address. E3: deterministic corner (all LUTs 2.5 ns, address buffers max, /AS buffer min) | E2a: 0 failures from 8 ns. E2b: from 6 ns. **E3: S_req = 11.0 ns (3-level bits), 8.5 ns (2-level bits)** |
 
 Transport delays preserve every glitch, so the model is pessimistic. The LUT and routing delay range is an assumption [A] until G-STA provides real minimum and maximum values.
 
@@ -111,16 +111,16 @@ Transport delays preserve every glitch, so the model is pessimistic. The LUT and
 | Item | Status |
 |---|---|
 | RTL structure S1–S5 ([../../hdl/rtl](../../hdl/rtl)) | Written |
-| `check_decode_structure.py` on the Yosys netlist | Written, **not yet run** |
-| tb_z2 T6, tb_hazard E1/E2 | Written, **not yet run** |
-| Formal F4, F12 (SymbiYosys) | Written, **not yet run** |
+| `check_decode_structure.py` on the Yosys netlist | **PASS** (13/13) |
+| tb_z2 T6, tb_hazard E1–E3 | **Run, PASS** (E2/E3 characterisations, §5) |
+| Formal F4, F12 (SymbiYosys) | **Proven** (k-induction, with F1–F16) |
 | Diamond minimum/maximum path delays, post-map structure check (G-STA) | **Pending:** needs Lattice Diamond and its free licence |
 | M-7 slot address setup, scope | **Pending:** hardware, after gate G-PSU |
 
 ## 8. Result
 
-- **By construction** (pending the tool runs above): /SLAVEn, XRDY and the data-buffer enable cannot assert while /AS is negated at the FPGA. The data buffers cannot be enabled by any decode transient.
-- **Conditionally:** for a stable address, /SLAVEn asserts only for a selected address **provided the slot address setup is at least S_req**, estimated at ≈ 8.5 ns. S_req becomes a number only with G-STA; the available setup becomes a number only with M-7.
+- **Shown by structure, netlist check, gate-level simulation and formal proof:** /SLAVEn, XRDY and the data-buffer enable cannot assert while /AS is negated at the FPGA. The data buffers cannot be enabled by any decode transient.
+- **Conditionally:** for a stable address, /SLAVEn asserts only for a selected address **provided the slot address setup is at least S_req**. S_req = 11.0 ns at the model's worst corner; the design value comes from G-STA, the available value from M-7.
 - **Not yet demonstrated:**
   - the numeric S_req;
   - the A2000 setup;

@@ -2,7 +2,7 @@
 
 Original HDL for the bridgeboard FPGA (Lattice LCMXO2-2000HC-4TG144C). **Licence: MIT** (D-13); every file carries an SPDX header. Specification: [../docs/hdl/zorro-interface-spec.md](../docs/hdl/zorro-interface-spec.md). Requirement-to-evidence map: [../docs/hdl/verification-matrix.md](../docs/hdl/verification-matrix.md).
 
-> **Status (2026-11-18): written, not yet executed.** No simulation, formal proof or synthesis result exists yet (gate G-SIM). Post-place-and-route timing needs Lattice Diamond (gate G-STA).
+> **Status (2026-11-18): `run_checks.sh` → ALL HDL CHECKS PASSED** (gate G-SIM; [../docs/hdl/verification-results.md](../docs/hdl/verification-results.md)). Post-place-and-route timing needs Lattice Diamond (gate G-STA).
 
 ## Layout
 
