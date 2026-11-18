@@ -37,7 +37,7 @@ MachXO2 is supported by **Lattice Diamond only**; Lattice Radiant does not suppo
 6. Check the final-gate structure on Diamond's netlist with `python -I hdl/syn/check_diamond_gates.py <work>/work/impl1/z2_sta_impl1_mapvo.vo`.
 7. Record the results in `docs/stage2/sheet1-sta-results.md`.
 
-**Status.** The exploratory run of 2026-11-19 passes every constraint (worst 14.79 ns against 18 ns) at both grades with 15 pF loads ([../docs/stage2/sheet1-sta-results.md](../docs/stage2/sheet1-sta-results.md)).
+**Status.** The exploratory run of 2026-11-19 passes every constraint at both grades with 15 pF loads: worst **15.31 ns** against 18 ns ([../docs/stage2/sheet1-sta-results.md](../docs/stage2/sheet1-sta-results.md)). These figures come from the same-day **corrected** run. The first run analysed the address inputs as LVCMOS25 because the LPF set IO_TYPE only on some ports. `run_diamond.sh` now fails if any port is not LVCMOS33 or any bank is not at 3.3 V.
 
 **Until sheet 2 fixes the FPGA pinout**, Diamond places the I/O itself. That run is exploratory: it shows the 18 ns allocation is realistic. Gate G-STA proper needs the final pin assignment.
 

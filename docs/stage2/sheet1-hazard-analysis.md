@@ -66,8 +66,8 @@ hold:   t_h,slot  >= (t_bufAS,max + t_AS->gate,max) - (t_bufA,min + t_sel,min)
 |---|---|---|
 | t_bufA,max − t_bufAS,min | 4.1 − 1.1 = 3.0 ns, plus trace mismatch ±0.5 ns = **3.5 ns** | [V S45], [E] |
 | t_sel,max: FPGA address pin → /SLAVEn pin | **STA: 14.19 ns** (A16, industrial, slow); Yosys 3 LUT levels | [V] Diamond TRACE ([sheet1-sta-results.md](sheet1-sta-results.md)) |
-| t_AS→gate,min: /AS pin → /SLAVEn pin | **STA: 2.48 ns** minimum (fast model); 8.84 ns maximum | [V] Diamond TRACE |
-| **Required slot setup** | **15.2 ns conservative** (slow maximum − fast minimum), **8.9–9.2 ns same corner**. Model corner 11.0 ns (tb_hazard E3) | [D] from STA |
+| t_AS→gate,min: /AS pin → /SLAVEn pin | **STA: 2.34 ns** minimum (fast model); 8.91 ns maximum | [V] Diamond TRACE |
+| **Required slot setup** | **16.4 ns conservative** (slow maximum − fast minimum), **8.9–9.8 ns same corner**. Model corner 11.0 ns (tb_hazard E3) | [D] from STA |
 | Available at the CPU | Address valid ≥ **30 ns** before /AS (#11, MC68000 8 MHz part) | [V S57] |
 | Available at the slot | 30 ns minus the unknown A2000 address-vs-/AS buffer skew | **M-7** |
 | Hold available at the CPU | Address valid ≥ **40 ns** after /AS negation (#13) | [V S57] |
@@ -120,7 +120,7 @@ Transport delays preserve every glitch, so the model is pessimistic. The LUT and
 ## 8. Result
 
 - **Shown by structure, netlist check, gate-level simulation and formal proof:** /SLAVEn, XRDY and the data-buffer enable cannot assert while /AS is negated at the FPGA. The data buffers cannot be enabled by any decode transient.
-- **Conditionally:** for a stable address, /SLAVEn asserts only for a selected address **provided the slot address setup is at least S_req = 15.2 ns** (conservative STA bound; 8.9–9.2 ns on the same corner). M-7 must show ≥ 18.2 ns, or ≥ 12.2 ns accepted on the same-corner basis.
+- **Conditionally:** for a stable address, /SLAVEn asserts only for a selected address **provided the slot address setup is at least S_req = 16.4 ns** (conservative STA bound; 8.9–9.8 ns on the same corner). M-7 must show ≥ 19.4 ns, or ≥ 12.8 ns accepted on the same-corner basis.
 - **Not yet demonstrated:**
   - the numeric S_req;
   - the A2000 setup;

@@ -123,7 +123,7 @@ care_lo  = ~(configured & mode_b)               // mode B compares A23..A19 only
 
 and 25 ns on /CFGINn → ZF_CFGOUT_N.
 
-**Gate G-STA** (conditions in [../stage2/sheet1-timing-budget.md](../stage2/sheet1-timing-budget.md) §9). The exploratory Diamond run of 2026-11-19 meets every constraint, worst 14.79 ns ([../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md)). The final run must report:
+**Gate G-STA** (conditions in [../stage2/sheet1-timing-budget.md](../stage2/sheet1-timing-budget.md) §9). The exploratory Diamond run of 2026-11-19 meets every constraint, worst 15.31 ns after the I/O-standard correction ([../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md)). The final run must report:
 - every one of these paths, at the slow corner, both edges, at 10 pF load;
 - the minimum delays needed by the hazard inequality.
 
