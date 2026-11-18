@@ -1,4 +1,4 @@
-ERC report (2026-11-18T09:59:11, Encoding UTF8)
+ERC report (2026-11-18T13:56:45, Encoding UTF8)
 Report includes: Errors, Warnings, Exclusions
 
 ***** Sheet /
@@ -76,10 +76,10 @@ Report includes: Errors, Warnings, Exclusions
     @(121.92 mm, 91.44 mm): Hierarchical Sheet Pin 'ZB_AS_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 93.98 mm): Hierarchical Sheet Pin 'ZB_BUSRST_N'
+    @(121.92 mm, 93.98 mm): Hierarchical Sheet Pin 'ZB_BERR_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 96.52 mm): Hierarchical Sheet Pin 'ZB_CDAC'
+    @(121.92 mm, 96.52 mm): Hierarchical Sheet Pin 'ZB_BUSRST_N'
 [pin_not_connected]: Pin not connected
     ; error
     @(121.92 mm, 99.06 mm): Hierarchical Sheet Pin 'ZB_CFGIN_N'
@@ -148,31 +148,37 @@ Report includes: Errors, Warnings, Exclusions
     @(121.92 mm, 152.40 mm): Hierarchical Sheet Pin 'LD15'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 154.94 mm): Hierarchical Sheet Pin 'ZF_CFGOUT_N'
+    @(121.92 mm, 154.94 mm): Hierarchical Sheet Pin 'EN_OK'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 157.48 mm): Hierarchical Sheet Pin 'ZF_DBUF_DIR'
+    @(121.92 mm, 157.48 mm): Hierarchical Sheet Pin 'ZF_ARM'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 160.02 mm): Hierarchical Sheet Pin 'ZF_DBUF_OE_N'
+    @(121.92 mm, 160.02 mm): Hierarchical Sheet Pin 'ZF_CFGOUT_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 162.56 mm): Hierarchical Sheet Pin 'ZF_DTACK_N'
+    @(121.92 mm, 162.56 mm): Hierarchical Sheet Pin 'ZF_DBUF_DIR'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 165.10 mm): Hierarchical Sheet Pin 'ZF_INT2_N'
+    @(121.92 mm, 165.10 mm): Hierarchical Sheet Pin 'ZF_DBUF_OE_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 167.64 mm): Hierarchical Sheet Pin 'ZF_INT6_N'
+    @(121.92 mm, 167.64 mm): Hierarchical Sheet Pin 'ZF_DTACK_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 170.18 mm): Hierarchical Sheet Pin 'ZF_OVR_N'
+    @(121.92 mm, 170.18 mm): Hierarchical Sheet Pin 'ZF_INT2_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 172.72 mm): Hierarchical Sheet Pin 'ZF_SLAVE_N'
+    @(121.92 mm, 172.72 mm): Hierarchical Sheet Pin 'ZF_INT6_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(121.92 mm, 175.26 mm): Hierarchical Sheet Pin 'ZF_XRDY'
+    @(121.92 mm, 175.26 mm): Hierarchical Sheet Pin 'ZF_OVR_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 177.80 mm): Hierarchical Sheet Pin 'ZF_SLAVE_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 180.34 mm): Hierarchical Sheet Pin 'ZF_XRDY'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
     @(124.46 mm, 66.04 mm): Hierarchical Label 'ZB_A1'
@@ -265,7 +271,7 @@ Report includes: Errors, Warnings, Exclusions
     @(124.46 mm, 231.14 mm): Hierarchical Label 'ZB_BUSRST_N'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
-    @(124.46 mm, 233.68 mm): Hierarchical Label 'ZB_CDAC'
+    @(124.46 mm, 233.68 mm): Hierarchical Label 'ZB_BERR_N'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
     @(248.92 mm, 66.04 mm): Hierarchical Label 'LD0'
@@ -316,6 +322,54 @@ Report includes: Errors, Warnings, Exclusions
     @(248.92 mm, 106.68 mm): Hierarchical Label 'LD15'
 
 ***** Sheet /1 Zorro II interface & AutoConfig/
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 200.66 mm): Symbol U104 Pin 5 [A3, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 203.20 mm): Symbol U104 Pin 6 [A4, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 205.74 mm): Symbol U104 Pin 7 [A5, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 208.28 mm): Symbol U104 Pin 8 [A6, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 210.82 mm): Symbol U104 Pin 9 [A7, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 213.36 mm): Symbol U104 Pin 10 [A8, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 200.66 mm): Symbol U104 Pin 19 [B3, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 203.20 mm): Symbol U104 Pin 18 [B4, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 205.74 mm): Symbol U104 Pin 17 [B5, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 208.28 mm): Symbol U104 Pin 16 [B6, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 210.82 mm): Symbol U104 Pin 15 [B7, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 213.36 mm): Symbol U104 Pin 14 [B8, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
 
 ***** Sheet /2 FPGA & configuration/
 
@@ -327,7 +381,7 @@ Report includes: Errors, Warnings, Exclusions
 
 ***** Sheet /6 Interrupts, diagnostics & programming/
 
- ** ERC messages: 104  Errors 57  Warnings 47
+ ** ERC messages: 118  Errors 59  Warnings 59
 
  ** Ignored checks:
     - Global label only appears once in the schematic

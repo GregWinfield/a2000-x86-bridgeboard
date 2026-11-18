@@ -1,6 +1,6 @@
 # Pin-assignment matrix
 
-**Status:** maintained document. Revision B, 2026-11-18. Section 2 reflects sheet 1 as built; sections 3 and 4 are still plans.
+**Status:** maintained document. Revision C, 2026-11-18. Section 2 reflects sheet 1 rev B as built; sections 3 and 4 are still plans.
 - FPGA *package* pin numbers are assigned on KiCad sheet 2.
 - Connector pin numbers below are verified [V].
 - Carrier connections are proposals pending review.
@@ -21,12 +21,12 @@
 | `X4_3V3_REF` | X4 3.3 V | X4 header pins 1/17 (`P3V3_S`, S0-only), reference supply only |
 | suffix `_N` | – | Active low |
 
-## 2. Zorro II edge connector J101 (100 pins), as built on sheet 1
+## 2. Zorro II edge connector J101 (100 pins), as built on sheet 1 (revision B)
 
-- **Origin:** this table is **generated from the KiCad netlist** (`tools/kicad/pinmatrix_sheet1.py`). It follows each pin through series resistors and buffers to the 3.3 V FPGA-side net.
-- **Sources:** pin names [V S11], cross-checked against [V S12]; signal semantics [V S10].
+- **Origin:** this table is **generated from the KiCad netlist** (`tools/kicad/pinmatrix_sheet1.py`). It follows each pin through series resistors, buffers and (rev B) the U107 enable gates to the 3.3 V FPGA-side net.
+- **Sources:** pin names [V S11], cross-checked against [V S12]; signal semantics [V S10]; /BERR monitoring requirement [V S52].
 - **Not connected:** a no-connect flag in KiCad; the finger exists but has no copper connection.
-- **Netlist audit:** 353 checks, 0 failures ([stage2/sheet1-erc-report.md](stage2/sheet1-erc-report.md)).
+- **Netlist audit:** 418 checks, 0 failures ([stage2/sheet1-erc-report.md](stage2/sheet1-erc-report.md)).
 
 | Pin | Zorro II name | Net | Carrier path (from netlist) | FPGA-side net |
 |---|---|---|---|---|
@@ -38,20 +38,20 @@
 | 6 | +5V | – | **not connected** (no-connect flag) | – |
 | 7 | /OWN | – | **not connected** (no-connect flag) | – |
 | 8 | -5V | – | **not connected** (no-connect flag) | – |
-| 9 | /SLAVEn | `Z_SLAVE_N` | R117 22R → U104.7 (B1) ↔ U104.2 (A1); test point TP102 | `ZF_SLAVE_N` |
+| 9 | /SLAVEn | `Z_SLAVE_N` | R117 22R → U104.21 (B1) ↔ U104.3 (A1); test point TP102 | `ZF_SLAVE_N` |
 | 10 | +12V | – | **not connected** (no-connect flag) | – |
-| 11 | /CFGOUTn | `Z_CFGOUT_N` | R118 22R → U104.6 (B2) ↔ U104.3 (A2); test point TP109 | `ZF_CFGOUT_N` |
+| 11 | /CFGOUTn | `Z_CFGOUT_N` | R118 22R → U104.20 (B2) ↔ U104.4 (A2); test point TP109 | `ZF_CFGOUT_N` |
 | 12 | /CFGINn | `Z_CFGIN_N` | U102.29 (4A2) ↔ U102.20 (4Y2); test point TP108 | `ZB_CFGIN_N` |
 | 13 | GND | GND | ground plane | – |
 | 14 | /C3 | – | **not connected** (no-connect flag) | – |
-| 15 | CDAC | `Z_CDAC` | U102.26 (4A4) ↔ U102.23 (4Y4) | `ZB_CDAC` |
+| 15 | CDAC | – | **not connected** (no-connect flag) | – |
 | 16 | /C1 | – | **not connected** (no-connect flag) | – |
 | 17 | /OVR | `Z_OVR_N` | R119 0R DNP (DNP) → U105.8 (4Y) ↔ U105.9 (4A) | `ZF_OVR_N` |
-| 18 | XRDY | `Z_XRDY` | U105.6 (3Y) ↔ U105.5 (3A); test point TP111 | `ZF_XRDY` |
-| 19 | /INT2 | `Z_INT2_N` | U105.2 (1Y) ↔ U105.1 (1A); test point TP110 | `ZF_INT2_N` |
+| 18 | XRDY | `Z_XRDY` | U105.6 (3Y) ↔ U105.5 (3A) → `XRDY_G` → U107.6 (2Y) ↔ U107.4 (2A); test point TP111 | `ZF_XRDY` |
+| 19 | /INT2 | `Z_INT2_N` | U105.2 (1Y) ↔ U105.1 (1A) → `INT2_G_N` → U107.8 (3Y) ↔ U107.9 (3A); test point TP110 | `ZF_INT2_N` |
 | 20 | -12V | – | **not connected** (no-connect flag) | – |
 | 21 | A5 | `Z_A5` | U101.41 (2A1) ↔ U101.8 (2Y1) | `ZB_A5` |
-| 22 | /INT6 | `Z_INT6_N` | U105.4 (2Y) ↔ U105.3 (2A) | `ZF_INT6_N` |
+| 22 | /INT6 | `Z_INT6_N` | U105.4 (2Y) ↔ U105.3 (2A) → `INT6_G_N` → U107.11 (4Y) ↔ U107.12 (4A) | `ZF_INT6_N` |
 | 23 | A6 | `Z_A6` | U101.40 (2A2) ↔ U101.9 (2Y2) | `ZB_A6` |
 | 24 | A4 | `Z_A4` | U101.43 (1A4) ↔ U101.6 (1Y4) | `ZB_A4` |
 | 25 | GND | GND | ground plane | – |
@@ -75,7 +75,7 @@
 | 43 | A15 | `Z_A15` | U101.27 (4A3) ↔ U101.22 (4Y3) | `ZB_A15` |
 | 44 | /EINT4 | – | **not connected** (no-connect flag) | – |
 | 45 | A16 | `Z_A16` | U101.26 (4A4) ↔ U101.23 (4Y4) | `ZB_A16` |
-| 46 | /BERR | `Z_BERR_N` | —; test point TP113 | — |
+| 46 | /BERR | `Z_BERR_N` | U102.26 (4A4) ↔ U102.23 (4Y4); test point TP113 | `ZB_BERR_N` |
 | 47 | A17 | `Z_A17` | U102.47 (1A1) ↔ U102.2 (1Y1) | `ZB_A17` |
 | 48 | /VPA | – | **not connected** (no-connect flag) | – |
 | 49 | GND | GND | ground plane | – |
@@ -131,7 +131,9 @@
 | 99 | GND | GND | ground plane | – |
 | 100 | GND | GND | ground plane | – |
 
-**Input buffer channels.** 23 address + /AS, /UDS, /LDS, READ + DOE, E7M, /CFGINn, /BUSRST + CDAC = 32. That uses all 32 channels of U101/U102.
+**Input buffer channels.** 23 address + /AS, /UDS, /LDS, READ + DOE, E7M, /CFGINn, /BUSRST + /BERR = 32. That uses all 32 channels of U101/U102. Rev B moved the last channel from CDAC (monitor only, R-29) to /BERR, which a card must monitor so that it can release its bus drivers [V S52].
+
+**Gated outputs (rev B).** XRDY, /INT2 and /INT6 reach U105 through U107, ORed with CARD_EN_N; /SLAVEn and /CFGOUTn pass U104, whose /OE is CARD_EN_N. When the card is not enabled, every Zorro-side driver is off and the slot behaves as an empty slot.
 
 ## 3. Radxa X4 40-pin header (via ribbon)
 
@@ -187,11 +189,15 @@ Header mapping: [V S1 sh.21], matches [V S5]. RP2040 alternate functions: [K S41
 
 ## 4. FPGA I/O budget (LCMXO2-2000HC-4TG144C, 111 I/O)
 
+Revision B recount (sheet 1 rev B). The Stage 1 count omitted `ZF_OVR_N` and `ZF_DTACK_N`, which are FPGA nets on sheet 1; they are included now.
+
 | Group | Pins |
 |---|---|
-| Zorro inputs (`ZB_*`) | 31 (+1 optional CDAC) |
-| Zorro outputs (`ZF_*`) | 5 |
-| Transceiver DIR, /OE | 2 |
+| Zorro inputs (`ZB_*`: 23 address, /AS, /UDS, /LDS, READ, DOE, E7M, /CFGINn, /BUSRST, /BERR) | 32 |
+| Zorro outputs (`ZF_SLAVE_N`, `ZF_CFGOUT_N`, `ZF_INT2_N`, `ZF_INT6_N`, `ZF_XRDY`) | 5 |
+| `ZF_OVR_N`, `ZF_DTACK_N` (outputs DNP-isolated in Rev 1) | 2 |
+| Transceiver `ZF_DBUF_DIR`, `ZF_DBUF_OE_N` | 2 |
+| Card enable: `ZF_ARM` (out), `EN_OK` (in), rev B | 2 |
 | `LD[15:0]` | 16 |
 | SRAM `SA[17:0]` + 5 control | 23 |
 | RP2040 link (`RP_*`) | 6 |
@@ -200,9 +206,11 @@ Header mapping: [V S1 sh.21], matches [V S5]. RP2040 alternate functions: [K S41
 | LEDs (5) + DIP (3) | 8 |
 | Clock in | 1 |
 | Debug/expansion header | 4 |
-| **Subtotal** | **102** (103 with CDAC) |
+| **Subtotal** | **107** |
 | PROGRAMN, INITN, DONE (kept) | 3 |
-| **Total** | **105–106 of 111** |
+| **Total** | **110 of 111** |
+
+**Concern C-14 (sheet 2).** One spare pin is too tight. Planned resolution, at no cost to Rev 1 function: do not route `ZF_OVR_N` and `ZF_DTACK_N` to the FPGA. R106/R107 already hold the U105 inputs high and R119/R120 (DNP) isolate the outputs, giving **108 of 111**. Alternative: LCMXO2-4000HC in the same package (I/O count TBV against the MachXO2 data sheet before relying on it).
 
 JTAG uses dedicated pins. Bank assignments (planned for sheet 2):
 - Zorro inputs and outputs grouped on banks nearest the edge connector;

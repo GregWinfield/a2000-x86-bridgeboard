@@ -1,4 +1,4 @@
-# Sheet 1: ERC and connectivity verification report
+# Sheet 1: ERC and connectivity verification report (revision B)
 
 **Date:** 2026-11-18.
 **Tool:** KiCad 10.0.8 `kicad-cli`.
@@ -6,41 +6,45 @@
 **Command:** `kicad-cli sch erc --severity-all` (default project rule severities).
 **Raw report:** [sheet1-erc-report.txt](sheet1-erc-report.txt).
 
-> An ERC-clean result does **not** mean the design is electrically, timing- or mechanically validated. It only means no rule the checker knows about was broken. See [sheet1-design-notes.md](sheet1-design-notes.md) §8 for the open engineering concerns.
+> An ERC result with only expected items does **not** mean the design is electrically, timing- or mechanically validated. It only means no rule the checker knows about was broken unexpectedly. The open engineering concerns are in [sheet1-design-notes.md](sheet1-design-notes.md) §9.
 
-## 1. Result
+## 1. Result (118 items, all expected)
 
 | Severity | Rule | Count | Items | Assessment |
 |---|---|---|---|---|
-| Error | `pin_not_connected` | 57 | Hierarchical **sheet pins** of sheet 1 on the root sheet: 32 × ZB_*, 16 × LD*, 9 × ZF_* | **Expected.** These are sheet 1's interface to sheet 2 (FPGA), which is not drawn yet. Every one becomes a real connection on sheet 2 |
-| Warning | `isolated_pin_label` | 47 | Sheet-1 hierarchical labels ZB_A1–ZB_A23, ZB_UDS_N, ZB_LDS_N, ZB_READ, ZB_DOE, ZB_E7M, ZB_CFGIN_N, ZB_BUSRST_N, ZB_CDAC and LD0–LD15. Each connects to a single pin on this sheet (a buffer output or transceiver A pin) | **Expected**, same cause. ZB_AS_N is not listed because it also has test point TP114 |
-| All other rules | – | **0** | Power-pin drive, pin-type conflicts (output↔output and similar), dangling wires and labels, no-connect misuse, duplicate references, library-symbol mismatches, label naming | – |
+| Error | `pin_not_connected` | 59 | Hierarchical **sheet pins** of sheet 1 on the root sheet: 32 × ZB_* (now including ZB_BERR_N; ZB_CDAC removed), 16 × LD*, 10 × ZF_* (now including ZF_ARM), EN_OK | **Expected.** Sheet 1's interface to sheet 2 (FPGA), which is not drawn yet |
+| Warning | `isolated_pin_label` | 47 | Sheet-1 hierarchical labels ZB_A1–ZB_A23, ZB_UDS_N, ZB_LDS_N, ZB_READ, ZB_DOE, ZB_E7M, ZB_CFGIN_N, ZB_BUSRST_N, ZB_BERR_N and LD0–LD15. Each connects to a single pin on this sheet | **Expected**, same cause. ZB_AS_N is absent because it also has TP114 |
+| Warning | `pin_to_pin` | 12 | "Bidirectional and Power output connected": U104 pins 5–10 (A3–A8) and 14–19 (B8–B3) tied to GND, which carries the GND PWR_FLAG | **Expected and intended (rev B).** The unused channels of the SN74LVC8T245 must not float: inputs on both ports are always active [V S53]. With DIR = A→B, the B pins drive low into ground when enabled, which is the same level |
+| All other rules | – | **0** | Power-pin drive, output↔output conflicts, dangling wires and labels, no-connect misuse, duplicate references, library-symbol mismatches, label naming | – |
 
-**No unexpected violations.** The 104 expected items all disappear once sheet 2 connects the interface. They were deliberately **not** suppressed with ERC exclusions or no-connect flags, so that an unconnected interface net cannot slip through later.
+**Not suppressed.**
+- The 106 interface items disappear once sheet 2 connects the interface.
+- The 12 tie-off warnings are permanent and are listed here on purpose. They are not hidden with ERC exclusions, so any **new** pin-to-pin warning stands out.
 
 ## 2. Temporary items that affect ERC
 
-- **PWR_FLAGs on `+3V3` and `+5V_BUS` (sheet 1, top-right).** They declare these rails as driven, because their source (sheet 5) is not drawn yet. Remove them when sheet 5 exists (concern C-12).
-  - Without them, ERC would report every IC supply pin as "input power pin not driven", which would hide real issues.
-  - The GND PWR_FLAG is permanent: ground enters through the Zorro GND pins and, later, the Molex.
-- **Tooling note.** The same flags on the **root** sheet were reported as `pin_not_connected` in three different arrangements (overlapping pins, a vertical wire, a horizontal wire). The same arrangement works on sub-sheets. The flags were moved to sheet 1. This behaviour of `kicad-cli` 10.0.8 is unexplained; it is recorded here in case it reappears.
+- **PWR_FLAGs on `+3V3` and `+5V_BUS` (sheet 1, top right).** They declare these rails as driven until sheet 5 exists. Remove them then (C-12).
+- **GND PWR_FLAG.** Permanent: ground enters through the Zorro GND pins and, later, the Molex.
+- **Tooling note (revision A).** Flags on the root sheet gave spurious `pin_not_connected` reports, which is why they are on sheet 1.
 
 ## 3. Connectivity audit (beyond ERC)
 
-ERC cannot tell whether the wiring matches the *design intent*. The exported netlist was therefore checked by `tools/kicad/audit_sheet1.py` against tables transcribed from the TI datasheets and the Zorro pin assignment:
+`tools/kicad/audit_sheet1.py` checks the exported netlist against tables transcribed from the TI datasheets and the Zorro pin assignment:
 
 | Check group | Checks |
 |---|---|
-| All 100 J101 pins: correct net, GND, or unconnected | 100 |
-| U101/U102: 16 A→Y channel mappings each (A and Y net), 4 ~OE to GND, 4 VCC, 8 GND | 2 × 48 = 96 |
-| U103: per bit, A pin net, B pin goes to exactly one RN element, far side of that element is Z_Dn, RN value (16 × 4); DIR ×2, ~OE ×2, VCCA/VCCB ×4, GND ×8 | 64 + 16 = 80 |
-| U104 (6 pin nets + 2 series-resistor paths × 3) and U105 (11 pin nets + unused 6Y + 2 DNP paths × 3) | 12 + 18 = 30 |
-| Default-state resistors (8 pull-ups of 2.2 kΩ, 1 pull-down of 10 kΩ) | 9 |
-| Decoupling: each of 17 capacitors between a rail and GND; rail counts (13 on +3V3, 4 on +5V_BUS); IC supply-pin counts (12 and 3) | 17 + 2 + 2 = 21 |
-| Test-point nets | 17 |
-| **Total** | **353 checks, 0 failures** |
+| All 100 J101 pins: correct net, GND, or unconnected (pin 15 CDAC now unconnected) | 100 |
+| U101/U102: 16 A→Y mappings each (Z_BERR_N → ZB_BERR_N on U102 4A4/4Y4), 4 ~OE, 4 VCC, 8 GND | 96 |
+| U103: per-bit A/B/RN paths; DIR; **~OE on DBUF_OE_G_N**; VCCA/VCCB; GND | 80 |
+| **U104 SN74LVC8T245:** 22 pin nets (DIR, ~OE = CARD_EN_N, A1/A2, unused A3–A8 and B3–B8 to GND, VCCA, VCCB ×2, GND ×3), value, 2 series-resistor paths × 3 | 29 |
+| U105: 11 pin nets (inputs now INT2_G_N, INT6_G_N, XRDY_G), unused 6Y, 2 DNP paths × 3 | 18 |
+| Default-state resistors (8 × 2.2 kΩ pull-ups, 1 × 10 kΩ pull-down) | 9 |
+| **Card enable (rev B):** EN_OK / ZF_ARM / CARD_EN_N / DBUF_OE_G_N pulls (4); U106 pins (5); U107 pins (14); U108/U109 pins, CT open, values, U108 SENSE (13); divider values and ends (3); JP101 (1); EN_OK open-drain drivers = U108 + U109 only (1) | 41 |
+| Decoupling: each of 22 capacitors between a rail and GND; rail counts (17 on +3V3, 5 on +5V_BUS); IC supply-pin counts (16 and 4) | 26 |
+| Test-point nets (TP101–TP119) | 19 |
+| **Total** | **418 checks, 0 failures** |
 
-**Round-trip check.** The generated files were re-saved by KiCad itself (`kicad-cli sch upgrade --force`). The re-saved files give the same ERC result and pass the same audit. Their netlist is identical to the original (ignoring timestamps). The committed files are KiCad's own re-saved versions.
+**Round-trip.** The generated files are re-saved by KiCad itself (`kicad-cli sch upgrade --force`) before ERC, export and audit. The committed files are KiCad's own re-saved versions.
 
 ## 4. How to reproduce
 
@@ -55,4 +59,5 @@ From the repo root:
 
 ```sh
 python -I tools/kicad/audit_sheet1.py hardware/kicad/sheet1.net
+python -I tools/kicad/pinmatrix_sheet1.py hardware/kicad/sheet1.net
 ```

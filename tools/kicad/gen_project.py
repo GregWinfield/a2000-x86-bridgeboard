@@ -20,7 +20,7 @@ from kisch import (FP_VERSION, GEN_VERSION, LIB, PROJECT, Pin, Schematic, StdSym
 
 KICAD_SYM = Path(r"C:\Program Files\KiCad\10.0\share\kicad\symbols")
 DATE = "2026-11-18"
-REV = "A (draft)"
+REV = "B (draft)"
 COMPANY = "A2000 x86 Bridgeboard project"
 LICENCE = "CERN-OHL-S-2.0"
 
@@ -87,19 +87,73 @@ def sym_lvch16t245():
         keywords="transceiver level translator dual supply bus hold", ref_at=(-10.16, 37.0), value_at=(-10.16, -35.6))
 
 
-def sym_lvc2t45():
-    # TI SCES516N, DCT/DCU pinout: 1 VCCA, 2 A1, 3 A2, 4 GND, 5 DIR, 6 B2, 7 B1, 8 VCCB
-    pins = [Pin("2", "A1", "bidirectional", -12.7, 5.08, 0, 5.08), Pin("3", "A2", "bidirectional", -12.7, 0, 0, 5.08),
-            Pin("5", "DIR", "input", -12.7, -5.08, 0, 5.08), Pin("7", "B1", "bidirectional", 12.7, 5.08, 180, 5.08),
-            Pin("6", "B2", "bidirectional", 12.7, 0, 180, 5.08), Pin("1", "VCCA", "power_in", -2.54, 12.7, 270, 2.54),
-            Pin("8", "VCCB", "power_in", 2.54, 12.7, 270, 2.54), Pin("4", "GND", "power_in", 0, -12.7, 90, 2.54)]
+def sym_lvc8t245():
+    # TI SCES584D (rev. May 2026), PW (TSSOP-24) pinout: 1 VCCA, 2 DIR, 3-10 A1-A8, 11-13 GND,
+    # 14 B8, 15 B7, 16 B6, 17 B5, 18 B4, 19 B3, 20 B2, 21 B1, 22 ~OE, 23-24 VCCB
+    pins = [Pin("2", "DIR", "input", -12.7, 15.24, 0, 5.08), Pin("22", "~{OE}", "input", -12.7, 12.7, 0, 5.08)]
+    for i in range(8):
+        y = 7.62 - 2.54 * i
+        pins.append(Pin(str(3 + i), f"A{i + 1}", "bidirectional", -12.7, y, 0, 5.08))
+        pins.append(Pin(str(21 - i), f"B{i + 1}", "bidirectional", 12.7, y, 180, 5.08))
+    pins += [Pin("1", "VCCA", "power_in", -2.54, 22.86, 270, 2.54), Pin("23", "VCCB", "power_in", 2.54, 22.86, 270, 2.54),
+             Pin("24", "VCCB", "power_in", 5.08, 22.86, 270, 2.54)]
+    pins += [Pin(n, "GND", "power_in", x, -17.78, 90, 2.54) for n, x in (("11", -2.54), ("12", 0), ("13", 2.54))]
     return SymbolDef(
-        "SN74LVC2T45DCT", "U", "SN74LVC2T45DCTR", "Package_SO:SSOP-8_2.95x2.8mm_P0.65mm",
-        "https://www.ti.com/lit/ds/symlink/sn74lvc2t45.pdf",
-        "2-bit dual-supply transceiver, VCC isolation, Ioff; DIR referenced to VCCA (TI SCES516N)",
-        pins, rects={1: [(-7.62, 10.16, 7.62, -10.16)]},
-        extra_props={"Manufacturer": "Texas Instruments", "MPN": "SN74LVC2T45DCTR"},
-        keywords="level translator dual supply 2bit", ref_at=(-7.62, 9.5), value_at=(-7.62, -10.0))
+        "SN74LVC8T245PW", "U", "SN74LVC8T245PWR", "Package_SO:TSSOP-24_4.4x7.8mm_P0.65mm",
+        "https://www.ti.com/lit/ds/symlink/sn74lvc8t245.pdf",
+        "8-bit dual-supply bus transceiver, 3-state, VCC isolation, Ioff; DIR/OE referenced to VCCA (TI SCES584D)",
+        pins, rects={1: [(-7.62, 20.32, 7.62, -15.24)]},
+        extra_props={"Manufacturer": "Texas Instruments", "MPN": "SN74LVC8T245PWR"},
+        keywords="level translator dual supply 8bit output enable", ref_at=(-7.62, 21.0), value_at=(-7.62, -15.5))
+
+
+def sym_lvc1g00():
+    # TI SCES212AC (rev. Aug 2026), DBV (SOT-23-5): 1 A, 2 B, 3 GND, 4 Y, 5 VCC
+    pins = [Pin("1", "A", "input", -10.16, 2.54, 0, 5.08), Pin("2", "B", "input", -10.16, -2.54, 0, 5.08),
+            Pin("4", "Y", "output", 10.16, 0, 180, 5.08), Pin("5", "VCC", "power_in", 0, 7.62, 270, 2.54),
+            Pin("3", "GND", "power_in", 0, -7.62, 90, 2.54)]
+    return SymbolDef(
+        "SN74LVC1G00DBV", "U", "SN74LVC1G00DBVR", "Package_TO_SOT_SMD:SOT-23-5",
+        "https://www.ti.com/lit/ds/symlink/sn74lvc1g00.pdf",
+        "Single 2-input NAND, 5.5 V tolerant inputs, Ioff (TI SCES212AC)",
+        pins, rects={1: [(-5.08, 5.08, 5.08, -5.08)]},
+        extra_props={"Manufacturer": "Texas Instruments", "MPN": "SN74LVC1G00DBVR"},
+        keywords="nand gate single", ref_at=(-5.08, 6.0), value_at=(-5.08, -6.5))
+
+
+def sym_lvc32a():
+    # TI SCAS286U (rev. July 2024), PW (TSSOP-14): 1 1A, 2 1B, 3 1Y, 4 2A, 5 2B, 6 2Y, 7 GND,
+    # 8 3Y, 9 3A, 10 3B, 11 4Y, 12 4A, 13 4B, 14 VCC
+    gates = {1: ("1", "2", "3"), 2: ("4", "5", "6"), 3: ("9", "10", "8"), 4: ("12", "13", "11")}
+    pins = []
+    for g, (a, b, y_) in gates.items():           # A inputs / Y outputs on top, B inputs grouped below
+        ya, yb = 10.16 - 5.08 * (g - 1), -10.16 - 2.54 * (g - 1)
+        pins += [Pin(a, f"{g}A", "input", -12.7, ya, 0, 5.08), Pin(b, f"{g}B", "input", -12.7, yb, 0, 5.08),
+                 Pin(y_, f"{g}Y", "output", 12.7, ya, 180, 5.08)]
+    pins += [Pin("14", "VCC", "power_in", 0, 17.78, 270, 2.54), Pin("7", "GND", "power_in", 0, -22.86, 90, 2.54)]
+    return SymbolDef(
+        "SN74LVC32APW", "U", "SN74LVC32APWR", "Package_SO:TSSOP-14_4.4x5mm_P0.65mm",
+        "https://www.ti.com/lit/ds/symlink/sn74lvc32a.pdf",
+        "Quad 2-input OR, inputs 5.5 V tolerant (TI SCAS286U)",
+        pins, rects={1: [(-7.62, 15.24, 7.62, -20.32)]},
+        extra_props={"Manufacturer": "Texas Instruments", "MPN": "SN74LVC32APWR"},
+        keywords="or gate quad", ref_at=(-7.62, 16.0), value_at=(-7.62, -21.0))
+
+
+def sym_tps3808():
+    # TI SBVS050N (rev. Aug 2026), DBV (SOT-23-6): 1 RESET (open drain), 2 GND, 3 MR (90k internal
+    # pull-up), 4 CT (open = 12-28 ms delay), 5 SENSE, 6 VDD. Value/MPN set per instance (G33, G01).
+    pins = [Pin("5", "SENSE", "input", -12.7, 2.54, 0, 5.08), Pin("4", "CT", "passive", -12.7, -2.54, 0, 5.08),
+            Pin("1", "~{RESET}", "open_collector", 12.7, 0, 180, 5.08),
+            Pin("3", "~{MR}", "input", -2.54, 12.7, 270, 5.08), Pin("6", "VDD", "power_in", 2.54, 12.7, 270, 5.08),
+            Pin("2", "GND", "power_in", 0, -12.7, 90, 5.08)]
+    return SymbolDef(
+        "TPS3808xDBV", "U", "TPS3808", "Package_TO_SOT_SMD:SOT-23-6",
+        "https://www.ti.com/lit/ds/symlink/tps3808.pdf",
+        "Supervisor, open-drain RESET, programmable delay (TI SBVS050N)",
+        pins, rects={1: [(-7.62, 7.62, 7.62, -7.62)]},
+        extra_props={"Manufacturer": "Texas Instruments"},
+        keywords="supervisor reset voltage monitor", ref_at=(-7.62, 8.5), value_at=(-7.62, -9.0))
 
 
 def sym_lvc07a():
@@ -140,7 +194,9 @@ ZNAMES = {1: "GND", 2: "GND", 3: "GND", 4: "GND", 5: "+5V", 6: "+5V", 7: "~{OWN}
 ZNET = {n: None for n in range(1, 101)}
 for n in (1, 2, 3, 4, 13, 25, 37, 49, 61, 73, 85, 87, 88, 89, 90, 91, 99, 100):
     ZNET[n] = "GND"
-ZNET.update({9: "Z_SLAVE_N", 11: "Z_CFGOUT_N", 12: "Z_CFGIN_N", 15: "Z_CDAC", 17: "Z_OVR_N", 18: "Z_XRDY",
+# Rev B: pin 15 (CDAC) is no longer buffered; its U102 channel now carries /BERR (pin 46), which
+# a card must monitor (Haynie, "100 Pin Expansion Signals", 1987).
+ZNET.update({9: "Z_SLAVE_N", 11: "Z_CFGOUT_N", 12: "Z_CFGIN_N", 17: "Z_OVR_N", 18: "Z_XRDY",
              19: "Z_INT2_N", 21: "Z_A5", 22: "Z_INT6_N", 23: "Z_A6", 24: "Z_A4", 26: "Z_A3", 27: "Z_A2",
              28: "Z_A7", 29: "Z_A1", 30: "Z_A8", 32: "Z_A9", 34: "Z_A10", 36: "Z_A11", 38: "Z_A12", 39: "Z_A13",
              41: "Z_A14", 43: "Z_A15", 45: "Z_A16", 46: "Z_BERR_N", 47: "Z_A17", 52: "Z_A18", 54: "Z_A19",
@@ -216,9 +272,9 @@ def write_zorro_footprint(path: Path):
 # ============================================================================ sheet 1
 def build_sheet1(repo: Path, root_uuid: str, sheet_uuid: str, syms, std):
     sch = Schematic("sheet1", "A2", "Zorro II interface and AutoConfig signal buffering", REV, DATE,
-                    ["Sheet 1 of 6 (Stage 2). NOT VALIDATED: design review pending.",
-                     "5 V Zorro <-> 3.3 V logic. No power drawn from Zorro +5V/+12V pins; all Zorro GND pins used.",
-                     "Pin data: TI SCAS699C, SCES635B, SCES516N, SCAS595W; Zorro: Commodore Zorro III spec App. K.",
+                    ["Sheet 1 of 6 (Stage 2, rev B). NOT VALIDATED: design review pending.",
+                     "5 V Zorro <-> 3.3 V logic. No power from Zorro +5V/+12V pins; all Zorro GND pins used.",
+                     "Pin data: TI SCAS699C SCES635B SCES584D SCAS595W SCES212AC SCAS286U SBVS050N",
                      f"Licence: {LICENCE}. See docs/stage2/sheet1-design-notes.md"],
                     COMPANY, f"/{root_uuid}/{sheet_uuid}")
     R, C, RN, TP = std["R"], std["C"], std["RN"], std["TP"]
@@ -297,7 +353,7 @@ def build_sheet1(repo: Path, root_uuid: str, sheet_uuid: str, syms, std):
     map102 = [(f"Z_A{i}", f"ZB_A{i}") for i in range(17, 24)] + [
         ("Z_AS_N", "ZB_AS_N"), ("Z_UDS_N", "ZB_UDS_N"), ("Z_LDS_N", "ZB_LDS_N"), ("Z_READ", "ZB_READ"),
         ("Z_DOE", "ZB_DOE"), ("Z_E7M", "ZB_E7M"), ("Z_CFGIN_N", "ZB_CFGIN_N"), ("Z_BUSRST_N", "ZB_BUSRST_N"),
-        ("Z_CDAC", "ZB_CDAC")]
+        ("Z_BERR_N", "ZB_BERR_N")]
     order = [f"{g}A{i}" for g in range(1, 5) for i in range(1, 5)]
     for U_, mp in ((U101, map101), (U102, map102)):
         for an, (zin, zout) in zip(order, mp):
@@ -352,14 +408,17 @@ def build_sheet1(repo: Path, root_uuid: str, sheet_uuid: str, syms, std):
             sch.hlabel(f"LD{bit}", "bidirectional", (ap[0] + 7.62, ap[1]), "right")
     oe_pts = [U103.p("48"), U103.p("25")]
     dir_pts = [U103.p("1"), U103.p("24")]
-    for pts, name in ((oe_pts, "ZF_DBUF_OE_N"), (dir_pts, "ZF_DBUF_DIR")):
+    for pts, name in ((oe_pts, "DBUF_OE_G_N"), (dir_pts, "ZF_DBUF_DIR")):
         st = [(p[0] + 2.54, p[1]) for p in pts]
         for p_, s in zip(pts, st):
             sch.wire(p_, s)
         sch.wire(st[0], st[1])
         sch.wire(st[0], (st[0][0] + 7.62, st[0][1]))
         sch.junction(st[0])
-        sch.hlabel(name, "input", (st[0][0] + 7.62, st[0][1]), "right")
+        if name.startswith("ZF_"):
+            sch.hlabel(name, "input", (st[0][0] + 7.62, st[0][1]), "right")
+        else:                                   # gated enable from U107 (rev B)
+            sch.label(name, (st[0][0] + 7.62, st[0][1]), "right")
     tie([U103.p("7"), U103.p("18")], "up", P5)
     t = [U103.p("31"), U103.p("42")]
     st = [(p[0], p[1] - 2.54) for p in t]
@@ -372,46 +431,83 @@ def build_sheet1(repo: Path, root_uuid: str, sheet_uuid: str, syms, std):
     tie([U103.p(n) for n in ("4", "10", "15", "21", "28", "34", "39", "45")], "down", GNDS)
     sch.text("B port = Zorro D0-D15 (VCCB = +5V_BUS): drives full 5 V levels.\nA port = local bus LD0-LD15 "
              "(VCCA = +3V3).\nDIR=H: A->B (card drives Zorro, reads). DIR=L: B->A.\n~{OE}=H: both ports Hi-Z "
-             "(isolation).\nBus-hold on all data inputs: no pull resistors (TI SCES635B).\nVCC isolation: either "
+             "(isolation). ~{OE} = U107: ZF_DBUF_OE_N OR CARD_EN_N.\nBus-hold on all data inputs: no pull resistors (TI SCES635B).\nVCC isolation: either "
              "supply at 0 V -> all outputs Hi-Z.\nRN101-RN104: 22R series damping, value TBV by SI measurement.",
              (172.72, 152.4), 1.27)
 
-    # ---------------- U104 /SLAVEn, /CFGOUTn driver ----------------------------
-    u2 = syms["LVC2T45"]
-    U104 = sch.place(u2, "U104", "SN74LVC2T45DCTR", 226.06, 190.5, ref_at=(217.17, 177.8), val_at=(234.95, 203.2),
-                      ref_just="right", val_just="left")
-    for pn, net in (("2", "ZF_SLAVE_N"), ("3", "ZF_CFGOUT_N")):
+    def tie_to_gnd_below(points, dx):
+        """Pins on one vertical line -> horizontal stubs (dx) -> vertical tie -> GND below the lowest."""
+        stubs = [(round(px + dx, 4), py) for px, py in points]
+        for a, b in zip(points, stubs):
+            sch.wire(a, b)
+        stubs.sort(key=lambda s: s[1])
+        for a, b in zip(stubs, stubs[1:]):
+            sch.wire(a, b)
+        end = stubs[-1]
+        ext = (end[0], round(end[1] + 2.54, 4))
+        sch.wire(end, ext)
+        for s in stubs[1:]:
+            sch.junction(s)
+        pwr(GNDS, ext[0], ext[1], hide_value=True)
+
+    # ---------------- U104 /SLAVEn, /CFGOUTn driver (rev B: SN74LVC8T245, ~OE = CARD_EN_N) ------
+    u8 = syms["LVC8T245"]
+    ux, uy = 226.06, 203.2
+    U104 = sch.place(u8, "U104", "SN74LVC8T245PWR", ux, uy, ref_at=(ux - 8.89, uy - 24.13), val_at=(ux + 8.89, uy + 22.86),
+                     ref_just="right", val_just="left")
+    dp = U104.p("2")                                        # DIR tied high: A -> B
+    dq = (round(dp[0] - 2.54, 4), dp[1])
+    sch.wire(dp, dq)
+    sch.wire(dq, (dq[0], round(dq[1] - 2.54, 4)))
+    pwr(P3, dq[0], round(dq[1] - 2.54, 4), val_at=(dq[0] - 4.5, dq[1] - 5.0))
+    op = U104.p("22")                                       # ~OE from the card-enable gate
+    sch.wire(op, (op[0] - 7.62, op[1]))
+    sch.label("CARD_EN_N", (op[0] - 7.62, op[1]), "left")
+    for pn, net in (("3", "ZF_SLAVE_N"), ("4", "ZF_CFGOUT_N")):
         p_ = U104.p(pn)
         sch.wire(p_, (p_[0] - 7.62, p_[1]))
         sch.hlabel(net, "input", (p_[0] - 7.62, p_[1]), "left")
-    dp = U104.p("5")
-    sch.wire(dp, (dp[0] - 2.54, dp[1]))
-    pwr(P3, dp[0] - 2.54, dp[1], 90, val_at=(dp[0] - 9.0, dp[1]))
-    for pn, ref, rx, net in (("7", "R117", 245.11, "Z_SLAVE_N"), ("6", "R118", 255.27, "Z_CFGOUT_N")):
+    tie_to_gnd_below([U104.p(str(n)) for n in range(5, 11)], -2.54)     # unused A3..A8
+    tie_to_gnd_below([U104.p(str(n)) for n in range(14, 20)], 2.54)     # unused B8..B3 (drive low = same level)
+    for pn, ref, rx, net, fy in (("21", "R117", 245.11, "Z_SLAVE_N", (-4.4, -2.2)),
+                                 ("20", "R118", 255.27, "Z_CFGOUT_N", (2.2, 4.4))):
         p_ = U104.p(pn)
         r = sch.place(R, ref, "22R", rx, p_[1], 90, footprint="Resistor_SMD:R_0603_1608Metric",
-                      props={"Spec": "0603 1% 0.1 W"}, ref_at=(rx, p_[1] - 2.2), val_at=(rx, p_[1] + 2.2))
+                      props={"Spec": "0603 1% 0.1 W"}, ref_at=(rx, p_[1] + fy[0]), val_at=(rx, p_[1] + fy[1]))
         a, b = r.p("1"), r.p("2")
         sch.wire(p_, a)
         sch.wire(b, (b[0] + 5.08, b[1]))
         sch.label(net, (b[0] + 5.08, b[1]), "right")
     pwr(P3, *U104.p("1"), val_at=(U104.p("1")[0] - 4.0, U104.p("1")[1] - 3.6))
-    pwr(P5, *U104.p("8"), val_at=(U104.p("8")[0] + 5.0, U104.p("8")[1] - 3.6))
-    pwr(GNDS, *U104.p("4"))
-    sch.text("U104 has no ~{OE}: outputs follow A inputs, held HIGH\n(inactive) by 2.2k pull-ups while the FPGA is\n"
-             "unconfigured. DIR=H (A->B). /SLAVEn path: see\nsheet notes (35 ns budget).", (172.72, 210.82), 1.27)
+    vb = [U104.p("23"), U104.p("24")]                       # VCCB pair -> +5V_BUS to the right
+    vs = [(p[0], round(p[1] - 2.54, 4)) for p in vb]
+    for p_, s in zip(vb, vs):
+        sch.wire(p_, s)
+    sch.wire(vs[0], vs[1])
+    sch.wire(vs[1], (round(vs[1][0] + 2.54, 4), vs[1][1]))
+    sch.junction(vs[1])
+    pwr(P5, round(vs[1][0] + 2.54, 4), vs[1][1], val_at=(vs[1][0] + 7.5, vs[1][1] - 3.6))
+    tie([U104.p(n) for n in ("11", "12", "13")], "down", GNDS)
+    sch.text("U104 (rev B) has ~{OE} = CARD_EN_N: Hi-Z until the card is armed (EN_OK and\n"
+             "ZF_ARM), so a blank, unconfigured or faulty FPGA cannot block the AutoConfig\n"
+             "chain; unpowered, VCC isolation gives Hi-Z. ~{OE} is static during operation, so\n"
+             "it is not in the /SLAVEn timing path. DIR=H (A->B). Unused A3-A8/B3-B8 tied to GND.",
+             (172.72, 312.42), 1.27)
 
-    # ---------------- U105 open-drain drivers ----------------------------------
+    # ---------------- U105 open-drain drivers (inputs gated by U107, rev B) -----------------
     uo = syms["LVC07A"]
-    U105 = sch.place(uo, "U105", "SN74LVC07APWR", 226.06, 251.46, ref_at=(217.17, 233.68), val_at=(234.95, 274.32),
+    U105 = sch.place(uo, "U105", "SN74LVC07APWR", 226.06, 264.16, ref_at=(217.17, 246.38), val_at=(234.95, 287.02),
                       ref_just="right", val_just="left")
-    od = [("1", "2", "ZF_INT2_N", "Z_INT2_N", None), ("3", "4", "ZF_INT6_N", "Z_INT6_N", None),
-          ("5", "6", "ZF_XRDY", "Z_XRDY", None), ("9", "8", "ZF_OVR_N", "Z_OVR_N", ("R119", 245.11)),
+    od = [("1", "2", "INT2_G_N", "Z_INT2_N", None), ("3", "4", "INT6_G_N", "Z_INT6_N", None),
+          ("5", "6", "XRDY_G", "Z_XRDY", None), ("9", "8", "ZF_OVR_N", "Z_OVR_N", ("R119", 245.11)),
           ("11", "10", "ZF_DTACK_N", "Z_DTACK_N", ("R120", 255.27))]
     for ain, yout, fnet, znet, dnp in od:
         pa, py = U105.p(ain), U105.p(yout)
         sch.wire(pa, (pa[0] - 7.62, pa[1]))
-        sch.hlabel(fnet, "input", (pa[0] - 7.62, pa[1]), "left")
+        if fnet.startswith("ZF_"):
+            sch.hlabel(fnet, "input", (pa[0] - 7.62, pa[1]), "left")
+        else:
+            sch.label(fnet, (pa[0] - 7.62, pa[1]), "left")
         if dnp:
             ref, rx = dnp
             r = sch.place(R, ref, "0R DNP", rx, py[1], 90, footprint="Resistor_SMD:R_0603_1608Metric", dnp=True,
@@ -429,9 +525,132 @@ def build_sheet1(repo: Path, root_uuid: str, sheet_uuid: str, syms, std):
     sch.noconnect(U105.p("12"))
     pwr(P3, *U105.p("14"), val_at=(U105.p("14")[0] + 4.5, U105.p("14")[1] - 3.6))
     pwr(GNDS, *U105.p("7"))
-    sch.text("Open-drain (wired-OR per Zorro spec): /INT2, /INT6, XRDY.\nFPGA drives input LOW to assert. XRDY is "
-             "kept fitted\n(wait-state provision; zero-wait timing is NOT assumed\nuntil measured). /OVR, /DTACK paths "
-             "DNP (automatic\nDTACK used). Spare channel 6: input tied high.", (172.72, 281.94), 1.27)
+    sch.text("Open-drain (wired-OR per Zorro spec): /INT2, /INT6, XRDY. Inputs come from U107,\n"
+             "gated by CARD_EN_N (released whenever the card is disabled). FPGA drives LOW to\n"
+             "assert. XRDY kept fitted (wait-state provision; zero-wait timing NOT assumed until\n"
+             "measured). /OVR, /DTACK paths DNP (automatic DTACK); if ever fitted they must be\n"
+             "gated too. Spare channel 6: input tied high.", (172.72, 294.64), 1.27)
+
+    # ---------------- card enable and fail-safe gating (rev B: C-03, C-04) --------------------
+    sch.text("CARD ENABLE AND FAIL-SAFE GATING (rev B, concerns C-03/C-04; docs/stage2/sheet1-design-notes.md section 6)\n"
+             "EN_OK = U108 (+3V3 >= 3.07 V) AND U109 (+5V_BUS >= 4.27 V) AND JP101 open; each TPS3808 releases 12-28 ms after\n"
+             "its rail is good (CT open, TI SBVS050N). CARD_EN_N = NAND(EN_OK, ZF_ARM). The FPGA drives ZF_ARM high only after\n"
+             "it has seen /BUSRST asserted with EN_OK true: the card joins the bus at a reset boundary, never in mid-scan.\n"
+             "CARD_EN_N high: U104 Hi-Z (A2000 1k pull-up / pull-down: /SLAVEn negated, /CFGOUTn passes the chain), U103\n"
+             "isolated, XRDY and /INTx released: the slot looks EMPTY. With the carrier unpowered VCC isolation does the same.",
+             (304.8, 246.38), 1.27)
+    tps = syms["TPS3808"]
+    y8, y9, xb = 284.48, 322.58, 350.52
+    U108 = sch.place(tps, "U108", "TPS3808G33DBVR", 330.2, y8, ref_at=(322.58, y8 - 8.89), val_at=(322.58, y8 + 10.16),
+                     ref_just="right", val_just="right", props={"MPN": "TPS3808G33DBVR", "Spec": "VIT- 3.07 V, CT open"})
+    U109 = sch.place(tps, "U109", "TPS3808G01DBVR", 330.2, y9, ref_at=(322.58, y9 - 8.89), val_at=(322.58, y9 + 10.16),
+                     ref_just="right", val_just="right",
+                     props={"MPN": "TPS3808G01DBVR", "Spec": "VIT- 0.405 V (adjustable), CT open"})
+    for Ux in (U108, U109):
+        tie([Ux.p("3"), Ux.p("6")], "up", P3)               # ~MR (no floating input: 1 ns pulses reset) + VDD
+        sch.noconnect(Ux.p("4"))                            # CT open: fixed 12-28 ms delay
+        pwr(GNDS, *Ux.p("2"), hide_value=True)
+    sp = U108.p("5")                                        # U108 SENSE = +3V3
+    sch.wire(sp, (sp[0] - 2.54, sp[1]))
+    pwr(P3, sp[0] - 2.54, sp[1], 90, val_at=(sp[0] - 9.0, sp[1]))
+    sp = U109.p("5")                                        # U109 SENSE = divider from +5V_BUS
+    dx = 304.8
+    r125 = sch.place(R, "R125", "95.3k", dx, round(sp[1] - 3.81, 4), 0, footprint="Resistor_SMD:R_0603_1608Metric",
+                     props={"Spec": "0603 1% 0.1 W"}, ref_at=(dx - 1.8, sp[1] - 5.1), val_at=(dx - 1.8, sp[1] - 2.5),
+                     ref_just="right", val_just="right")
+    r126 = sch.place(R, "R126", "10k", dx, round(sp[1] + 3.81, 4), 0, footprint="Resistor_SMD:R_0603_1608Metric",
+                     props={"Spec": "0603 1% 0.1 W"}, ref_at=(dx - 1.8, sp[1] + 2.5), val_at=(dx - 1.8, sp[1] + 5.1),
+                     ref_just="right", val_just="right")
+    sch.wire(r125.p("2"), sp)
+    pwr(P5, *r125.p("1"))
+    pwr(GNDS, *r126.p("2"), hide_value=True)
+    sch.text("U109 VIT- = 0.405 V x (1 + 95.3k/10k) = 4.27 V on +5V_BUS", (dx - 7.62, y9 + 20.32), 1.27)
+    # EN_OK: wired-AND of both RESET outputs and JP101, R121 pull-up
+    r8, r9 = U108.p("1"), U109.p("1")
+    y_lbl, y_nand = round(y8 + 7.62, 4), round(y8 + 17.78, 4)
+    sch.wire(r8, (xb, r8[1]))
+    sch.wire(r9, (xb, r9[1]))
+    for a, b in (((xb, y8), (xb, y_lbl)), ((xb, y_lbl), (xb, y_nand)), ((xb, y_nand), (xb, y9))):
+        sch.wire(a, b)
+    for j in ((xb, y8), (xb, y_lbl), (xb, y_nand), (xb, y9)):
+        sch.junction(j)
+    r121 = sch.place(R, "R121", "10k", xb, round(y8 - 10.16, 4), 0, footprint="Resistor_SMD:R_0603_1608Metric",
+                     props={"Spec": "0603 1% 0.1 W"}, ref_at=(xb + 1.8, y8 - 11.4), val_at=(xb + 1.8, y8 - 8.9),
+                     ref_just="left", val_just="left")
+    sch.wire(r121.p("2"), (xb, y8))
+    pwr(P3, *r121.p("1"))
+    sch.wire((xb, y_lbl), (round(xb + 7.62, 4), y_lbl))
+    sch.hlabel("EN_OK", "output", (round(xb + 7.62, 4), y_lbl), "right")
+    jp = sch.place(std["JP"], "JP101", "DISABLE", xb, round(y9 + 7.62, 4), 90,
+                   footprint="Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
+                   props={"Spec": "2-pin header + shunt; fitted = card disabled"},
+                   ref_at=(xb + 7.0, y9 + 6.35), val_at=(xb + 8.5, y9 + 8.89))
+    sch.wire((xb, y9), jp.p("2"))
+    pwr(GNDS, *jp.p("1"), hide_value=True)
+    sch.text("JP101 fitted: EN_OK low, card held off the bus\n(recovery from a faulty bitstream).", (xb + 15.24, y9 + 5.08), 1.27)
+    # U106: CARD_EN_N = NAND(EN_OK, ZF_ARM); R122 ZF_ARM pull-down, R123 CARD_EN_N pull-up (TI: ~OE high at power-up)
+    U106 = sch.place(syms["LVC1G00"], "U106", "SN74LVC1G00DBVR", 383.54, round(y_nand + 2.54, 4),
+                     ref_at=(377.19, y_nand - 5.08), val_at=(389.89, y_nand + 11.43), ref_just="right", val_just="left")
+    sch.wire((xb, y_nand), U106.p("1"))
+    bp = U106.p("2")
+    xr = round(bp[0] - 5.08, 4)
+    sch.wire(bp, (xr, bp[1]))
+    sch.wire((xr, bp[1]), (round(xr - 5.08, 4), bp[1]))
+    sch.junction((xr, bp[1]))
+    sch.hlabel("ZF_ARM", "input", (round(xr - 5.08, 4), bp[1]), "left")
+    r122 = sch.place(R, "R122", "10k", xr, round(bp[1] + 7.62, 4), 0, footprint="Resistor_SMD:R_0603_1608Metric",
+                     props={"Spec": "0603 1% 0.1 W"}, ref_at=(xr + 1.8, bp[1] + 6.4), val_at=(xr + 1.8, bp[1] + 8.9),
+                     ref_just="left", val_just="left")
+    sch.wire(r122.p("1"), (xr, bp[1]))
+    pwr(GNDS, *r122.p("2"), hide_value=True)
+    yp = U106.p("4")
+    xq = round(yp[0] + 5.08, 4)
+    sch.wire(yp, (xq, yp[1]))
+    sch.wire((xq, yp[1]), (round(xq + 7.62, 4), yp[1]))
+    sch.junction((xq, yp[1]))
+    sch.label("CARD_EN_N", (round(xq + 7.62, 4), yp[1]), "right")
+    r123 = sch.place(R, "R123", "10k", xq, round(yp[1] - 7.62, 4), 0, footprint="Resistor_SMD:R_0603_1608Metric",
+                     props={"Spec": "0603 1% 0.1 W"}, ref_at=(xq + 1.8, yp[1] - 8.9), val_at=(xq + 1.8, yp[1] - 6.4),
+                     ref_just="left", val_just="left")
+    sch.wire(r123.p("2"), (xq, yp[1]))
+    pwr(P3, *r123.p("1"))
+    pwr(P3, *U106.p("5"), val_at=(U106.p("5")[0] - 4.0, U106.p("5")[1] - 3.6))
+    pwr(GNDS, *U106.p("3"), hide_value=True)
+    # U107: OR every remaining Zorro-side enable with CARD_EN_N
+    U107 = sch.place(syms["LVC32A"], "U107", "SN74LVC32APWR", 467.36, 299.72, ref_at=(459.74, 280.67),
+                     val_at=(474.98, 325.12), ref_just="right", val_just="left")
+    gate_io = [("1", "2", "3", "ZF_DBUF_OE_N", "DBUF_OE_G_N"), ("4", "5", "6", "ZF_XRDY", "XRDY_G"),
+               ("9", "10", "8", "ZF_INT2_N", "INT2_G_N"), ("12", "13", "11", "ZF_INT6_N", "INT6_G_N")]
+    bpins = [U107.p(g[1]) for g in gate_io]                 # 1B..4B tied: one CARD_EN_N label
+    bst = [(round(b_[0] - 2.54, 4), b_[1]) for b_ in bpins]
+    for b_, s_ in zip(bpins, bst):
+        sch.wire(b_, s_)
+    for a2, b2 in zip(bst, bst[1:]):
+        sch.wire(a2, b2)
+    for s_ in bst[:-1]:
+        sch.junction(s_)
+    sch.wire(bst[0], (round(bst[0][0] - 5.08, 4), bst[0][1]))
+    sch.label("CARD_EN_N", (round(bst[0][0] - 5.08, 4), bst[0][1]), "left")
+    for k, (pa_, pb_, py_, fin, gout) in enumerate(gate_io):
+        a_, y_ = U107.p(pa_), U107.p(py_)
+        sch.wire(a_, (round(a_[0] - 7.62, 4), a_[1]))
+        sch.hlabel(fin, "input", (round(a_[0] - 7.62, 4), a_[1]), "left")
+        if k == 0:                                          # U103 ~OE pull-up (TI SCES635B power-up recommendation)
+            xo = round(y_[0] + 7.62, 4)
+            sch.wire(y_, (xo, y_[1]))
+            sch.wire((xo, y_[1]), (round(xo + 5.08, 4), y_[1]))
+            sch.junction((xo, y_[1]))
+            sch.label(gout, (round(xo + 5.08, 4), y_[1]), "right")
+            r124 = sch.place(R, "R124", "10k", xo, round(y_[1] - 7.62, 4), 0, footprint="Resistor_SMD:R_0603_1608Metric",
+                             props={"Spec": "0603 1% 0.1 W"}, ref_at=(xo + 1.8, y_[1] - 8.9),
+                             val_at=(xo + 1.8, y_[1] - 6.4), ref_just="left", val_just="left")
+            sch.wire(r124.p("2"), (xo, y_[1]))
+            pwr(P3, *r124.p("1"))
+        else:
+            sch.wire(y_, (round(y_[0] + 12.7, 4), y_[1]))
+            sch.label(gout, (round(y_[0] + 12.7, 4), y_[1]), "right")
+    pwr(P3, *U107.p("14"), val_at=(U107.p("14")[0] - 4.0, U107.p("14")[1] - 3.6))
+    pwr(GNDS, *U107.p("7"), hide_value=True)
 
     # ---------------- default-state (safe start-up) resistor bank -------------
     bank = [("R101", "ZF_SLAVE_N"), ("R102", "ZF_CFGOUT_N"), ("R103", "ZF_INT2_N"), ("R104", "ZF_INT6_N"),
@@ -462,8 +681,10 @@ def build_sheet1(repo: Path, root_uuid: str, sheet_uuid: str, syms, std):
             ("C104", "100n", P3, "U101"), ("C105", "100n", P3, "U102"), ("C106", "100n", P3, "U102"),
             ("C107", "100n", P3, "U102"), ("C108", "100n", P3, "U102"), ("C109", "100n", P3, "U103 VCCA"),
             ("C110", "100n", P3, "U103 VCCA"), ("C111", "100n", P5, "U103 VCCB"), ("C112", "100n", P5, "U103 VCCB"),
-            ("C113", "100n", P3, "U104 VCCA"), ("C114", "100n", P5, "U104 VCCB"), ("C115", "100n", P3, "U105"),
-            ("C116", "10u", P3, "bulk +3V3"), ("C117", "10u", P5, "bulk +5V_BUS")]
+            ("C113", "100n", P3, "U104 VCCA"), ("C114", "100n", P5, "U104 VCCB pin 23"), ("C115", "100n", P3, "U105"),
+            ("C116", "10u", P3, "bulk +3V3"), ("C117", "10u", P5, "bulk +5V_BUS"),
+            ("C118", "100n", P5, "U104 VCCB pin 24"), ("C119", "100n", P3, "U106"), ("C120", "100n", P3, "U107"),
+            ("C121", "100n", P3, "U108 VDD"), ("C122", "100n", P3, "U109 VDD")]
     cx, cy = 304.8, 116.84
     sch.text("DECOUPLING: one 100 nF per supply pin, placed at the pin (PCB); 10 uF bulk per rail on this sheet.",
              (cx - 5.08, 100.33), 1.27)
@@ -499,18 +720,30 @@ def build_sheet1(repo: Path, root_uuid: str, sheet_uuid: str, syms, std):
         tp = sch.place(TP, f"TP{101 + len(tps) + k}", "TestPoint", x, y, 0, footprint="TestPoint:TestPoint_Pad_D1.5mm",
                        in_bom=False, ref_at=(x + 1.6, y - 4.2), val_at=(x + 1.6, y - 2.6), hide_value=True, ref_just="left")
         pwr(GNDS, *tp.p("1"))
+    # rev B: card-enable observation (power-up / arming timing, measurement M-6)
+    for k, net in enumerate(("CARD_EN_N", "EN_OK")):
+        x = tx + 20.32 * (2 + k)
+        y = ty + 40.64
+        tp = sch.place(TP, f"TP{118 + k}", "TestPoint", x, y, 0, footprint="TestPoint:TestPoint_Pad_D1.5mm",
+                       in_bom=False, ref_at=(x + 1.6, y - 4.2), val_at=(x + 1.6, y - 2.6), hide_value=True, ref_just="left")
+        p_ = tp.p("1")
+        sch.wire(p_, (p_[0], p_[1] + 3.81))
+        if net == "EN_OK":
+            sch.hlabel(net, "output", (p_[0], p_[1] + 3.81), "right")
+        else:
+            sch.label(net, (p_[0], p_[1] + 3.81), "right")
 
     # ---------------- design notes block -----------------------------------------
     sch.text(
         "DESIGN NOTES (summary; full analysis in docs/stage2/sheet1-design-notes.md)\n"
         "1. /SLAVEn must assert <= 35 ns after /AS and negate <= 50 ns after /AS rises (Zorro III spec App. K, Zorro II\n"
         "   compatibility). Path: U102 (tpd <= 4.1 ns) + FPGA combinational (datasheet floor 7.24 ns, -4; final value from\n"
-        "   Diamond STA) + U104 (tpd <= 4.4 ns) + R117 + PCB. Budget closes only if the FPGA segment is <= ~20 ns.\n"
+        "   Diamond STA, gate G-STA) + U104 (tpd <= 4.4 ns) + R117 + PCB. 18 ns FPGA allocation is NOT proven.\n"
         "2. XRDY provision is fitted. HDL default mode inserts wait states via XRDY until zero-wait timing is measured.\n"
-        "3. Power-off isolation: U101/U102 Ioff, U103/U104 VCC isolation + Ioff, U105 Ioff. With the carrier unpowered,\n"
-        "   /SLAVEn and /CFGOUTn float: depends on A2000 backplane pull-ups (open concern C-03).\n"
-        "4. Interfaces to sheet 2 (FPGA) are hierarchical labels: ZB_* (buffered Zorro inputs), ZF_* (FPGA-driven\n"
-        "   outputs), LD0-LD15 (local data bus). Power nets +3V3 / +5V_BUS come from sheet 5 (not yet drawn).\n"
+        "3. Power-off isolation: U101/U102 Ioff, U103/U104 VCC isolation + Ioff, U105 Ioff. Unpowered or disabled, the\n"
+        "   card is Hi-Z on /SLAVEn and /CFGOUTn: A2000 R6 RP800 (1k up) and RP607 (1k down) make the slot look empty.\n"
+        "4. Interfaces to sheet 2 (FPGA) are hierarchical labels: ZB_* (buffered Zorro inputs, incl. /BERR), ZF_*\n"
+        "   (FPGA-driven), EN_OK, LD0-LD15. Power nets +3V3 / +5V_BUS come from sheet 5 (not yet drawn).\n"
         "5. Not yet validated: no ERC-clean claim implies electrical or timing correctness.",
         (304.8, 214.63), 1.27)
     return sch
@@ -589,8 +822,9 @@ def main(repo: Path):
     kdir = repo / "hardware" / "kicad"
     (kdir / "sheets").mkdir(parents=True, exist_ok=True)
     (kdir / "lib" / f"{LIB}.pretty").mkdir(parents=True, exist_ok=True)
-    syms = {"LVC16244": sym_lvc16244(), "LVCH16T245": sym_lvch16t245(), "LVC2T45": sym_lvc2t45(),
-            "LVC07A": sym_lvc07a(), "ZORRO": sym_zorro(), "+5V_BUS": sym_power("+5V_BUS")}
+    syms = {"LVC16244": sym_lvc16244(), "LVCH16T245": sym_lvch16t245(), "LVC8T245": sym_lvc8t245(),
+            "LVC07A": sym_lvc07a(), "LVC1G00": sym_lvc1g00(), "LVC32A": sym_lvc32a(), "TPS3808": sym_tps3808(),
+            "ZORRO": sym_zorro(), "+5V_BUS": sym_power("+5V_BUS")}
     write_symbol_lib(kdir / "lib" / f"{LIB}.kicad_sym", list(syms.values()))
     write_zorro_footprint(kdir / "lib" / f"{LIB}.pretty" / "Zorro2_Edge_2x50_P2.54mm.kicad_mod")
     std = {"R": StdSymbol(KICAD_SYM / "Device.kicad_sym", "Device", "R"),
@@ -599,7 +833,8 @@ def main(repo: Path):
            "TP": StdSymbol(KICAD_SYM / "Connector.kicad_sym", "Connector", "TestPoint"),
            "+3V3": StdSymbol(KICAD_SYM / "power.kicad_sym", "power", "+3V3"),
            "GND": StdSymbol(KICAD_SYM / "power.kicad_sym", "power", "GND"),
-           "FLAG": StdSymbol(KICAD_SYM / "power.kicad_sym", "power", "PWR_FLAG")}
+           "FLAG": StdSymbol(KICAD_SYM / "power.kicad_sym", "power", "PWR_FLAG"),
+           "JP": StdSymbol(KICAD_SYM / "Jumper.kicad_sym", "Jumper", "Jumper_2_Open")}
     root_uuid = U("root")
     sheet_uuids = {n: U(f"sheetblock{n}") for n, _, _ in SHEETS}
     s1 = build_sheet1(repo, root_uuid, sheet_uuids[1], syms, std)

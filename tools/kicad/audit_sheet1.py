@@ -65,7 +65,7 @@ def main(path):
     m102 = [(f"Z_A{i}", f"ZB_A{i}") for i in range(17, 24)] + [
         ("Z_AS_N", "ZB_AS_N"), ("Z_UDS_N", "ZB_UDS_N"), ("Z_LDS_N", "ZB_LDS_N"), ("Z_READ", "ZB_READ"),
         ("Z_DOE", "ZB_DOE"), ("Z_E7M", "ZB_E7M"), ("Z_CFGIN_N", "ZB_CFGIN_N"), ("Z_BUSRST_N", "ZB_BUSRST_N"),
-        ("Z_CDAC", "ZB_CDAC")]
+        ("Z_BERR_N", "ZB_BERR_N")]                       # rev B: /BERR monitored (was CDAC)
     for ref, mp in (("U101", m101), ("U102", m102)):
         for ap, yp, (zi, zo) in zip(a_pins, y_pins, mp):
             check(net_of(ref, ap) == zi, f"{ref}.{ap} expected {zi}, got {net_of(ref, ap)}")
@@ -94,17 +94,21 @@ def main(path):
     for p in ("1", "24"):
         check(net_of("U103", p) == "ZF_DBUF_DIR", f"U103.{p} (DIR) expected ZF_DBUF_DIR, got {net_of('U103', p)}")
     for p in ("48", "25"):
-        check(net_of("U103", p) == "ZF_DBUF_OE_N", f"U103.{p} (/OE) expected ZF_DBUF_OE_N, got {net_of('U103', p)}")
+        check(net_of("U103", p) == "DBUF_OE_G_N", f"U103.{p} (/OE) expected DBUF_OE_G_N, got {net_of('U103', p)}")
     for p, rail in (("7", "+5V_BUS"), ("18", "+5V_BUS"), ("31", "+3V3"), ("42", "+3V3")):
         check(net_of("U103", p) == rail, f"U103.{p} expected {rail}, got {net_of('U103', p)}")
     for p in ("4", "10", "15", "21", "28", "34", "39", "45"):
         check(net_of("U103", p) == "GND", f"U103.{p} (GND) expected GND, got {net_of('U103', p)}")
 
-    # ---- U104 SN74LVC2T45 -------------------------------------------------------------
-    exp104 = {"1": "+3V3", "2": "ZF_SLAVE_N", "3": "ZF_CFGOUT_N", "4": "GND", "5": "+3V3", "8": "+5V_BUS"}
+    # ---- U104 SN74LVC8T245 (rev B; TI SCES584D PW pinout) --------------------------------
+    exp104 = {"1": "+3V3", "2": "+3V3", "3": "ZF_SLAVE_N", "4": "ZF_CFGOUT_N", "22": "CARD_EN_N",
+              "23": "+5V_BUS", "24": "+5V_BUS", "11": "GND", "12": "GND", "13": "GND"}
+    exp104.update({str(n): "GND" for n in range(5, 11)})      # unused A3..A8
+    exp104.update({str(n): "GND" for n in range(14, 20)})     # unused B8..B3
     for p, n_ in exp104.items():
         check(net_of("U104", p) == n_, f"U104.{p} expected {n_}, got {net_of('U104', p)}")
-    for upin, rref, znet in (("7", "R117", "Z_SLAVE_N"), ("6", "R118", "Z_CFGOUT_N")):
+    check(comps["U104"]["value"] == "SN74LVC8T245PWR", f"U104 value {comps['U104']['value']}")
+    for upin, rref, znet in (("21", "R117", "Z_SLAVE_N"), ("20", "R118", "Z_CFGOUT_N")):
         nodes = nets.get(net_of("U104", upin), [])
         check({r for r, _, _ in nodes} == {"U104", rref}, f"U104.{upin} should go only to {rref}: {nodes}")
         other = [p for r, p, _ in nodes if r == rref]
@@ -114,7 +118,7 @@ def main(path):
         check(comps[rref]["value"] == "22R", f"{rref} value {comps[rref]['value']}")
 
     # ---- U105 SN74LVC07A ----------------------------------------------------------------
-    exp105 = {"1": "ZF_INT2_N", "2": "Z_INT2_N", "3": "ZF_INT6_N", "4": "Z_INT6_N", "5": "ZF_XRDY", "6": "Z_XRDY",
+    exp105 = {"1": "INT2_G_N", "2": "Z_INT2_N", "3": "INT6_G_N", "4": "Z_INT6_N", "5": "XRDY_G", "6": "Z_XRDY",
               "9": "ZF_OVR_N", "11": "ZF_DTACK_N", "13": "+3V3", "14": "+3V3", "7": "GND"}
     for p, n_ in exp105.items():
         check(net_of("U105", p) == n_, f"U105.{p} expected {n_}, got {net_of('U105', p)}")
@@ -143,6 +147,44 @@ def main(path):
     check(any(net_of(r, "2" if p == "1" else "1") == "GND" and comps[r]["value"] == "10k" for r, p in rs),
           f"ZF_DBUF_DIR needs a 10k pull-down to GND (found {rs})")
 
+    # ---- rev B card-enable / fail-safe gating ---------------------------------------------
+    def pull(net, rail, value):
+        rs_ = [(r, p) for r, p, _ in nets.get(net, []) if r.startswith("R")]
+        check(any(net_of(r, "2" if p == "1" else "1") == rail and comps[r]["value"] == value for r, p in rs_),
+              f"{net} needs a {value} resistor to {rail} (found {rs_})")
+    pull("EN_OK", "+3V3", "10k")          # R121: wired-AND pull-up
+    pull("ZF_ARM", "GND", "10k")          # R122: blank FPGA = not armed
+    pull("CARD_EN_N", "+3V3", "10k")      # R123: U104 ~OE high at power-up (TI)
+    pull("DBUF_OE_G_N", "+3V3", "10k")    # R124: U103 ~OE high at power-up (TI)
+    # U106 SN74LVC1G00 (SCES212AC DBV): 1 A, 2 B, 3 GND, 4 Y, 5 VCC
+    for p, n_ in {"1": "EN_OK", "2": "ZF_ARM", "3": "GND", "4": "CARD_EN_N", "5": "+3V3"}.items():
+        check(net_of("U106", p) == n_, f"U106.{p} expected {n_}, got {net_of('U106', p)}")
+    # U107 SN74LVC32A (SCAS286U PW): gates (A, B, Y)
+    exp107 = {"1": "ZF_DBUF_OE_N", "2": "CARD_EN_N", "3": "DBUF_OE_G_N",
+              "4": "ZF_XRDY", "5": "CARD_EN_N", "6": "XRDY_G",
+              "9": "ZF_INT2_N", "10": "CARD_EN_N", "8": "INT2_G_N",
+              "12": "ZF_INT6_N", "13": "CARD_EN_N", "11": "INT6_G_N", "7": "GND", "14": "+3V3"}
+    for p, n_ in exp107.items():
+        check(net_of("U107", p) == n_, f"U107.{p} expected {n_}, got {net_of('U107', p)}")
+    # U108/U109 TPS3808 (SBVS050N DBV): 1 RESET, 2 GND, 3 MR, 4 CT, 5 SENSE, 6 VDD
+    for ref, sense, mpn in (("U108", "+3V3", "TPS3808G33DBVR"), ("U109", None, "TPS3808G01DBVR")):
+        for p, n_ in {"1": "EN_OK", "2": "GND", "3": "+3V3", "6": "+3V3"}.items():
+            check(net_of(ref, p) == n_, f"{ref}.{p} expected {n_}, got {net_of(ref, p)}")
+        check(is_unconnected(ref, "4"), f"{ref}.4 (CT) must be open (fixed 12-28 ms delay)")
+        check(comps[ref]["value"] == mpn, f"{ref} value {comps[ref]['value']} (expected {mpn})")
+        if sense:
+            check(net_of(ref, "5") == sense, f"{ref}.5 (SENSE) expected {sense}, got {net_of(ref, '5')}")
+    sn = net_of("U109", "5")
+    div = {r: comps[r]["value"] for r, _, _ in nets.get(sn, []) if r.startswith("R")}
+    check(sorted(div.values()) == ["10k", "95.3k"], f"U109 SENSE divider 95.3k/10k (found {div})")
+    for r, v in div.items():
+        p_ = next(p for rr, p, _ in nets[sn] if rr == r)
+        other = net_of(r, "2" if p_ == "1" else "1")
+        check(other == ("+5V_BUS" if v == "95.3k" else "GND"), f"{r} ({v}) far end on {other}")
+    check({net_of("JP101", "1"), net_of("JP101", "2")} == {"EN_OK", "GND"}, "JP101 between EN_OK and GND")
+    en_ok_drivers = sorted(r for r, p, t in nets.get("EN_OK", []) if t == "open_collector")
+    check(en_ok_drivers == ["U108", "U109"], f"EN_OK open-drain drivers {en_ok_drivers}")
+
     # ---- decoupling -------------------------------------------------------------------------
     n3 = sum(1 for r, p, _ in nets.get("+3V3", []) if r.startswith("C"))
     n5 = sum(1 for r, p, _ in nets.get("+5V_BUS", []) if r.startswith("C"))
@@ -150,17 +192,18 @@ def main(path):
         if r.startswith("C"):
             nn = {net_of(r, "1"), net_of(r, "2")}
             check(("GND" in nn) and (nn & {"+3V3", "+5V_BUS"}), f"{r} must sit between a rail and GND: {nn}")
-    # one 100 nF per supply pin: +3V3 pins = U101 4 + U102 4 + U103 VCCA 2 + U104 VCCA 1 + U105 1 = 12, plus 1 bulk
-    # +5V_BUS pins = U103 VCCB 2 + U104 VCCB 1 = 3, plus 1 bulk
-    check(n3 == 13, f"+3V3 decoupling count {n3} (expected 12x100n + 1x10u = 13)")
-    check(n5 == 4, f"+5V_BUS decoupling count {n5} (expected 3x100n + 1x10u = 4)")
-    for rail, pins in (("+3V3", 12), ("+5V_BUS", 3)):
+    # one 100 nF per supply pin: +3V3 pins = U101 4 + U102 4 + U103 VCCA 2 + U104 VCCA 1 + U105 1 + U106 1
+    # + U107 1 + U108 VDD 1 + U109 VDD 1 = 16, plus 1 bulk; +5V_BUS pins = U103 VCCB 2 + U104 VCCB 2 = 4, plus 1 bulk
+    check(n3 == 17, f"+3V3 decoupling count {n3} (expected 16x100n + 1x10u = 17)")
+    check(n5 == 5, f"+5V_BUS decoupling count {n5} (expected 4x100n + 1x10u = 5)")
+    for rail, pins in (("+3V3", 16), ("+5V_BUS", 4)):
         ic_pins = sum(1 for r, p, t in nets.get(rail, []) if r.startswith("U") and t == "power_in")
         check(ic_pins == pins, f"{rail}: {ic_pins} IC supply pins (expected {pins})")
 
     # ---- test points ---------------------------------------------------------------------------
     tp_expect = ["Z_AS_N", "Z_SLAVE_N", "Z_DOE", "Z_E7M", "Z_READ", "Z_UDS_N", "Z_LDS_N", "Z_CFGIN_N",
-                 "Z_CFGOUT_N", "Z_INT2_N", "Z_XRDY", "Z_BUSRST_N", "Z_BERR_N", "ZB_AS_N", "ZF_SLAVE_N", "GND", "GND"]
+                 "Z_CFGOUT_N", "Z_INT2_N", "Z_XRDY", "Z_BUSRST_N", "Z_BERR_N", "ZB_AS_N", "ZF_SLAVE_N", "GND", "GND",
+                 "CARD_EN_N", "EN_OK"]
     for i, want in enumerate(tp_expect):
         ref = f"TP{101 + i}"
         check(net_of(ref, "1") == want, f"{ref} expected on {want}, got {net_of(ref, '1')}")

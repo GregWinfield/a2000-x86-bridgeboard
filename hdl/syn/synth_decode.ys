@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MIT
+# Generic 4-input-LUT synthesis of the combinational Zorro decode (C-02 structural evidence).
+# Run from hdl/:  yosys -q -s syn/synth_decode.ys
+# Outputs: build/decode_lut.v (netlist for tb_hazard), build/decode_lut.json (for
+# syn/check_decode_structure.py), build/decode_stat.txt (LUT count, logic depth).
+read_verilog -sv rtl/z2_asgate.v rtl/z2_decode.v
+hierarchy -check -top z2_decode
+synth -top z2_decode -lut 4
+opt_clean -purge
+tee -o build/decode_stat.txt stat
+tee -a build/decode_stat.txt ltp -noff
+write_verilog -noattr build/decode_lut.v
+write_json build/decode_lut.json

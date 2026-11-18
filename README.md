@@ -7,8 +7,8 @@ An open-source, modern successor to the Commodore A2386SX bridgeboard. It is a g
 | Stage | Description | State |
 |---|---|---|
 | 1 | Architecture review | **Done**: decisions adopted as the [Rev 1 baseline](docs/02-rev1-baseline.md) (2026-11-18) |
-| 2 | Zorro II minimum system | **Sheet 1 drawn, in review**: [schematic PDF](docs/stage2/sheet1-schematic.pdf), [design notes](docs/stage2/sheet1-design-notes.md), [ERC report](docs/stage2/sheet1-erc-report.md), [HDL interface spec](docs/hdl/zorro-interface-spec.md). The HDL itself is not written yet |
-| 3 | Shared memory, SPI, interrupts | Waits for gate G-SHEET1 (review of the sheet-1 open concerns) |
+| 2 | Zorro II minimum system | **Sheet 1 revision B, in review** (card-enable gating, RMW-capable HDL): [schematic PDF](docs/stage2/sheet1-schematic.pdf), [design notes](docs/stage2/sheet1-design-notes.md), [timing budget](docs/stage2/sheet1-timing-budget.md), [hazard analysis](docs/stage2/sheet1-hazard-analysis.md), [ERC report](docs/stage2/sheet1-erc-report.md), [HDL spec](docs/hdl/zorro-interface-spec.md), [RTL and testbenches](hdl/). Verification written but **not yet executed** (gates G-SIM, G-STA) |
+| 3 | Shared memory, SPI, interrupts | Waits for gate G-SHEET1 (owner review of sheet 1 revision B) |
 | 4 | RP2040 firmware + Windows test utility | – |
 | 5 | Integration, drivers, RDP investigation | – |
 | 6 | PCB | – |
@@ -22,8 +22,9 @@ An open-source, modern successor to the Commodore A2386SX bridgeboard. It is a g
 | [docs/00-project-brief.md](docs/00-project-brief.md) | Original requirements, verbatim |
 | [docs/01-architecture-review.md](docs/01-architecture-review.md) | Stage 1 review: block diagram, Zorro II requirements, FPGA comparison, shared memory, power budget, BOM, risks |
 | [docs/02-rev1-baseline.md](docs/02-rev1-baseline.md) | Adopted decisions D-01 to D-17, owner clarifications, engineering requirements ER-1 to ER-5, gates |
-| [docs/stage2/](docs/stage2/) | Sheet 1: design notes (timing budgets, power-off isolation, safe start-up, open concerns), ERC report, PDF |
-| [docs/hdl/zorro-interface-spec.md](docs/hdl/zorro-interface-spec.md) | FPGA Zorro II slave / AutoConfig interface specification |
+| [docs/stage2/](docs/stage2/) | Sheet 1: design notes (power-off isolation, card enable and AutoConfig bypass, safe start-up, open concerns), timing budget, decode hazard analysis, ERC report, PDF |
+| [docs/hdl/zorro-interface-spec.md](docs/hdl/zorro-interface-spec.md) | FPGA Zorro II slave / AutoConfig specification (revision B) |
+| [docs/hdl/verification-matrix.md](docs/hdl/verification-matrix.md) | Review requirements (C-01 to C-05, C-13) mapped to tests, proofs, analyses and gates |
 | [docs/risk-register.md](docs/risk-register.md) | Engineering risks and unknowns (maintained) |
 | [docs/pin-assignment-matrix.md](docs/pin-assignment-matrix.md) | Zorro connector (generated from the netlist), SBC header and FPGA I/O allocation |
 | [docs/bom/bom-preliminary.csv](docs/bom/bom-preliminary.csv) | Preliminary BOM with AUD estimates |
@@ -39,7 +40,7 @@ An open-source, modern successor to the Commodore A2386SX bridgeboard. It is a g
 ```text
 docs/                  architecture, baseline, stage reports, specs, BOM, risks, test records
 hardware/kicad/        KiCad 10 project (root + sheets 1-6, project libraries)
-hdl/                   FPGA sources + constraints                    [Stage 2, not started]
+hdl/                   FPGA RTL, testbenches, formal, constraints   [Stage 2, verification pending]
 firmware/rp2040/       RP2040 bridge firmware                         [Stage 4]
 software/windows/      Windows service / test utility                 [Stage 4-5]
 software/amiga/        Amiga driver / library / tools                 [Stage 5]

@@ -7,7 +7,7 @@
 	(title_block
 		(title "Power regulation & protection")
 		(date "2026-11-18")
-		(rev "A (draft)")
+		(rev "B (draft)")
 		(company "A2000 x86 Bridgeboard project")
 		(comment 1 "Sheet 5 of 6. PLACEHOLDER: not yet designed (Stage 2+).")
 		(comment 4 "Licence: CERN-OHL-S-2.0")

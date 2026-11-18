@@ -5,7 +5,7 @@
 **Scope:** The seven items from the brief's "First task" (see [00-project-brief.md](00-project-brief.md)) plus a recommended revision-1 architecture.
 **Not in scope yet:** schematics, HDL, firmware.
 
-> **Update 2026-11-18.** The owner adopted D-01 to D-17 with clarifications; see [02-rev1-baseline.md](02-rev1-baseline.md). During sheet 1 (Stage 2) the data transceiver changed from SN74LVC16T245 to the bus-hold variant **SN74LVCH16T245**; see [stage2/sheet1-design-notes.md](stage2/sheet1-design-notes.md). This review is otherwise kept as the Stage 1 record.
+> **Update 2026-11-18.** The owner adopted D-01 to D-17 with clarifications; see [02-rev1-baseline.md](02-rev1-baseline.md). During sheet 1 (Stage 2) the data transceiver changed from SN74LVC16T245 to the bus-hold variant **SN74LVCH16T245**; see [stage2/sheet1-design-notes.md](stage2/sheet1-design-notes.md). In sheet 1 **revision B** the /SLAVEn and /CFGOUTn driver changed from SN74LVC2T45 to an output-enabled **SN74LVC8T245** behind card-enable gating. As a result, an unpowered or unconfigured card no longer blocks downstream AutoConfig, which this review still describes in §2 and §8. /BERR also replaced CDAC on the input buffers. See the [baseline change log](02-rev1-baseline.md). This review is otherwise kept as the Stage 1 record.
 
 Evidence tags (`[V]`, `[Vs]`, `[M]`, `[D]`, `[K]`, `[A]`, `[E]`, TBV) and source IDs (`S1`…) are defined in [sources.md](sources.md). Anything tagged `[K]`, `[A]` or TBV must be closed before the relevant schematic sheet is frozen.
 

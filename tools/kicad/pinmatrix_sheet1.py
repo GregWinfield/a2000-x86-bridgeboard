@@ -35,11 +35,23 @@ def main(path):
             return by_func.get((ref, fn.replace("A", "Y")))
         if "16T245" in val and "B" in fn:
             return by_func.get((ref, fn.replace("B", "A")))
-        if "2T45" in val and fn.startswith("B"):
+        if "8T245" in val and fn.startswith("B"):            # U104 SN74LVC8T245 (rev B)
             return by_func.get((ref, fn.replace("B", "A")))
         if "07A" in val and fn.endswith("Y"):
             return by_func.get((ref, fn.replace("Y", "A")))
+        if "LVC32A" in val and fn.endswith("Y"):             # U107 gate: Y <- A (FPGA side), B = CARD_EN_N
+            return by_func.get((ref, fn.replace("Y", "A")))
         return None
+
+    def through_gate(net, seen):
+        """A gated local net (rev B, e.g. XRDY_G): continue through the U107 gate that drives it."""
+        for r, p, t in nets.get(net, []):
+            if r.startswith("U") and t == "output" and (r, p) not in seen:
+                pp = partner(r, p)
+                if pp:
+                    return f" → `{net}` → {r}.{p} ({func.get((r, p), '')}) ↔ {r}.{pp} ({func.get((r, pp), '')})", \
+                           pin_net.get((r, pp))
+        return "", net
 
     def follow(net, seen=()):
         """Return (path text, fpga-side net) for a Zorro-domain net."""
@@ -57,7 +69,11 @@ def main(path):
                 fn = func.get((r, p), p)
                 pp = partner(r, p)
                 fnet = pin_net.get((r, pp)) if pp else None
-                return f"{r}.{p} ({fn}) ↔ {r}.{pp} ({func.get((r, pp), '')})", fnet
+                txt = f"{r}.{p} ({fn}) ↔ {r}.{pp} ({func.get((r, pp), '')})"
+                if fnet and not fnet.startswith(("ZB_", "ZF_", "LD")):
+                    more, fnet = through_gate(fnet, seen + ((r, pp),))
+                    txt += more
+                return txt, fnet
         return "", None
 
     print("| Pin | Zorro II name | Net | Carrier path (from netlist) | FPGA-side net |")

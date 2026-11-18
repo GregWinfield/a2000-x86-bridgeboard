@@ -7,7 +7,7 @@
 	(title_block
 		(title "A2000 x86 Bridgeboard: top level")
 		(date "2026-11-18")
-		(rev "A (draft)")
+		(rev "B (draft)")
 		(company "A2000 x86 Bridgeboard project")
 		(comment 1 "Zorro II bridgeboard carrying a removable x86 SBC (Rev 1: Radxa X4).")
 		(comment 2 "Hierarchy follows the brief: sheets 1-6. Only sheet 1 is drawn (Stage 2).")
@@ -17,7 +17,7 @@
 	(lib_symbols)
 	(text "Sheet-1 interface pins are intentionally unconnected at this level until sheet 2 (FPGA) is drawn.\nERC reports for these are expected and listed in docs/stage2/sheet1-erc-report.md."
 		(exclude_from_sim no)
-		(at 50.8 187.96 0)
+		(at 50.8 193.04 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -219,7 +219,7 @@
 	)
 	(sheet
 		(at 50.8 30.48)
-		(size 71.12 149.86)
+		(size 71.12 154.94)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -244,7 +244,7 @@
 			)
 		)
 		(property "Sheetfile" "sheets/01_zorro_interface.kicad_sch"
-			(at 50.8 180.94 0)
+			(at 50.8 186.02 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -494,9 +494,9 @@
 				(justify right)
 			)
 		)
-		(pin "ZB_BUSRST_N" output
+		(pin "ZB_BERR_N" output
 			(at 121.92 93.98 0)
-			(uuid "9f0fe5ba-fd57-5149-856c-a2a95d23c436")
+			(uuid "5abdfdf5-8880-5926-afd7-8c06e9f5a36d")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -504,9 +504,9 @@
 				(justify right)
 			)
 		)
-		(pin "ZB_CDAC" output
+		(pin "ZB_BUSRST_N" output
 			(at 121.92 96.52 0)
-			(uuid "f2248093-9d71-5524-9abb-8a1c479064ca")
+			(uuid "9f0fe5ba-fd57-5149-856c-a2a95d23c436")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -734,8 +734,28 @@
 				(justify right)
 			)
 		)
-		(pin "ZF_CFGOUT_N" input
+		(pin "EN_OK" output
 			(at 121.92 154.94 0)
+			(uuid "f82aa439-2fc5-5fc4-b2d2-5a47d9489e7d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_ARM" input
+			(at 121.92 157.48 0)
+			(uuid "58f5fdc1-43b7-5ec5-a900-3de49ab0d695")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "ZF_CFGOUT_N" input
+			(at 121.92 160.02 0)
 			(uuid "7b4cb392-c3fd-5a1d-9967-0d97071bdb22")
 			(effects
 				(font
@@ -745,7 +765,7 @@
 			)
 		)
 		(pin "ZF_DBUF_DIR" input
-			(at 121.92 157.48 0)
+			(at 121.92 162.56 0)
 			(uuid "9430e7e3-f9bd-5d22-8e50-6148e6cdaf34")
 			(effects
 				(font
@@ -755,7 +775,7 @@
 			)
 		)
 		(pin "ZF_DBUF_OE_N" input
-			(at 121.92 160.02 0)
+			(at 121.92 165.1 0)
 			(uuid "d8d620bc-1191-5218-afeb-c6c65d7bd5e8")
 			(effects
 				(font
@@ -765,7 +785,7 @@
 			)
 		)
 		(pin "ZF_DTACK_N" input
-			(at 121.92 162.56 0)
+			(at 121.92 167.64 0)
 			(uuid "42b348ce-a68b-5ed7-8828-67eb95268077")
 			(effects
 				(font
@@ -775,7 +795,7 @@
 			)
 		)
 		(pin "ZF_INT2_N" input
-			(at 121.92 165.1 0)
+			(at 121.92 170.18 0)
 			(uuid "3b551893-9b99-568b-b9ed-85d4922467d2")
 			(effects
 				(font
@@ -785,7 +805,7 @@
 			)
 		)
 		(pin "ZF_INT6_N" input
-			(at 121.92 167.64 0)
+			(at 121.92 172.72 0)
 			(uuid "8a1b4177-2998-5774-bdab-7d537ec14bd6")
 			(effects
 				(font
@@ -795,7 +815,7 @@
 			)
 		)
 		(pin "ZF_OVR_N" input
-			(at 121.92 170.18 0)
+			(at 121.92 175.26 0)
 			(uuid "69bed040-6baf-597c-b56f-0ae9048da64f")
 			(effects
 				(font
@@ -805,7 +825,7 @@
 			)
 		)
 		(pin "ZF_SLAVE_N" input
-			(at 121.92 172.72 0)
+			(at 121.92 177.8 0)
 			(uuid "1876f703-88c0-5b3e-a874-435f0de8ed6e")
 			(effects
 				(font
@@ -815,7 +835,7 @@
 			)
 		)
 		(pin "ZF_XRDY" input
-			(at 121.92 175.26 0)
+			(at 121.92 180.34 0)
 			(uuid "ea609424-2250-5fa1-b6be-498d43fdef77")
 			(effects
 				(font
