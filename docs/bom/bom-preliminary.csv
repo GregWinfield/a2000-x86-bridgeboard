@@ -1,9 +1,9 @@
 Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-off),Source,Unit AUD low,Unit AUD high,Status,Notes
 1,FPGA,Zorro/SRAM/SPI logic,Lattice,LCMXO2-2000HC-4TG144C,TQFP-144,1,"USD 6.29-6.53 (LCSC, low stock); EUR 16.28 (DigiKey DE)",S20,10.00,29.00,Vs,52-week factory lead time quoted; buy early. Migration: LCMXO2-4000HC-4TG144C (TBV)
 2,SRAM,Shared memory 512 KB,ISSI,IS61WV25616EDBLL-10TLI,TSOP-II-44,1,"USD 2.65 (LCSC, 869 stock); USD 6.17 (Farnell)",S24,4.00,10.00,Vs,256K x 16; 10 ns; 2.4-3.6 V
-3,Bus interface,D0-D15 5V<->3.3V transceiver (VCC isolation),Texas Instruments,SN74LVC16T245DGGR,TSSOP-48,1,"USD 0.70 (LCSC); USD 1.08-3.85 (others)",S26,1.10,6.00,Vs,VCCA=+3V3 (LD bus); VCCB=+5V_BUS (Zorro)
-4,Bus interface,Address/control input buffers (5V-tolerant),Texas Instruments or Nexperia,SN74LVC16244ADGGR / 74LVC16244ADGG,TSSOP-48,2,not checked,E,0.80,1.60,E,32 channels total; 31 used + CDAC
-5,Bus interface,/SLAVEn and /CFGOUTn driver at 5 V levels,Texas Instruments,SN74LVC2T45DCTR,VSSOP-8,1,not checked,E,0.30,0.80,E,Dual supply; fixed direction A->B
+3,Bus interface,D0-D15 5V<->3.3V transceiver with bus-hold (VCC isolation),Texas Instruments,SN74LVCH16T245DGGR,TSSOP-48,1,not checked; LVC16T245 (no bus-hold) USD 0.70-3.85 used as proxy,S26/S46,1.10,6.00,E,Sheet 1 U103. Bus-hold variant chosen because the Zorro data bus floats between cycles (TI: inputs must not float). VCCA=+3V3 (LD bus); VCCB=+5V_BUS
+4,Bus interface,Address/control input buffers (5V-tolerant),Texas Instruments or Nexperia,SN74LVC16244ADGGR / 74LVC16244ADGG,TSSOP-48,2,not checked,E,0.80,1.60,E,32 channels: 31 Zorro inputs + /BERR (rev B; CDAC no longer buffered)
+5,Bus interface,"/SLAVEn and /CFGOUTn driver at 5 V levels, ~OE = CARD_EN_N (rev B, C-03/C-04)",Texas Instruments,SN74LVC8T245PWR,TSSOP-24,1,not checked,S53,1.00,3.00,E,Sheet 1 U104. Replaces SN74LVC2T45 (no OE). 2 of 8 channels used; unused A/B tied to GND. Same part family as MNT VA2000 translators (S12)
 6,Bus interface,Open-drain /INT2 /INT6 XRDY (+DNP /OVR /DTACK),Texas Instruments or Nexperia,SN74LVC07APWR,TSSOP-14,1,not checked,E,0.30,0.80,E,5V-tolerant open-drain outputs (Ioff) [K]
 7,X4 isolation,RP2040 link / JTAG isolating translators,Texas Instruments,SN74AVC4T774PWR,TSSOP-16,3,USD 0.42-1.65,S26,0.65,2.60,Vs,B-side VCC = X4 header 3.3 V (P3V3_S)
 8,Power entry,12 V eFuse (OVLO/UVLO/ILIM/soft-start/reverse block),Texas Instruments,TPS25947 (variant TBD),VQFN-HR 2x2 mm,1,USD 1.29-2.17 (Mouser),S27,2.00,3.40,Vs,Variant choice: fixed 13.8 V clamp vs adjustable OVLO
@@ -17,7 +17,7 @@ Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-o
 16,Telemetry,12 V current/voltage monitor (I2C),Texas Instruments,INA226AIDGSR,VSSOP-10,1,not checked,E,2.30,4.70,E,Recommended on prototypes (D-11)
 17,Telemetry,Current shunt 10 mOhm 1% 1 W,Various,TBD,2512,1,not checked,E,0.40,1.00,E,
 18,Clock,50 MHz 3.3 V CMOS oscillator (optional; internal OSC alternative),Various,TBD,3.2x2.5 mm,1,not checked,E,0.00,2.50,E,Low = DNP
-19,Connectors,4-pin peripheral power PCB header ("Molex 8981" style),TE/Molex or equivalent,TBD,THT,1,not checked,E,1.00,3.00,E,Pin numbering TBV against A2000 harness
+19,Connectors,"4-pin peripheral power PCB header (""Molex 8981"" style)",TE/Molex or equivalent,TBD,THT,1,not checked,E,1.00,3.00,E,Pin numbering TBV against A2000 harness
 20,Connectors,X4 GPIO: 2x20 2.54 mm box header + 40-way IDC ribbon (<=15 cm) with 2 sockets,Various,TBD,THT/cable,1,not checked,E,3.00,8.00,E,Ribbon keeps X4 swappable (D-07)
 21,Connectors,X4 power lead: 2-pin 2.54 mm crimp housing (>=3 A) + carrier header + 18-20 AWG wire,Molex KK 254 family (TBV) or equivalent,TBD,cable,1,not checked,E,2.00,5.00,E,Check J10 pitch on actual board (R-04)
 22,Connectors,FPGA JTAG header,Various,TBD (2x5 1.27 mm or 1x6 2.54 mm),THT/SMD,1,not checked,E,0.50,1.50,E,
@@ -33,3 +33,10 @@ Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-o
 32,x86,Radxa X4 4 GB LPDDR5 (no eMMC),Radxa,RS866-D4H1 (RS 329-065),SBC,1,"GBP 62.22 (RS UK, indicative); about USD 60 (AliExpress)",S30,95.00,125.00,Vs,8 GB = RS866-D8H1 at USD 265.99 (Apr 2026) = about AUD 410+ (S29); not included
 33,x86,NVMe M.2 2230 SSD 256 GB,Various,TBD,M.2 2230,1,not checked,E,50.00,100.00,E,2026 NAND prices elevated
 34,x86,X4 active cooler (heatsink + fan),Radxa or equivalent,TBD,accessory,1,not checked,E,15.00,30.00,E,Height affects slot clearance
+35,Bus interface,22R series damping arrays for D0-D15 (RN101-RN104),Yageo,YC164-JR-0722RL (TBV),0603x4 convex,4,not checked,E,0.10,0.30,E,Value TBV by SI measurement (C-07)
+36,Bus interface,"Card-enable gate CARD_EN_N = NAND(EN_OK, ZF_ARM) (U106)",Texas Instruments,SN74LVC1G00DBVR,SOT-23-5,1,not checked,S54,0.15,0.60,E,Sheet 1 rev B (C-03/C-04)
+37,Bus interface,"Enable gating: ORs CARD_EN_N into U103 ~OE, XRDY, /INT2, /INT6 (U107)",Texas Instruments,SN74LVC32APWR,TSSOP-14,1,not checked,S55,0.30,1.00,E,Sheet 1 rev B (C-03/C-04)
+38,Bus interface,"Supervisor +3V3 (VIT- 3.07 V, CT open 12-28 ms) (U108)",Texas Instruments,TPS3808G33DBVR,SOT-23-6,1,not checked,S56,1.20,3.50,E,EN_OK wired-AND; MR tied to VDD
+39,Bus interface,Supervisor +5V_BUS via 95.3k/10k divider (VIT- 4.27 V) (U109),Texas Instruments,TPS3808G01DBVR,SOT-23-6,1,not checked,S56,1.20,3.50,E,Threshold TBV against the sheet-5 +5V_BUS tolerance
+40,User I/O,JP101 DISABLE jumper (1x2 header + shunt),Various,TBD,2.54 mm header,1,not checked,E,0.20,0.60,E,Fitted = card held off the bus (EN_OK low)
+41,Passives,"Rev B passives: R121-R124 10k, R125 95.3k 1%, R126 10k 1%, C118-C122 100 nF",Various,TBD,0603,1,not checked,E,0.30,1.00,E,Lot (11 parts)

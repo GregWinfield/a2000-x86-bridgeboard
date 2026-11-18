@@ -14,7 +14,9 @@ _autosave-*
 hardware/kicad/**/outputs/
 hardware/kicad/**/production/
 
-# FPGA build outputs (Lattice Diamond)
+# FPGA build and verification outputs (Lattice Diamond, Icarus, Yosys, SymbiYosys)
+hdl/build/
+hdl/formal/z2_core_*/
 hdl/**/impl*/
 hdl/**/*.jed
 hdl/**/*.bit

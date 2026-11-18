@@ -62,6 +62,31 @@ Prices are snapshots taken through search results on 2026-11-18. They are indica
 | S30 | RS Components Radxa X4 4 GB listings, `https://uk.rs-online.com/web/p/rock-sbc-boards/0329065`, `.../0329066` | [Vs]. 4 GB no-eMMC £62.22 (indicative). 4 GB/32 GB £65.34 ex VAT, out of stock until 2026-01-22 at time of index. AliExpress ≈ USD 60 |
 | S31 | DFRobot LattePanda Mu, `https://www.dfrobot.com/product-2820.html` | [Vs]. N100 module, 9–20 V input. Launch USD 139. Lite carrier USD 39 |
 
+## Stage 2 (sheet 1) datasheets: downloaded and read directly, 2026-11-18
+
+| ID | Source | How used |
+|---|---|---|
+| S45 | TI SN74LVC16244A data sheet, SCAS699C (Aug 2003, rev. June 2014), `https://www.ti.com/lit/ds/symlink/sn74lvc16244a.pdf` | [V]. DGG pinout; tpd ≤ 4.1 ns at 3.3 V ±0.3 V (−40 to 85 °C); inputs 5.5 V-tolerant at any VCC; Ioff |
+| S46 | TI SN74LVCH16T245 data sheet, SCES635B (rev. Apr 2015), `https://www.ti.com/lit/ds/symlink/sn74lvch16t245.pdf`; plus SN74LVC16T245 SCES636B (rev. Apr 2015) for pinout comparison | [V]. Pinout (identical in both, checked by diff); function table; DIR/OE referenced to VCCA; VCC isolation; Ioff; bus-hold (no pull resistors; IBHLO 900 µA at 5.5 V read from the rendered table); switching at VCCA 3.3 V / VCCB 5 V; OE pull-up recommendation |
+| S47 | TI SN74LVC2T45 data sheet, SCES516N (rev. June 2024), `https://www.ti.com/lit/ds/symlink/sn74lvc2t45.pdf` | [V]. DCT/DCU pinout; DIR function; VCC isolation; Ioff; A→B tPLH ≤ 4.4 ns / tPHL ≤ 4.0 ns at VCCA 3.3 V, VCCB 5 V |
+| S48 | TI SN74LVC07A data sheet, SCAS595W (rev. Oct 2016), `https://www.ti.com/lit/ds/symlink/sn74lvc07a.pdf` | [V]. PW pinout; open-drain; 5.5 V-tolerant I/O; Ioff; tpd ≤ 3.6 ns at 3.3 V |
+| S49 | Lattice MachXO2 Family Data Sheet FPGA-DS-02056-4.7 (2026), `https://www.latticesemi.com/view_document?document_id=38834` | [V]. I/O tri-stated with weak pull-down before and during configuration; IPU/IPD 26–309 / 30–305 µA; tREFRESH 1.4 ms (XO2-2000), 2.4 ms (XO2-4000); tPD 7.24 ns (−4, best case, LVCMOS25 8 mA, 0 pF); PLL fIN ≥ 7 MHz; TQFP-144 = 111 GPIO (Table 4.4). Supersedes the [K] entry S44 |
+| S50 | = S10, used for the sheet-1 timing rules | [V] |
+
+## Stage 2 (sheet 1 revision B): read directly, 2026-11-18
+
+| ID | Source | How used |
+|---|---|---|
+| S51 | Commodore A2000 Rev 6 (A2000-CR, 312721) schematic, redrawn edition rev. 1.38 (2012), `https://www.amigawiki.org/dnl/schematics/A2000_R6.pdf` | [V]. Schematic sheet 6 (PDF page 7): U606 74LS32 /CFGIN–/CFGOUT OR chain, RP607 1 kΩ pull-downs on /CFGOUT1–5. Sheet 8 (PDF page 9): RP800 1 kΩ pull-ups to +5 V on /SLAVE1–5 into Buster U800. Power-on reset (LM339 U805, C814 22 µF, R805 47 kΩ, PST518B), giving ≈ 0.7 s [D]. Third-party document: read only, nothing copied into the project |
+| S52 | Dave Haynie, "100 Pin Expansion Signals on Amiga Computers", 20 July 1987 (troff source `100pin.nr`), mirror `https://www.devili.iki.fi/mirrors/haynie/systems/amiga2k/docs/100pin.nr` | [V]. Empty slots pass /CFGOUT→/CFGIN on the motherboard; a card must monitor /BERR and be ready to tri-state its on-bus buffers whenever it is asserted; read-data buffers consider /UDS//LDS "in case the cycle actually turns out to be a read-modify-write cycle"; DOE enables card data buffers and its timing differs between read and write; read data enabling is delayed for collision detection |
+| S53 | TI SN74LVC8T245 data sheet, SCES584D (June 2005, rev. May 2026), `https://www.ti.com/lit/ds/symlink/sn74lvc8t245.pdf` | [V]. PW pinout; A→B 0.5–4.4 ns, OE→B enable 0.9–6.8 ns, disable 0.8–6.3 ns at VCCA 3.3 V ±0.3 V / VCCB 5 V ±0.5 V; VCC isolation below 100 mV or floating; Ioff; inputs on both ports always active; OE pull-up for Hi-Z during power-up and power-down |
+| S54 | TI SN74LVC1G00 data sheet, SCES212AC (rev. Aug 2026), `https://www.ti.com/lit/ds/symlink/sn74lvc1g00.pdf` | [V]. DBV pinout; tpd 1.0–4.7 ns at 3.3 V ±0.3 V (CL 30/50 pF, −40 to 85 °C); Ioff |
+| S55 | TI SN74LVC32A data sheet, SCAS286U (rev. July 2024), `https://www.ti.com/lit/ds/symlink/sn74lvc32a.pdf` | [V]. PW pinout; tpd 1.0–3.8 ns at 3.3 V ±0.3 V (−40 to 85 °C); inputs 5.5 V-tolerant |
+| S56 | TI TPS3808 data sheet, SBVS050N (rev. Aug 2026), `https://www.ti.com/lit/ds/symlink/tps3808.pdf` | [V]. DBV pinout; VIT− 3.07 V (G33), 0.405 V (G01); accuracy; CT open 12–28 ms; MR 90 kΩ internal pull-up, 1 ns pulse width; open-drain RESET valid from VDD ≥ 0.8 V; SENSE→RESET ≤ 20 µs; pull-up 10 kΩ–1 MΩ |
+| S57 | Motorola M68000 8-/16-/32-Bit Microprocessors User's Manual, 9th edition (Freescale reprint), retrieved from the Internet Archive copy of `https://www.nxp.com/docs/en/reference-manual/MC68000UM.pdf` (NXP blocked automated download) | [V]. Read-modify-write cycle states S0–S19 (§4.1.3, §5.1.3); AC timing §10.10 (8 MHz): #11 address to /AS ≥ 30 ns, #13 address hold ≥ 40 ns, #14A DS width (write) ≥ 140 ns, #20A R/W valid ≤ 10 ns after /AS, #25 data hold ≥ 40 ns, #26 data valid before DS ≥ 40 ns, #29A data-in Hi-Z ≤ 187 ns. Supersedes the [K] entry S42 |
+| S58 | Dave Haynie, Buster-2 chip specification (A3000), mirror `https://www.devili.iki.fi/mirrors/haynie/chips/buster/docs/buster2.pdf` | [V]. DOE driven by Buster for Zorro II cycles; collision detection from multiple /SLAVEn before data buffers are enabled; automatic Zorro II DTACK held off by XRDY. A3000 part: used for corroboration of signal semantics only |
+| S59 | YosysHQ OSS CAD Suite, release 2026-10-31, `oss-cad-suite-windows-x64-20261031.tgz` from `https://github.com/YosysHQ/oss-cad-suite-build/releases/tag/2026-10-31` | Tool provenance: SHA-256 `4e845291d99e1711e4c3a005661132deef8f8cc0afaf1e3fd0f4811cc103e783` matched the published value. Contains Icarus Verilog, Yosys, SymbiYosys, nextpnr-machxo2. **Not yet executed** on the development machine |
+
 ## Standards / general references (not fetched in this review)
 
 | ID | Source | How used |

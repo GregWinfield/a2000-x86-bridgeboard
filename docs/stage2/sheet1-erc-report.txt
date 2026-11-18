@@ -1,0 +1,390 @@
+ERC report (2026-11-18T13:56:45, Encoding UTF8)
+Report includes: Errors, Warnings, Exclusions
+
+***** Sheet /
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 33.02 mm): Hierarchical Sheet Pin 'ZB_A1'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 35.56 mm): Hierarchical Sheet Pin 'ZB_A2'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 38.10 mm): Hierarchical Sheet Pin 'ZB_A3'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 40.64 mm): Hierarchical Sheet Pin 'ZB_A4'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 43.18 mm): Hierarchical Sheet Pin 'ZB_A5'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 45.72 mm): Hierarchical Sheet Pin 'ZB_A6'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 48.26 mm): Hierarchical Sheet Pin 'ZB_A7'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 50.80 mm): Hierarchical Sheet Pin 'ZB_A8'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 53.34 mm): Hierarchical Sheet Pin 'ZB_A9'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 55.88 mm): Hierarchical Sheet Pin 'ZB_A10'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 58.42 mm): Hierarchical Sheet Pin 'ZB_A11'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 60.96 mm): Hierarchical Sheet Pin 'ZB_A12'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 63.50 mm): Hierarchical Sheet Pin 'ZB_A13'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 66.04 mm): Hierarchical Sheet Pin 'ZB_A14'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 68.58 mm): Hierarchical Sheet Pin 'ZB_A15'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 71.12 mm): Hierarchical Sheet Pin 'ZB_A16'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 73.66 mm): Hierarchical Sheet Pin 'ZB_A17'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 76.20 mm): Hierarchical Sheet Pin 'ZB_A18'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 78.74 mm): Hierarchical Sheet Pin 'ZB_A19'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 81.28 mm): Hierarchical Sheet Pin 'ZB_A20'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 83.82 mm): Hierarchical Sheet Pin 'ZB_A21'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 86.36 mm): Hierarchical Sheet Pin 'ZB_A22'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 88.90 mm): Hierarchical Sheet Pin 'ZB_A23'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 91.44 mm): Hierarchical Sheet Pin 'ZB_AS_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 93.98 mm): Hierarchical Sheet Pin 'ZB_BERR_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 96.52 mm): Hierarchical Sheet Pin 'ZB_BUSRST_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 99.06 mm): Hierarchical Sheet Pin 'ZB_CFGIN_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 101.60 mm): Hierarchical Sheet Pin 'ZB_DOE'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 104.14 mm): Hierarchical Sheet Pin 'ZB_E7M'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 106.68 mm): Hierarchical Sheet Pin 'ZB_LDS_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 109.22 mm): Hierarchical Sheet Pin 'ZB_READ'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 111.76 mm): Hierarchical Sheet Pin 'ZB_UDS_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 114.30 mm): Hierarchical Sheet Pin 'LD0'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 116.84 mm): Hierarchical Sheet Pin 'LD1'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 119.38 mm): Hierarchical Sheet Pin 'LD2'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 121.92 mm): Hierarchical Sheet Pin 'LD3'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 124.46 mm): Hierarchical Sheet Pin 'LD4'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 127.00 mm): Hierarchical Sheet Pin 'LD5'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 129.54 mm): Hierarchical Sheet Pin 'LD6'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 132.08 mm): Hierarchical Sheet Pin 'LD7'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 134.62 mm): Hierarchical Sheet Pin 'LD8'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 137.16 mm): Hierarchical Sheet Pin 'LD9'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 139.70 mm): Hierarchical Sheet Pin 'LD10'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 142.24 mm): Hierarchical Sheet Pin 'LD11'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 144.78 mm): Hierarchical Sheet Pin 'LD12'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 147.32 mm): Hierarchical Sheet Pin 'LD13'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 149.86 mm): Hierarchical Sheet Pin 'LD14'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 152.40 mm): Hierarchical Sheet Pin 'LD15'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 154.94 mm): Hierarchical Sheet Pin 'EN_OK'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 157.48 mm): Hierarchical Sheet Pin 'ZF_ARM'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 160.02 mm): Hierarchical Sheet Pin 'ZF_CFGOUT_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 162.56 mm): Hierarchical Sheet Pin 'ZF_DBUF_DIR'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 165.10 mm): Hierarchical Sheet Pin 'ZF_DBUF_OE_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 167.64 mm): Hierarchical Sheet Pin 'ZF_DTACK_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 170.18 mm): Hierarchical Sheet Pin 'ZF_INT2_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 172.72 mm): Hierarchical Sheet Pin 'ZF_INT6_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 175.26 mm): Hierarchical Sheet Pin 'ZF_OVR_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 177.80 mm): Hierarchical Sheet Pin 'ZF_SLAVE_N'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(121.92 mm, 180.34 mm): Hierarchical Sheet Pin 'ZF_XRDY'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 66.04 mm): Hierarchical Label 'ZB_A1'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 68.58 mm): Hierarchical Label 'ZB_A2'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 71.12 mm): Hierarchical Label 'ZB_A3'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 73.66 mm): Hierarchical Label 'ZB_A4'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 78.74 mm): Hierarchical Label 'ZB_A5'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 81.28 mm): Hierarchical Label 'ZB_A6'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 83.82 mm): Hierarchical Label 'ZB_A7'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 86.36 mm): Hierarchical Label 'ZB_A8'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 91.44 mm): Hierarchical Label 'ZB_A9'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 93.98 mm): Hierarchical Label 'ZB_A10'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 96.52 mm): Hierarchical Label 'ZB_A11'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 99.06 mm): Hierarchical Label 'ZB_A12'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 104.14 mm): Hierarchical Label 'ZB_A13'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 106.68 mm): Hierarchical Label 'ZB_A14'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 109.22 mm): Hierarchical Label 'ZB_A15'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 111.76 mm): Hierarchical Label 'ZB_A16'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 187.96 mm): Hierarchical Label 'ZB_A17'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 190.50 mm): Hierarchical Label 'ZB_A18'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 193.04 mm): Hierarchical Label 'ZB_A19'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 195.58 mm): Hierarchical Label 'ZB_A20'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 200.66 mm): Hierarchical Label 'ZB_A21'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 203.20 mm): Hierarchical Label 'ZB_A22'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 205.74 mm): Hierarchical Label 'ZB_A23'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 213.36 mm): Hierarchical Label 'ZB_UDS_N'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 215.90 mm): Hierarchical Label 'ZB_LDS_N'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 218.44 mm): Hierarchical Label 'ZB_READ'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 220.98 mm): Hierarchical Label 'ZB_DOE'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 226.06 mm): Hierarchical Label 'ZB_E7M'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 228.60 mm): Hierarchical Label 'ZB_CFGIN_N'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 231.14 mm): Hierarchical Label 'ZB_BUSRST_N'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(124.46 mm, 233.68 mm): Hierarchical Label 'ZB_BERR_N'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 66.04 mm): Hierarchical Label 'LD0'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 68.58 mm): Hierarchical Label 'LD1'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 71.12 mm): Hierarchical Label 'LD2'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 73.66 mm): Hierarchical Label 'LD3'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 76.20 mm): Hierarchical Label 'LD4'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 78.74 mm): Hierarchical Label 'LD5'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 81.28 mm): Hierarchical Label 'LD6'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 83.82 mm): Hierarchical Label 'LD7'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 88.90 mm): Hierarchical Label 'LD8'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 91.44 mm): Hierarchical Label 'LD9'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 93.98 mm): Hierarchical Label 'LD10'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 96.52 mm): Hierarchical Label 'LD11'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 99.06 mm): Hierarchical Label 'LD12'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 101.60 mm): Hierarchical Label 'LD13'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 104.14 mm): Hierarchical Label 'LD14'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(248.92 mm, 106.68 mm): Hierarchical Label 'LD15'
+
+***** Sheet /1 Zorro II interface & AutoConfig/
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 200.66 mm): Symbol U104 Pin 5 [A3, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 203.20 mm): Symbol U104 Pin 6 [A4, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 205.74 mm): Symbol U104 Pin 7 [A5, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 208.28 mm): Symbol U104 Pin 8 [A6, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 210.82 mm): Symbol U104 Pin 9 [A7, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(213.36 mm, 213.36 mm): Symbol U104 Pin 10 [A8, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 200.66 mm): Symbol U104 Pin 19 [B3, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 203.20 mm): Symbol U104 Pin 18 [B4, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 205.74 mm): Symbol U104 Pin 17 [B5, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 208.28 mm): Symbol U104 Pin 16 [B6, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 210.82 mm): Symbol U104 Pin 15 [B7, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+[pin_to_pin]: Pins of type Bidirectional and Power output are connected
+    ; warning
+    @(238.76 mm, 213.36 mm): Symbol U104 Pin 14 [B8, Bidirectional, Line]
+    @(63.50 mm, 182.88 mm): Symbol #FLG0101 Pin 1 [Power output, Line]
+
+***** Sheet /2 FPGA & configuration/
+
+***** Sheet /3 Shared SRAM & arbitration/
+
+***** Sheet /4 x86 SBC interconnect (Radxa X4 in Rev 1)/
+
+***** Sheet /5 Power regulation & protection/
+
+***** Sheet /6 Interrupts, diagnostics & programming/
+
+ ** ERC messages: 118  Errors 59  Warnings 59
+
+ ** Ignored checks:
+    - Global label only appears once in the schematic
+    - Four connection points are joined together
+    - SPICE model issue
+    - Assigned footprint doesn't match footprint filters

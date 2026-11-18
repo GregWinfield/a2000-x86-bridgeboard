@@ -1,0 +1,27 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "aee42d62-f924-55fc-bf23-a95399513423")
+	(paper "A3")
+	(title_block
+		(title "Power regulation & protection")
+		(date "2026-11-18")
+		(rev "B (draft)")
+		(company "A2000 x86 Bridgeboard project")
+		(comment 1 "Sheet 5 of 6. PLACEHOLDER: not yet designed (Stage 2+).")
+		(comment 4 "Licence: CERN-OHL-S-2.0")
+	)
+	(lib_symbols)
+	(text "PLACEHOLDER - 5 Power regulation & protection\n\nPlanned: Molex 4-pin input, +12 V fuse/TVS/TPS25947 eFuse/INA226 to the SBC, +5 V PTC/TVS/reverse\nprotection -> +5V_BUS, 3.3 V LDO -> +3V3. USB-C backfeed mitigation (R-05) to be designed here."
+		(exclude_from_sim no)
+		(at 25.4 25.4 0)
+		(effects
+			(font
+				(size 2 2)
+			)
+			(justify left top)
+		)
+		(uuid "6465686a-e0b3-5cc0-a377-8359f63847ff")
+	)
+)

@@ -1,0 +1,27 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "4eae37e2-9b49-5f8e-984d-6479dc8faa99")
+	(paper "A3")
+	(title_block
+		(title "FPGA & configuration")
+		(date "2026-11-18")
+		(rev "B (draft)")
+		(company "A2000 x86 Bridgeboard project")
+		(comment 1 "Sheet 2 of 6. PLACEHOLDER: not yet designed (Stage 2+).")
+		(comment 4 "Licence: CERN-OHL-S-2.0")
+	)
+	(lib_symbols)
+	(text "PLACEHOLDER - 2 FPGA & configuration\n\nPlanned: LCMXO2-2000HC-4TG144C (migration LCMXO2-4000HC), 111 I/O budget (docs/pin-assignment-matrix.md),\nJTAG header + optional RP2040-driven JTAG, oscillator (optional), bank planning, decoupling."
+		(exclude_from_sim no)
+		(at 25.4 25.4 0)
+		(effects
+			(font
+				(size 2 2)
+			)
+			(justify left top)
+		)
+		(uuid "2262f531-bead-5286-b089-61f7b2210519")
+	)
+)

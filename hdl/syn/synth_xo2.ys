@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+# Open-source MachXO2 synthesis of the whole Stage 2 design: resource use and logic depth only.
+# This is NOT the timing sign-off: gate G-STA requires Lattice Diamond post-place-and-route STA
+# (syn/diamond_sta.tcl). Run from hdl/:  yosys -q -s syn/synth_xo2.ys
+read_verilog -sv rtl/z2_sync.v rtl/z2_asgate.v rtl/z2_decode.v rtl/z2_core.v rtl/z2_top.v
+hierarchy -check -top z2_top
+synth_lattice -family xo2 -top z2_top
+tee -o build/z2_top_xo2_stat.txt stat
+write_json build/z2_top_xo2.json

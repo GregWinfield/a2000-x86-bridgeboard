@@ -1,6 +1,6 @@
 # Pin-assignment matrix
 
-**Status:** maintained document. Revision A, 2026-11-18 (Stage 1, preliminary).
+**Status:** maintained document. Revision C, 2026-11-18. Section 2 reflects sheet 1 rev B as built; sections 3 and 4 are still plans.
 - FPGA *package* pin numbers are assigned on KiCad sheet 2.
 - Connector pin numbers below are verified [V].
 - Carrier connections are proposals pending review.
@@ -21,114 +21,119 @@
 | `X4_3V3_REF` | X4 3.3 V | X4 header pins 1/17 (`P3V3_S`, S0-only), reference supply only |
 | suffix `_N` | – | Active low |
 
-## 2. Zorro II edge connector (100 pins)
+## 2. Zorro II edge connector J101 (100 pins), as built on sheet 1 (revision B)
 
-Pin names are from [V S11], cross-checked against [V S12]. Signal semantics are from [V S10]. **NC** means no copper connection beyond the finger (a no-connect flag in KiCad).
+- **Origin:** this table is **generated from the KiCad netlist** (`tools/kicad/pinmatrix_sheet1.py`). It follows each pin through series resistors, buffers and (rev B) the U107 enable gates to the 3.3 V FPGA-side net.
+- **Sources:** pin names [V S11], cross-checked against [V S12]; signal semantics [V S10]; /BERR monitoring requirement [V S52].
+- **Not connected:** a no-connect flag in KiCad; the finger exists but has no copper connection.
+- **Netlist audit:** 418 checks, 0 failures ([stage2/sheet1-erc-report.md](stage2/sheet1-erc-report.md)).
 
-| Pin | Zorro II name | Net | Carrier connection | FPGA signal | Note |
-|---|---|---|---|---|---|
-| 1 | GND | GND | Ground plane | – | |
-| 2 | GND | GND | Ground plane | – | |
-| 3 | GND | GND | Ground plane | – | |
-| 4 | GND | GND | Ground plane | – | |
-| 5 | +5VDC | – | **NC** | – | No power from Zorro |
-| 6 | +5VDC | – | **NC** | – | No power from Zorro |
-| 7 | /OWN | – | NC | – | No DMA |
-| 8 | −5VDC | – | NC | – | |
-| 9 | /SLAVEn | `Z_SLAVE_N` | SN74LVC2T45 B-port (5 V) | `ZF_SLAVE_N` | ≤ 35 ns / ≤ 50 ns; pull-up keeps it inactive while unconfigured |
-| 10 | +12VDC | – | **NC** | – | No power from Zorro |
-| 11 | /CFGOUTn | `Z_CFGOUT_N` | SN74LVC2T45 B-port (5 V) | `ZF_CFGOUT_N` | Negated on reset |
-| 12 | /CFGINn | `Z_CFGIN_N` | 74LVC16244A | `ZB_CFGIN_N` | |
-| 13 | GND | GND | Ground plane | – | |
-| 14 | /C3 | – | NC | – | |
-| 15 | CDAC | `Z_CDAC` | 74LVC16244A (32nd channel) | `ZB_CDAC` (optional) | Uses 1 of the 6 spare FPGA pins if fitted |
-| 16 | /C1 | – | NC | – | |
-| 17 | /OVR | `Z_OVR_N` | 74LVC07A channel via **DNP** 0 Ω | – | Not used in rev 1 |
-| 18 | XRDY | `Z_XRDY` | 74LVC07A (open drain) | `ZF_XRDY_HOLD` | Provisioned for wait states |
-| 19 | /INT2 | `Z_INT2_N` | 74LVC07A (open drain) | `ZF_INT2` | Default IRQ |
-| 20 | −12VDC | – | NC | – | |
-| 21 | A5 | `Z_A5` | 74LVC16244A | `ZB_A5` | |
-| 22 | /INT6 | `Z_INT6_N` | 74LVC07A (open drain) | `ZF_INT6` | Alternative IRQ |
-| 23 | A6 | `Z_A6` | 74LVC16244A | `ZB_A6` | |
-| 24 | A4 | `Z_A4` | 74LVC16244A | `ZB_A4` | |
-| 25 | GND | GND | Ground plane | – | |
-| 26 | A3 | `Z_A3` | 74LVC16244A | `ZB_A3` | |
-| 27 | A2 | `Z_A2` | 74LVC16244A | `ZB_A2` | |
-| 28 | A7 | `Z_A7` | 74LVC16244A | `ZB_A7` | |
-| 29 | A1 | `Z_A1` | 74LVC16244A | `ZB_A1` | |
-| 30 | A8 | `Z_A8` | 74LVC16244A | `ZB_A8` | |
-| 31 | FC0 | – | NC | – | Not valid for Z2 DMA masters |
-| 32 | A9 | `Z_A9` | 74LVC16244A | `ZB_A9` | |
-| 33 | FC1 | – | NC | – | |
-| 34 | A10 | `Z_A10` | 74LVC16244A | `ZB_A10` | |
-| 35 | FC2 | – | NC | – | |
-| 36 | A11 | `Z_A11` | 74LVC16244A | `ZB_A11` | |
-| 37 | GND | GND | Ground plane | – | |
-| 38 | A12 | `Z_A12` | 74LVC16244A | `ZB_A12` | |
-| 39 | A13 | `Z_A13` | 74LVC16244A | `ZB_A13` | |
-| 40 | (/EINT7) | – | NC | – | Unsupported |
-| 41 | A14 | `Z_A14` | 74LVC16244A | `ZB_A14` | |
-| 42 | (/EINT5) | – | NC | – | Unsupported |
-| 43 | A15 | `Z_A15` | 74LVC16244A | `ZB_A15` | |
-| 44 | (/EINT4) | – | NC | – | Unsupported |
-| 45 | A16 | `Z_A16` | 74LVC16244A | `ZB_A16` | |
-| 46 | /BERR | – | NC (optional TP) | – | Never driven |
-| 47 | A17 | `Z_A17` | 74LVC16244A | `ZB_A17` | |
-| 48 | (/VPA) | – | NC | – | |
-| 49 | GND | GND | Ground plane | – | |
-| 50 | E Clock | – | NC | – | |
-| 51 | (/VMA) | – | NC | – | |
-| 52 | A18 | `Z_A18` | 74LVC16244A | `ZB_A18` | |
-| 53 | /RST | – | NC | – | Open-collector, bidirectional: do not load |
-| 54 | A19 | `Z_A19` | 74LVC16244A | `ZB_A19` | |
-| 55 | /HLT | – | NC | – | |
-| 56 | A20 | `Z_A20` | 74LVC16244A | `ZB_A20` | |
-| 57 | A22 | `Z_A22` | 74LVC16244A | `ZB_A22` | Note: 57 = A22, 58 = A21 |
-| 58 | A21 | `Z_A21` | 74LVC16244A | `ZB_A21` | |
-| 59 | A23 | `Z_A23` | 74LVC16244A | `ZB_A23` | |
-| 60 | /BRn | – | NC | – | No DMA |
-| 61 | GND | GND | Ground plane | – | |
-| 62 | /BGACK | – | NC | – | |
-| 63 | D15 | `Z_D15` | SN74LVC16T245 B-port | `LD15` (via transceiver) | |
-| 64 | /BGn | – | NC | – | |
-| 65 | D14 | `Z_D14` | SN74LVC16T245 B-port | `LD14` | |
-| 66 | /DTACK | `Z_DTACK_N` | 74LVC07A channel via **DNP** 0 Ω | – | Automatic DTACK used |
-| 67 | D13 | `Z_D13` | SN74LVC16T245 B-port | `LD13` | |
-| 68 | READ | `Z_READ` | 74LVC16244A | `ZB_READ` | |
-| 69 | D12 | `Z_D12` | SN74LVC16T245 B-port | `LD12` | |
-| 70 | /LDS | `Z_LDS_N` | 74LVC16244A | `ZB_LDS_N` | |
-| 71 | D11 | `Z_D11` | SN74LVC16T245 B-port | `LD11` | |
-| 72 | /UDS | `Z_UDS_N` | 74LVC16244A | `ZB_UDS_N` | |
-| 73 | GND | GND | Ground plane | – | |
-| 74 | /AS | `Z_AS_N` | 74LVC16244A | `ZB_AS_N` | Combinational path to /SLAVEn |
-| 75 | D0 | `Z_D0` | SN74LVC16T245 B-port | `LD0` | |
-| 76 | D10 | `Z_D10` | SN74LVC16T245 B-port | `LD10` | |
-| 77 | D1 | `Z_D1` | SN74LVC16T245 B-port | `LD1` | |
-| 78 | D9 | `Z_D9` | SN74LVC16T245 B-port | `LD9` | |
-| 79 | D2 | `Z_D2` | SN74LVC16T245 B-port | `LD2` | |
-| 80 | D8 | `Z_D8` | SN74LVC16T245 B-port | `LD8` | |
-| 81 | D3 | `Z_D3` | SN74LVC16T245 B-port | `LD3` | |
-| 82 | D7 | `Z_D7` | SN74LVC16T245 B-port | `LD7` | |
-| 83 | D4 | `Z_D4` | SN74LVC16T245 B-port | `LD4` | |
-| 84 | D6 | `Z_D6` | SN74LVC16T245 B-port | `LD6` | |
-| 85 | GND | GND | Ground plane | – | |
-| 86 | D5 | `Z_D5` | SN74LVC16T245 B-port | `LD5` | |
-| 87 | GND | GND | Ground plane | – | |
-| 88 | GND | GND | Ground plane | – | |
-| 89 | GND | GND | Ground plane | – | |
-| 90 | GND | GND | Ground plane | – | |
-| 91 | GND (Z2) / SenseZ3 | GND | Ground plane | – | Zorro II convention |
-| 92 | E7M | `Z_E7M` | 74LVC16244A | `ZB_E7M` | Route to a clock-capable FPGA pin |
-| 93 | DOE | `Z_DOE` | 74LVC16244A | `ZB_DOE` | Gates data-out |
-| 94 | /BUSRST | `Z_BUSRST_N` | 74LVC16244A | `ZB_BUSRST_N` | Resets AutoConfig logic |
-| 95 | /GBG | – | NC | – | |
-| 96 | (/EINT1) | – | NC | – | |
-| 97 | NC (Z2) | – | NC | – | /FCS on Z3 |
-| 98 | NC (Z2) | – | NC | – | /DS1 on Z3 |
-| 99 | GND | GND | Ground plane | – | |
-| 100 | GND | GND | Ground plane | – | |
+| Pin | Zorro II name | Net | Carrier path (from netlist) | FPGA-side net |
+|---|---|---|---|---|
+| 1 | GND | GND | ground plane | – |
+| 2 | GND | GND | ground plane | – |
+| 3 | GND | GND | ground plane | – |
+| 4 | GND | GND | ground plane | – |
+| 5 | +5V | – | **not connected** (no-connect flag) | – |
+| 6 | +5V | – | **not connected** (no-connect flag) | – |
+| 7 | /OWN | – | **not connected** (no-connect flag) | – |
+| 8 | -5V | – | **not connected** (no-connect flag) | – |
+| 9 | /SLAVEn | `Z_SLAVE_N` | R117 22R → U104.21 (B1) ↔ U104.3 (A1); test point TP102 | `ZF_SLAVE_N` |
+| 10 | +12V | – | **not connected** (no-connect flag) | – |
+| 11 | /CFGOUTn | `Z_CFGOUT_N` | R118 22R → U104.20 (B2) ↔ U104.4 (A2); test point TP109 | `ZF_CFGOUT_N` |
+| 12 | /CFGINn | `Z_CFGIN_N` | U102.29 (4A2) ↔ U102.20 (4Y2); test point TP108 | `ZB_CFGIN_N` |
+| 13 | GND | GND | ground plane | – |
+| 14 | /C3 | – | **not connected** (no-connect flag) | – |
+| 15 | CDAC | – | **not connected** (no-connect flag) | – |
+| 16 | /C1 | – | **not connected** (no-connect flag) | – |
+| 17 | /OVR | `Z_OVR_N` | R119 0R DNP (DNP) → U105.8 (4Y) ↔ U105.9 (4A) | `ZF_OVR_N` |
+| 18 | XRDY | `Z_XRDY` | U105.6 (3Y) ↔ U105.5 (3A) → `XRDY_G` → U107.6 (2Y) ↔ U107.4 (2A); test point TP111 | `ZF_XRDY` |
+| 19 | /INT2 | `Z_INT2_N` | U105.2 (1Y) ↔ U105.1 (1A) → `INT2_G_N` → U107.8 (3Y) ↔ U107.9 (3A); test point TP110 | `ZF_INT2_N` |
+| 20 | -12V | – | **not connected** (no-connect flag) | – |
+| 21 | A5 | `Z_A5` | U101.41 (2A1) ↔ U101.8 (2Y1) | `ZB_A5` |
+| 22 | /INT6 | `Z_INT6_N` | U105.4 (2Y) ↔ U105.3 (2A) → `INT6_G_N` → U107.11 (4Y) ↔ U107.12 (4A) | `ZF_INT6_N` |
+| 23 | A6 | `Z_A6` | U101.40 (2A2) ↔ U101.9 (2Y2) | `ZB_A6` |
+| 24 | A4 | `Z_A4` | U101.43 (1A4) ↔ U101.6 (1Y4) | `ZB_A4` |
+| 25 | GND | GND | ground plane | – |
+| 26 | A3 | `Z_A3` | U101.44 (1A3) ↔ U101.5 (1Y3) | `ZB_A3` |
+| 27 | A2 | `Z_A2` | U101.46 (1A2) ↔ U101.3 (1Y2) | `ZB_A2` |
+| 28 | A7 | `Z_A7` | U101.38 (2A3) ↔ U101.11 (2Y3) | `ZB_A7` |
+| 29 | A1 | `Z_A1` | U101.47 (1A1) ↔ U101.2 (1Y1) | `ZB_A1` |
+| 30 | A8 | `Z_A8` | U101.37 (2A4) ↔ U101.12 (2Y4) | `ZB_A8` |
+| 31 | FC0 | – | **not connected** (no-connect flag) | – |
+| 32 | A9 | `Z_A9` | U101.36 (3A1) ↔ U101.13 (3Y1) | `ZB_A9` |
+| 33 | FC1 | – | **not connected** (no-connect flag) | – |
+| 34 | A10 | `Z_A10` | U101.35 (3A2) ↔ U101.14 (3Y2) | `ZB_A10` |
+| 35 | FC2 | – | **not connected** (no-connect flag) | – |
+| 36 | A11 | `Z_A11` | U101.33 (3A3) ↔ U101.16 (3Y3) | `ZB_A11` |
+| 37 | GND | GND | ground plane | – |
+| 38 | A12 | `Z_A12` | U101.32 (3A4) ↔ U101.17 (3Y4) | `ZB_A12` |
+| 39 | A13 | `Z_A13` | U101.30 (4A1) ↔ U101.19 (4Y1) | `ZB_A13` |
+| 40 | /EINT7 | – | **not connected** (no-connect flag) | – |
+| 41 | A14 | `Z_A14` | U101.29 (4A2) ↔ U101.20 (4Y2) | `ZB_A14` |
+| 42 | /EINT5 | – | **not connected** (no-connect flag) | – |
+| 43 | A15 | `Z_A15` | U101.27 (4A3) ↔ U101.22 (4Y3) | `ZB_A15` |
+| 44 | /EINT4 | – | **not connected** (no-connect flag) | – |
+| 45 | A16 | `Z_A16` | U101.26 (4A4) ↔ U101.23 (4Y4) | `ZB_A16` |
+| 46 | /BERR | `Z_BERR_N` | U102.26 (4A4) ↔ U102.23 (4Y4); test point TP113 | `ZB_BERR_N` |
+| 47 | A17 | `Z_A17` | U102.47 (1A1) ↔ U102.2 (1Y1) | `ZB_A17` |
+| 48 | /VPA | – | **not connected** (no-connect flag) | – |
+| 49 | GND | GND | ground plane | – |
+| 50 | E | – | **not connected** (no-connect flag) | – |
+| 51 | /VMA | – | **not connected** (no-connect flag) | – |
+| 52 | A18 | `Z_A18` | U102.46 (1A2) ↔ U102.3 (1Y2) | `ZB_A18` |
+| 53 | /RST | – | **not connected** (no-connect flag) | – |
+| 54 | A19 | `Z_A19` | U102.44 (1A3) ↔ U102.5 (1Y3) | `ZB_A19` |
+| 55 | /HLT | – | **not connected** (no-connect flag) | – |
+| 56 | A20 | `Z_A20` | U102.43 (1A4) ↔ U102.6 (1Y4) | `ZB_A20` |
+| 57 | A22 | `Z_A22` | U102.40 (2A2) ↔ U102.9 (2Y2) | `ZB_A22` |
+| 58 | A21 | `Z_A21` | U102.41 (2A1) ↔ U102.8 (2Y1) | `ZB_A21` |
+| 59 | A23 | `Z_A23` | U102.38 (2A3) ↔ U102.11 (2Y3) | `ZB_A23` |
+| 60 | /BRn | – | **not connected** (no-connect flag) | – |
+| 61 | GND | GND | ground plane | – |
+| 62 | /BGACK | – | **not connected** (no-connect flag) | – |
+| 63 | D15 | `Z_D15` | RN104 4x22R → U103.23 (2B8) ↔ U103.26 (2A8) | `LD15` |
+| 64 | /BGn | – | **not connected** (no-connect flag) | – |
+| 65 | D14 | `Z_D14` | RN104 4x22R → U103.22 (2B7) ↔ U103.27 (2A7) | `LD14` |
+| 66 | /DTACK | `Z_DTACK_N` | R120 0R DNP (DNP) → U105.10 (5Y) ↔ U105.11 (5A) | `ZF_DTACK_N` |
+| 67 | D13 | `Z_D13` | RN104 4x22R → U103.20 (2B6) ↔ U103.29 (2A6) | `LD13` |
+| 68 | READ | `Z_READ` | U102.33 (3A3) ↔ U102.16 (3Y3); test point TP105 | `ZB_READ` |
+| 69 | D12 | `Z_D12` | RN104 4x22R → U103.19 (2B5) ↔ U103.30 (2A5) | `LD12` |
+| 70 | /LDS | `Z_LDS_N` | U102.35 (3A2) ↔ U102.14 (3Y2); test point TP107 | `ZB_LDS_N` |
+| 71 | D11 | `Z_D11` | RN103 4x22R → U103.17 (2B4) ↔ U103.32 (2A4) | `LD11` |
+| 72 | /UDS | `Z_UDS_N` | U102.36 (3A1) ↔ U102.13 (3Y1); test point TP106 | `ZB_UDS_N` |
+| 73 | GND | GND | ground plane | – |
+| 74 | /AS | `Z_AS_N` | U102.37 (2A4) ↔ U102.12 (2Y4); test point TP101 | `ZB_AS_N` |
+| 75 | D0 | `Z_D0` | RN101 4x22R → U103.2 (1B1) ↔ U103.47 (1A1) | `LD0` |
+| 76 | D10 | `Z_D10` | RN103 4x22R → U103.16 (2B3) ↔ U103.33 (2A3) | `LD10` |
+| 77 | D1 | `Z_D1` | RN101 4x22R → U103.3 (1B2) ↔ U103.46 (1A2) | `LD1` |
+| 78 | D9 | `Z_D9` | RN103 4x22R → U103.14 (2B2) ↔ U103.35 (2A2) | `LD9` |
+| 79 | D2 | `Z_D2` | RN101 4x22R → U103.5 (1B3) ↔ U103.44 (1A3) | `LD2` |
+| 80 | D8 | `Z_D8` | RN103 4x22R → U103.13 (2B1) ↔ U103.36 (2A1) | `LD8` |
+| 81 | D3 | `Z_D3` | RN101 4x22R → U103.6 (1B4) ↔ U103.43 (1A4) | `LD3` |
+| 82 | D7 | `Z_D7` | RN102 4x22R → U103.12 (1B8) ↔ U103.37 (1A8) | `LD7` |
+| 83 | D4 | `Z_D4` | RN102 4x22R → U103.8 (1B5) ↔ U103.41 (1A5) | `LD4` |
+| 84 | D6 | `Z_D6` | RN102 4x22R → U103.11 (1B7) ↔ U103.38 (1A7) | `LD6` |
+| 85 | GND | GND | ground plane | – |
+| 86 | D5 | `Z_D5` | RN102 4x22R → U103.9 (1B6) ↔ U103.40 (1A6) | `LD5` |
+| 87 | GND | GND | ground plane | – |
+| 88 | GND | GND | ground plane | – |
+| 89 | GND | GND | ground plane | – |
+| 90 | GND | GND | ground plane | – |
+| 91 | GND/SenseZ3 | GND | ground plane | – |
+| 92 | E7M | `Z_E7M` | U102.30 (4A1) ↔ U102.19 (4Y1); test point TP104 | `ZB_E7M` |
+| 93 | DOE | `Z_DOE` | U102.32 (3A4) ↔ U102.17 (3Y4); test point TP103 | `ZB_DOE` |
+| 94 | /BUSRST | `Z_BUSRST_N` | U102.27 (4A3) ↔ U102.22 (4Y3); test point TP112 | `ZB_BUSRST_N` |
+| 95 | /GBG | – | **not connected** (no-connect flag) | – |
+| 96 | /EINT1 | – | **not connected** (no-connect flag) | – |
+| 97 | NC | – | **not connected** (no-connect flag) | – |
+| 98 | NC | – | **not connected** (no-connect flag) | – |
+| 99 | GND | GND | ground plane | – |
+| 100 | GND | GND | ground plane | – |
 
-**Input buffer channel count.** 23 address + 4 strobes/READ + 4 (E7M, DOE, /CFGINn, /BUSRST) = 31, with CDAC as the 32nd. That fits 2× 74LVC16244A (32 channels) exactly.
+**Input buffer channels.** 23 address + /AS, /UDS, /LDS, READ + DOE, E7M, /CFGINn, /BUSRST + /BERR = 32. That uses all 32 channels of U101/U102. Rev B moved the last channel from CDAC (monitor only, R-29) to /BERR, which a card must monitor so that it can release its bus drivers [V S52].
+
+**Gated outputs (rev B).** XRDY, /INT2 and /INT6 reach U105 through U107, ORed with CARD_EN_N; /SLAVEn and /CFGOUTn pass U104, whose /OE is CARD_EN_N. When the card is not enabled, every Zorro-side driver is off and the slot behaves as an empty slot.
 
 ## 3. Radxa X4 40-pin header (via ribbon)
 
@@ -184,11 +189,15 @@ Header mapping: [V S1 sh.21], matches [V S5]. RP2040 alternate functions: [K S41
 
 ## 4. FPGA I/O budget (LCMXO2-2000HC-4TG144C, 111 I/O)
 
+Revision B recount (sheet 1 rev B). The Stage 1 count omitted `ZF_OVR_N` and `ZF_DTACK_N`, which are FPGA nets on sheet 1; they are included now.
+
 | Group | Pins |
 |---|---|
-| Zorro inputs (`ZB_*`) | 31 (+1 optional CDAC) |
-| Zorro outputs (`ZF_*`) | 5 |
-| Transceiver DIR, /OE | 2 |
+| Zorro inputs (`ZB_*`: 23 address, /AS, /UDS, /LDS, READ, DOE, E7M, /CFGINn, /BUSRST, /BERR) | 32 |
+| Zorro outputs (`ZF_SLAVE_N`, `ZF_CFGOUT_N`, `ZF_INT2_N`, `ZF_INT6_N`, `ZF_XRDY`) | 5 |
+| `ZF_OVR_N`, `ZF_DTACK_N` (outputs DNP-isolated in Rev 1) | 2 |
+| Transceiver `ZF_DBUF_DIR`, `ZF_DBUF_OE_N` | 2 |
+| Card enable: `ZF_ARM` (out), `EN_OK` (in), rev B | 2 |
 | `LD[15:0]` | 16 |
 | SRAM `SA[17:0]` + 5 control | 23 |
 | RP2040 link (`RP_*`) | 6 |
@@ -197,9 +206,11 @@ Header mapping: [V S1 sh.21], matches [V S5]. RP2040 alternate functions: [K S41
 | LEDs (5) + DIP (3) | 8 |
 | Clock in | 1 |
 | Debug/expansion header | 4 |
-| **Subtotal** | **102** (103 with CDAC) |
+| **Subtotal** | **107** |
 | PROGRAMN, INITN, DONE (kept) | 3 |
-| **Total** | **105–106 of 111** |
+| **Total** | **110 of 111** |
+
+**Concern C-14 (sheet 2).** One spare pin is too tight. Planned resolution, at no cost to Rev 1 function: do not route `ZF_OVR_N` and `ZF_DTACK_N` to the FPGA. R106/R107 already hold the U105 inputs high and R119/R120 (DNP) isolate the outputs, giving **108 of 111**. Alternative: LCMXO2-4000HC in the same package (I/O count TBV against the MachXO2 data sheet before relying on it).
 
 JTAG uses dedicated pins. Bank assignments (planned for sheet 2):
 - Zorro inputs and outputs grouped on banks nearest the edge connector;

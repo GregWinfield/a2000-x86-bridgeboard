@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: MIT
+# Formal verification of z2_core (properties F1-F16 in rtl/z2_core.v, `ifdef FORMAL).
+# Run from hdl/formal:  sby -f z2_core.sby
+#   prove : k-induction, unbounded proof of F1-F16 (synchronous form of F16)
+#   bmc   : bounded check from reset, adds the pin-level XRDY bound (FORMAL_BMC_ONLY)
+#   cover : reachability of configuration, a completed RMW cycle, a watchdog trip, a read drive
+# Inputs are unconstrained: the properties must hold for ANY input sequence.
+[tasks]
+prove
+bmc
+cover
+
+[options]
+prove: mode prove
+prove: depth 24
+bmc: mode bmc
+bmc: depth 48
+cover: mode cover
+cover: depth 96
+
+[engines]
+smtbmc yices
+
+[script]
+bmc: read -define FORMAL_BMC_ONLY
+read -formal z2_sync.v z2_asgate.v z2_decode.v z2_core.v
+chparam -set WDOG_LIMIT 8 z2_core
+prep -top z2_core
+
+[files]
+../rtl/z2_sync.v
+../rtl/z2_asgate.v
+../rtl/z2_decode.v
+../rtl/z2_core.v

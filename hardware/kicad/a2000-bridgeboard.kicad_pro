@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "filename": "a2000-bridgeboard.kicad_pro",
+    "version": 3
+  },
+  "schematic": {
+    "legacy_lib_dir": "",
+    "legacy_lib_list": []
+  },
+  "sheets": [
+    [
+      "d39b100b-95e7-5bd7-a013-57e2f39bf9ef",
+      "Root"
+    ],
+    [
+      "bbf301a1-7620-5067-8552-9ec8e0397bab",
+      "1 Zorro II interface & AutoConfig"
+    ],
+    [
+      "c35ea252-a5b6-5722-8220-996bce893d14",
+      "2 FPGA & configuration"
+    ],
+    [
+      "a235a479-9950-53fe-8be0-44518fb1e97a",
+      "3 Shared SRAM & arbitration"
+    ],
+    [
+      "af9050ec-e616-5aef-a7fc-e9ef6cacc591",
+      "4 x86 SBC interconnect (Radxa X4 in Rev 1)"
+    ],
+    [
+      "465a192b-ccaa-561a-b133-c22057d3346d",
+      "5 Power regulation & protection"
+    ],
+    [
+      "7bf3128f-d2c5-5dd0-a836-55b28c07890f",
+      "6 Interrupts, diagnostics & programming"
+    ]
+  ],
+  "text_variables": {
+    "LICENCE": "CERN-OHL-S-2.0"
+  }
+}
