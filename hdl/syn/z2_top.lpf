@@ -46,6 +46,17 @@ MAXDELAY FROM PORT "ZB_LDS_N"  TO PORT "ZF_DBUF_OE_N" 18.000000 ns ;
 # ---------------- /CFGOUTn follows /CFGINn (not timing critical)
 MAXDELAY FROM PORT "ZB_CFGIN_N" TO PORT "ZF_CFGOUT_N" 25.000000 ns ;
 
+# ---------------- sheet 3: SRAM U301 address/control and the local data bus (registered outputs).
+# CLOCK_TO_OUT reports the clock-to-output delays used by docs/stage2/sheet3-timing-budget.md; MIN 0 ns
+# makes TRACE report the fastest value (skew between pins). Allocations (that document, section 3):
+#   SRAM_OUT 12 ns: keeps every SRAM AC limit with at least one clock of margin.
+#   LD_OUT   16 ns: Zorro register-read data reach the slot (U103 A->B) before XRDY can be released.
+#            The host-write data limit (tSD before /WE rises two clocks later) is about 35 ns.
+DEFINE PORT GROUP "SRAM_OUT" "SA[0]" "SA[1]" "SA[2]" "SA[3]" "SA[4]" "SA[5]" "SA[6]" "SA[7]" "SA[8]" "SA[9]" "SA[10]" "SA[11]" "SA[12]" "SA[13]" "SA[14]" "SA[15]" "SA[16]" "SA[17]" "SRAM_CE_N" "SRAM_OE_N" "SRAM_WE_N" "SRAM_UB_N" "SRAM_LB_N" ;
+CLOCK_TO_OUT GROUP "SRAM_OUT" MAX 12.000000 ns MIN 0.000000 ns CLKPORT "clk_core" ;
+DEFINE PORT GROUP "LD_OUT" "LD[0]" "LD[1]" "LD[2]" "LD[3]" "LD[4]" "LD[5]" "LD[6]" "LD[7]" "LD[8]" "LD[9]" "LD[10]" "LD[11]" "LD[12]" "LD[13]" "LD[14]" "LD[15]" ;
+CLOCK_TO_OUT GROUP "LD_OUT" MAX 16.000000 ns MIN 0.000000 ns CLKPORT "clk_core" ;
+
 # ---------------- output loading for timing (Diamond default is 0 pF). Each FPGA output drives one
 # LVC input: SN74LVC8T245 A port Cio 8.5 pF typ (S53), SN74LVC32A Ci 5 pF (S55), LVCH16T245 DIR
 # 4-5 pF x 2 (S46), plus trace and test pad. 15 pF is a conservative bound for all of them.

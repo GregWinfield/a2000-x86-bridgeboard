@@ -32,3 +32,5 @@ Thumbs.db
 # Python
 __pycache__/
 .venv/
+hdl/formal/fv_shm/
+hdl/formal/fv_shm_*/
