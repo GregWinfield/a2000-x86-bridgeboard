@@ -1,6 +1,6 @@
 # Pin-assignment matrix
 
-**Status:** maintained document. Revision D, 2026-11-19. Section 2 reflects sheet 1 rev B as built; section 4 is corrected by the sheet-3 reassessment; section 3 is still a plan.
+**Status:** maintained document. Revision E, 2026-11-19. Section 2 reflects sheet 1 rev B as built. Section 4 holds the owner's C-17 plan (102 signals), verified by a Diamond fit; the physical pin assignment follows on sheet 2. Section 3 is still a plan.
 - FPGA *package* pin numbers are assigned on KiCad sheet 2.
 - Connector pin numbers below are verified [V].
 - Carrier connections are proposals pending review.
@@ -182,6 +182,10 @@ Header mapping: [V S1 sh.21], matches [V S5]. RP2040 alternate functions: [K S41
 | 39 | GND | GND | GND | – |
 | 40 | GP25 | Reserved | – | – |
 
+Not on the header: GP0/GP1 go to the N100's UART1 (R314/R315 0 Ω); GP23 also has an unfitted 0 Ω (R316, NC) to an N100 GPIO [V S1 sheet 21].
+
+**Option C-17b (owner decision pending).** LEDs on **GP16–GP19** (header pins 27, 28, 26, 32) through a fourth SN74AVC4T774, all channels B→A. See [stage2/sheet3-design-notes.md](stage2/sheet3-design-notes.md) §8.2.
+
 **Translator allocation** (3× SN74AVC4T774: A side = `+3V3`, B side = `X4_3V3_REF`):
 - **U_a:** SCK, CS_N, MOSI (B→A) and MISO (A→B).
 - **U_b:** IRQ_N and ATTN (A→B), plus 2 spare.
@@ -205,17 +209,24 @@ Revision C table (sheet 1 rev B). The Stage 1 count omitted `ZF_OVR_N` and `ZF_D
 | RP2040 link (`RP_*`) | 6 |
 | X4 power/status | 3 |
 | I²C telemetry | 3 |
-| LEDs (5) + DIP (3) | 8 |
+| LEDs (5) + DIP (3) | 8 (rev E: 2 LEDs + 3 DIP = 5) |
 | Clock in | 1 |
 | Debug/expansion header | 4 |
 | **Subtotal** | **107** |
 | PROGRAMN, INITN, DONE (kept) | 3 |
 | **Total** | **110**, plus **4 JTAG = 114 of 111: does not fit** (rev D) |
-| **Recommended (rev D):** drop ZF_OVR_N, ZF_DTACK_N; PROGRAMN/INITN/DONE used as I/O for tolerant signals | **105 + 4 JTAG = 109 of 111 (2 spare)**; Diamond fit test `fit_top` places 105 + 4 of 112 |
+| **Rev E plan (owner decision C-17, 2026-11-19):** ZF_OVR_N, ZF_DTACK_N not routed; **2 LEDs**; PROGRAMN, INITN, DONE kept as configuration pins; JTAG kept | **102 signals; 111 − 4 JTAG − 3 configuration = 104 available; 2 spare.** Diamond fit test `fit_top`: 102 + 4 JTAG of 112 placed, 0 timing errors (JTAGENB and SN prohibited, so a conservative 103 available) |
+| Option C-17b: 4 LEDs on RP2040 GPIO, 1 FPGA READY LED | 101 signals, 3 spare (owner decision C-26) |
 
 **Concern C-14 (sheet 2).** One spare pin is too tight. Planned resolution, at no cost to Rev 1 function: do not route `ZF_OVR_N` and `ZF_DTACK_N` to the FPGA. R106/R107 already hold the U105 inputs high and R119/R120 (DNP) isolate the outputs, giving **108 of 111**. Alternative: LCMXO2-4000HC in the same package (I/O count TBV against the MachXO2 data sheet before relying on it).
 
-JTAG uses four of the general-purpose pins while the JTAG port is enabled (rev D). Dual-function configuration pins (PROGRAMN, INITN, DONE, JTAGENB, MCLK, SN, SI, SO, CSSPIN) need deliberate assignment (C-18). Bank assignments (planned for sheet 2):
+JTAG uses four of the general-purpose pins while the JTAG port is enabled. Pin rules for sheet 2 (sheet-3 notes §8.1):
+- PROGRAMN, INITN and DONE: configuration only.
+- JTAGENB: no signal (C-19).
+- **SN: never an externally driven input**, because it must not be low while the device is erased.
+- `clk_core` on a PCLK pin.
+
+Bank assignments (planned for sheet 2):
 - Zorro inputs and outputs grouped on banks nearest the edge connector;
 - `LD` and `SA` on the banks facing the SRAM;
 - RP2040 and JTAG signals towards the X4 connector.

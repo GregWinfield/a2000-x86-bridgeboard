@@ -50,9 +50,9 @@ module card_model #(
         .y({ZB_AS_N, ZB_UDS_N, ZB_LDS_N, ZB_READ, ZB_DOE, ZB_E7M, ZB_CFGIN_N, ZB_BUSRST_N, ZB_BERR_N}));
 
     // ---------------- FPGA
-    wire ZF_SLAVE_N_i, ZF_CFGOUT_N_i, ZF_INT2_N_i, ZF_INT6_N_i, ZF_XRDY_i, ZF_OVR_N_i, ZF_DTACK_N_i;
+    wire ZF_SLAVE_N_i, ZF_CFGOUT_N_i, ZF_INT2_N_i, ZF_INT6_N_i, ZF_XRDY_i;
     wire ZF_DBUF_DIR_i, ZF_DBUF_OE_N_i, ZF_ARM_i;
-    wire [3:0] led;
+    wire [1:0] led;
     wire [15:0] LD;
     m_bushold #(.W(16)) u_ld_hold (.bus(LD));   // U103 A-port bus-hold keeps the last level
     wire EN_OK;
@@ -63,7 +63,7 @@ module card_model #(
         .ZB_DOE(ZB_DOE), .ZB_E7M(ZB_E7M), .ZB_CFGIN_N(ZB_CFGIN_N), .ZB_BUSRST_N(ZB_BUSRST_N),
         .ZB_BERR_N(ZB_BERR_N), .EN_OK(EN_OK), .ZF_ARM(ZF_ARM_i),
         .ZF_SLAVE_N(ZF_SLAVE_N_i), .ZF_CFGOUT_N(ZF_CFGOUT_N_i), .ZF_INT2_N(ZF_INT2_N_i), .ZF_INT6_N(ZF_INT6_N_i),
-        .ZF_XRDY(ZF_XRDY_i), .ZF_OVR_N(ZF_OVR_N_i), .ZF_DTACK_N(ZF_DTACK_N_i),
+        .ZF_XRDY(ZF_XRDY_i),
         .ZF_DBUF_DIR(ZF_DBUF_DIR_i), .ZF_DBUF_OE_N(ZF_DBUF_OE_N_i),
         .LD(LD),
         .SA(SA_i), .SRAM_CE_N(SRAM_CE_N_i), .SRAM_OE_N(SRAM_OE_N_i), .SRAM_WE_N(SRAM_WE_N_i),

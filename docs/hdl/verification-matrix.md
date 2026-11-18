@@ -87,3 +87,11 @@ Evidence executed on 2026-11-19 ([verification-results.md](verification-results.
 | Safe state while the FPGA is blank or reloading | tb_shm S8 (deselected, /WE high, contents kept); card model pin-float timing | /CE, /WE high; no LD drive; data kept | **Pass** (model); hardware M-9/M-11 open |
 | FPGA pin availability | Diamond fit tests `fit_top`, `fit_top_rc`; pad check | Places with JTAG enabled, all banks 3.3 V, 0 timing errors | **Pass** (count); bank-level assignment and C-18 open (sheet 2) |
 | Schematic connectivity | `audit_sheet3.py` (120 checks), ERC | 0 failures; only documented ERC entries | **Pass** |
+
+### Sheet 3 revision A1 additions (owner review, 2026-11-19)
+
+| Requirement | Evidence | Pass criterion | Status |
+|---|---|---|---|
+| C-17 plan: 102 signals with JTAG and PROGRAMN/INITN/DONE kept | Diamond `fit_top` with SYSCONFIG SDM_PORT and JTAGENB/SN prohibited | Places; 0 timing errors; pad check | **Pass** (102 + 4 JTAG of 112) |
+| Canonical byte order (hardware lanes) | tb_shm S12, vectors V1–V4, V6 | Every view as in the byte-order spec | **Pass** |
+| Two-LED interface, READY blink code | tb_z2 T3 (CONTROL b5..b4, LED test) | Register and pins as specified | **Pass** |

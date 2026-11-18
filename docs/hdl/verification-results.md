@@ -130,3 +130,11 @@ Pad check (every port LVCMOS33, every used bank at 3.3 V): pass in every run.
 | 13 | Constraint | LD clock-to-out 12.05 ns against a 12 ns allocation chosen without derivation | Allocation, not a requirement | Allocation derived: 16 ns (sheet-3 timing budget §3) |
 
 Earlier finding (Stage 2, same day): the exploratory STA had analysed most ports as LVCMOS25. That is corrected in the STA record, and `run_diamond.sh` now fails on any non-LVCMOS33 port.
+
+### 5.5 Revision A1 (owner decisions), 2026-11-19
+
+| Change | Check | Result |
+|---|---|---|
+| z2_top: ZF_OVR_N/ZF_DTACK_N removed; LED[1:0] (READY blink code, FAULT); CONTROL LED test b5..b4 | Full `run_checks.sh` | **ALL HDL CHECKS PASSED** (tb_z2 5 554 checks per run; tb_shm 127 per run) |
+| tb_shm S12: canonical byte order through both ports | 4 seeds + 2 corners | 0 failures |
+| LPF: `SYSCONFIG SDM_PORT=PROGRAMN_DONE_INITN JTAG_PORT=ENABLE`; `PROHIBIT SITE "120"` (JTAGENB), `"70"` (SN) | Diamond z2_top −4 C / −4 I; `fit_top` (102 signals) −4 C | 0 / 0 / 0 errors; worst Zorro path 13.71 / 14.94 / 15.14 ns; 50 MHz slack 4.76 / 4.11 / 3.66 ns; configuration pins "Reserved: sysCONFIG"; 102 + 4 JTAG of 112 sites |

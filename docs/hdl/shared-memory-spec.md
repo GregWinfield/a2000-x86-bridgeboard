@@ -1,6 +1,6 @@
 # HDL specification: shared SRAM, arbitration, queues and interrupts (Stage 3, sheet 3)
 
-**Status:** revision A, 2026-11-19.
+**Status:** revision A1, 2026-11-19 (owner decisions: C-21 approved; byte order defined in [byte-order-spec.md](byte-order-spec.md)).
 - RTL: [z2_lbus.v](../../hdl/rtl/z2_lbus.v), [z2_mbx.v](../../hdl/rtl/z2_mbx.v), the SRAM target in [z2_core.v](../../hdl/rtl/z2_core.v), [z2_top.v](../../hdl/rtl/z2_top.v), and the host-port stub [z2_hostif_stub.v](../../hdl/rtl/z2_hostif_stub.v). Licence MIT (D-13).
 - Verification: `hdl/run_checks.sh` passes ([verification-results.md](verification-results.md) §5).
 - Companion documents: [zorro-interface-spec.md](zorro-interface-spec.md) (Zorro side, revision C); board: [../stage2/sheet3-design-notes.md](../stage2/sheet3-design-notes.md).
@@ -14,7 +14,8 @@
 
 - No side ever needs a lock to access memory. Memory access is always granted within a bounded time (§3.5).
 - The queue protocol stops both sides working on the same slot (§4.2). The arbiter never makes a protocol decision.
-- **Not included:** the hardware semaphores outlined in the architecture review §7.4. Single-producer, single-consumer queues with single-writer indices need no locks, and semaphores would add a third coordination mechanism. They can be added if a shared multi-writer structure appears (concern C-21).
+- **No hardware semaphores** (C-21, approved by the owner 2026-11-19). The two single-producer, single-consumer queues with single-writer indices need no locks. Single-writer enforcement, the ownership rules, epoch tracking and level interrupts are retained.
+- **Multiple producers on one processor** must be serialised in software. Examples are several Amiga tasks posting to Q0, or several PC threads posting to Q1. They may use a mutex, or a single owning task that posts on their behalf. The hardware sees exactly one writer per index.
 
 ## 2. Blocks and interfaces
 
@@ -153,6 +154,15 @@ Zorro-side registers outside the queue block: **$0020 BANK** (Zorro, reset by /B
 - "Work" is a queue that is not empty, so draining the queue removes the request. There is nothing to acknowledge, and a notification cannot be lost between a check and a clear.
 - "Space" is level-sensitive too: a producer enables it only while blocked, and it fires at once if space already exists.
 
+### 4.5 Byte order
+
+Normative in [byte-order-spec.md](byte-order-spec.md):
+- shared memory is a byte array, and multi-byte values are big-endian;
+- byte 2n is the upper lane (D15–D8, /UDS, `h_be[1]`);
+- the SPI link sends MSB first, in ascending addresses.
+
+tb_shm S12 checks the lanes.
+
 ## 5. Formal properties (hdl/formal/fv_shm.v, every input free)
 
 | ID | Property |
@@ -172,7 +182,7 @@ Zorro-side registers outside the queue block: **$0020 BANK** (Zorro, reset by /B
 
 | Item | Where |
 |---|---|
-| SPI slave, clock-domain crossing, protocol framing and CRC; ATTN use | Sheet 4 (host link) |
+| SPI slave, clock-domain crossing, protocol framing and CRC; ATTN use | Sheet 4 (host link). Required verification (owner, 2026-11-19), all on the **real** SPI slave RTL, not a model:<br>**HL-1** SPI protocol and byte order at the pins (an SPI master model with RP2040 PL022 timing at the chosen SCK, modes, CS framing; vectors V1 and V5).<br>**HL-2** Clock-domain crossing: a structured synchroniser or handshake, proven by formal or a CDC check, plus random clock-ratio simulation.<br>**HL-3** Host-request buffering sized for the H-4 latency (≥ one Zorro cycle, bounded by the watchdog) at the maximum SCK, with overflow impossible or reported (ATTN).<br>**HL-4** Ordering: transactions executed in order, a write completes before a later index or doorbell write (G4), no reordering across the CDC.<br>**HL-5** tb_z2 and tb_shm re-run through the real SPI slave.<br>**HL-6** Stress: continuous SPI traffic during Amiga copy loops (M-13 in simulation) |
 | G-STA of the host read capture path (LD → FPGA): the host path is absent from synthesis until the SPI slave exists (stub) | Sheet 4; timing budget §2.3 (≈ 19 ns margin estimated) |
 | 50 MHz register-path slack 2.7 ns worst (START decision: decode comparator → `hold_q`); watch as logic grows | Concern C-23 |
 | Zero-wait mode for SRAM cycles: passes in the model, unproven on hardware | G-ZEROWAIT |

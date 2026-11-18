@@ -52,7 +52,7 @@ module z2_core #(
     output wire        zf_dbuf_dir,
     output wire        zf_dbuf_oe_n,
     output wire        zf_arm,
-    output wire [3:0]  led,
+    output wire [1:0]  led,          // {FAULT, READY} (C-17: two FPGA LEDs)
     // Stage 3: local-bus arbiter (z2_lbus). zq_* are requests; z2_lbus puts them on the pins.
     output reg  [17:0] zq_addr,
     output reg         zq_ce, zq_oe, zq_we, zq_ub, zq_lb,
@@ -99,7 +99,7 @@ module z2_core #(
     reg  [7:0]  wd_cnt;
     reg         wd_trip, wd_flag;
     reg         zero_wait, irq_en, int_sel, irq_pend;
-    reg  [3:0]  led_r;
+    reg  [1:0]  led_r;                // CONTROL b5..b4: LED test
     reg  [15:0] scratch0, scratch1, zcycles, waitstats, wdog_events, rmw_cycles, berr_events, ticks;
     reg  [9:0]  tick_pre;
     reg         berr_s_d;
@@ -118,7 +118,7 @@ module z2_core #(
         dir_q = 1'b0; dir_req = 1'b0; oe_rd_q = 1'b0; oe_wr_q = 1'b0; hold_q = 1'b1; ld_oe = 1'b0; ld_dout = 16'h0000;
         oe_idle_cnt = 3'd0; dir_cnt = 3'd0; wr_cnt = 3'd0; wd_cnt = 8'd0; wd_trip = 1'b0; wd_flag = 1'b0;
         // (guard counters start at the GSR value 0 and saturate during the 15-clock por)
-        zero_wait = 1'b0; irq_en = 1'b0; int_sel = 1'b0; irq_pend = 1'b0; led_r = 4'd0;
+        zero_wait = 1'b0; irq_en = 1'b0; int_sel = 1'b0; irq_pend = 1'b0; led_r = 2'd0;
         scratch0 = 16'h0000; scratch1 = 16'h0000; zcycles = 16'h0000; waitstats = 16'h0000;
         wdog_events = 16'h0000; rmw_cycles = 16'h0000; berr_events = 16'h0000; ticks = 16'h0000;
         tick_pre = 10'd0; berr_s_d = 1'b0; brst_cnt = 2'd0; busrst_q = 1'b0; mode_b_l = 1'b0; armed = 1'b0;
@@ -166,7 +166,13 @@ module z2_core #(
     // pull-down passes the chain (empty-slot behaviour).
     assign zf_cfgout_n = zb_cfgin_n | ~(configured | shutup);
     assign zf_arm      = armed;
-    assign led         = led_r | {wd_flag, irq_en & (irq_pend | z_irq), configured, armed};
+    // READY (LED0) alone shows the card state, so it suffices for standalone diagnostics:
+    //   off = not armed (also FPGA blank: pin Hi-Z); slow blink = armed, waiting for AutoConfig;
+    //   steady = configured; fast blink = watchdog flag set (fault).
+    // FAULT (LED1): watchdog flag, or an interrupt asserted towards the Amiga.
+    wire led_ready = wd_flag ? ticks[11] : configured ? 1'b1 : armed ? ticks[14] : 1'b0;
+    wire led_fault = wd_flag | (irq_en & (irq_pend | z_irq));
+    assign led         = led_r | {led_fault, led_ready};
     assign zrst_o       = zrst;
     assign busrst_o     = busrst_q;
     assign configured_o = configured;
@@ -207,7 +213,7 @@ module z2_core #(
     wire [17:0] sram_wa   = mode_b_l ? addr_q[18:1] : (addr_q[15] ? {bank, addr_q[14:1]} : {4'd0, addr_q[14:1]});
     wire [15:0] status_w  = {5'd0, armed, en_ok_s, wd_flag, 1'b0, dip_disable, dip_int6, dip_mode_b,
                              1'b0, zero_wait, int_sel, mode_b_l};
-    wire [15:0] control_w = {8'd0, led_r, 1'b0, int_sel, irq_en, zero_wait};
+    wire [15:0] control_w = {8'd0, 2'b00, led_r, 1'b0, int_sel, irq_en, zero_wait};
 
     always @* begin
         case (ridx)
@@ -301,7 +307,7 @@ module z2_core #(
             oe_rd_q <= 1'b0; oe_wr_q <= 1'b0; ld_oe <= 1'b0; dir_req <= 1'b0;
             zq_ce <= 1'b0; zq_oe <= 1'b0; zq_we <= 1'b0; zq_ub <= 1'b0; zq_lb <= 1'b0; bank <= 4'd0; res_cnt <= 3'd0;
             hold_q <= 1'b1;
-            zero_wait <= 1'b0; irq_en <= 1'b0; int_sel <= dip_int6; irq_pend <= 1'b0; led_r <= 4'd0;
+            zero_wait <= 1'b0; irq_en <= 1'b0; int_sel <= dip_int6; irq_pend <= 1'b0; led_r <= 2'd0;
             wd_cnt <= 8'd0; wd_trip <= 1'b0;
             zcycles <= 16'd0; waitstats <= 16'd0; rmw_cycles <= 16'd0;
         end else begin
@@ -495,7 +501,7 @@ module z2_core #(
                                             zero_wait <= ld_in[0];
                                             irq_en    <= ld_in[1];
                                             int_sel   <= ld_in[2];
-                                            led_r     <= ld_in[7:4];
+                                            led_r     <= ld_in[5:4];
                                         end
                                         if (lane_hi && ld_in[8]) wd_flag <= 1'b0;   // W1C
                                     end

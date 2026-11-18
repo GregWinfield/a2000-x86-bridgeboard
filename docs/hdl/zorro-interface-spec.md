@@ -50,13 +50,13 @@
 | `ZF_ARM` | out | ZF_ARM | **New:** 1 = join the bus. R122 pull-down |
 | `ZF_SLAVE_N`, `ZF_XRDY`, `ZF_DBUF_OE_N` | out | same | Combinational (§5). LVCMOS33, 8 mA, FAST |
 | `ZF_DBUF_DIR`, `ZF_CFGOUT_N`, `ZF_INT2_N`, `ZF_INT6_N` | out | same | Registered, except `ZF_CFGOUT_N` (combinational from /CFGINn) |
-| `ZF_OVR_N`, `ZF_DTACK_N` | out | same | Constant 1 in Rev 1. May be left unrouted at sheet 2 (C-14) |
+| (`ZF_OVR_N`, `ZF_DTACK_N`) | – | sheet 1 only | **Not routed to the FPGA** (C-17, 2026-11-19); held inactive by R106/R107 on sheet 1 |
 | `LD[15:0]` | inout | LD0–LD15 | No FPGA pull or keeper (U103 bus-hold). Shared with U301 (sheet 3) |
 | `SA[17:0]`, `SRAM_CE_N`, `SRAM_OE_N`, `SRAM_WE_N`, `SRAM_UB_N`, `SRAM_LB_N` | out | sheet 3 | U301 address and control, each straight from one flip-flop |
 | `RP_IRQ_N` | out | sheet 4 | Host-side interrupt (z2_mbx), registered, active low |
 | `clk_core` | in | (sheet 2) | 50 MHz [A] |
 | `DIP_MODE_B`, `DIP_INT6`, `DIP_DISABLE` | in | (sheet 6) | Sampled during /BUSRST and at power-on |
-| `LED[3:0]` | out | (sheet 6) | armed, configured, interrupt, watchdog flag (ORed with CONTROL test bits) |
+| `LED[1:0]` | out | (sheet 2/6) | LED0 READY: off = not armed, slow blink = armed and unconfigured, steady = configured, fast blink = watchdog flag. LED1 FAULT: watchdog flag or an interrupt asserted. Each ORed with a CONTROL test bit |
 
 ## 4. Clocking, reset and arming
 
@@ -117,7 +117,7 @@ care_lo  = ~(configured & mode_b)               // mode B compares A23..A19 only
 3. **When the card may drive LD from Zorro.** Only with `dir_q = 0`, `oe_wr_q` and READ low.
 4. **Read and write terms are mutually exclusive** through the registered `dir_q`. A READ transition inside a cycle can only remove an enable.
 5. **XRDY** is held only for a selected cycle, never during /BERR, and never longer than the watchdog bound (§7.5).
-6. `ZF_OVR_N` and `ZF_DTACK_N` are constant 1 (automatic motherboard DTACK).
+6. /OVR and /DTACK are not driven by the card (automatic motherboard DTACK); they are not FPGA pins (C-17).
 
 ## 6. Timing constraints
 
@@ -228,7 +228,7 @@ $48 alone also configures. A /BERR during the configuring write cancels it.
 | $0000 | MAGIC | R | $4252 | "BR" |
 | $0002 | VERSION | R | $0A02 | [15:8] hardware revision, [7:0] HDL version (02 = Stage 3) |
 | $0004 | STATUS | R | – | b0 mode B; b1 INT_SEL; b2 zero-wait; b4 DIP mode B; b5 DIP INT6; b6 DIP disable; b8 watchdog tripped (sticky); **b9 EN_OK; b10 armed** |
-| $0006 | CONTROL | R/W | $0000 (b2 from DIP) | b0 ZERO_WAIT_EN (gate G-ZEROWAIT); b1 IRQ_EN; b2 INT_SEL; b7..4 LED test; b8 write 1 clears the watchdog flag (high byte) |
+| $0006 | CONTROL | R/W | $0000 (b2 from DIP) | b0 ZERO_WAIT_EN (gate G-ZEROWAIT); b1 IRQ_EN; b2 INT_SEL; b5..4 LED test (FAULT, READY); b8 write 1 clears the watchdog flag (high byte) |
 | $0008 / $000A | SCRATCH0 / 1 | R/W | $0000 at power-on | Byte lanes honoured; survive /BUSRST; TAS target for RMW tests |
 | $000C | ZCYCLES | R | 0 | Board-window cycles |
 | $000E | TICKS | R | 0 | clk/1024 |

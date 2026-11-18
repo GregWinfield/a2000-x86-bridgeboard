@@ -29,8 +29,6 @@ module z2_top (
     output wire        ZF_INT2_N,
     output wire        ZF_INT6_N,
     output wire        ZF_XRDY,
-    output wire        ZF_OVR_N,
-    output wire        ZF_DTACK_N,
     output wire        ZF_DBUF_DIR,
     output wire        ZF_DBUF_OE_N,
     // local data bus: U103 A port (sheet 1) and SRAM U301 data (sheet 3)
@@ -48,16 +46,15 @@ module z2_top (
     input  wire        DIP_MODE_B,
     input  wire        DIP_INT6,
     input  wire        DIP_DISABLE,
-    output wire [3:0]  LED
+    output wire [1:0]  LED            // {FAULT, READY} (C-17)
 );
     // power-on reset: 15 clocks after configuration (GSR has already set the INIT values)
     reg [3:0] por_cnt = 4'd0;
     always @(posedge clk_core) if (por_cnt != 4'hF) por_cnt <= por_cnt + 4'd1;
     wire por = (por_cnt != 4'hF);
 
-    // Rev 1 uses the automatic motherboard DTACK: own /OVR and /DTACK stay inactive.
-    assign ZF_OVR_N   = 1'b1;
-    assign ZF_DTACK_N = 1'b1;
+    // Rev 1 uses the automatic motherboard DTACK. ZF_OVR_N / ZF_DTACK_N are not routed to the
+    // FPGA (C-17): on sheet 1, R106/R107 hold the U105 inputs high and R119/R120 (DNP) isolate them.
 
     // ---------------- local data bus: at most one FPGA driver (formal X2)
     wire [15:0] ld_dout, h_ld_dout;

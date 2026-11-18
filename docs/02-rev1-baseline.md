@@ -56,7 +56,7 @@ All recommended decisions D-01 to D-17 from the review §11.1 are adopted. Where
 | Gate | Before | Condition |
 |---|---|---|
 | G-SHEET1 | Starting sheet 3 (SRAM) | Owner review of sheet 1 **revision B** and its open concerns ([stage2/sheet1-design-notes.md](stage2/sheet1-design-notes.md) §9). **Approved 2026-11-19 for design progression**, pending final hardware verification (change log) |
-| G-SHEET3 | Drawing sheet 2 (FPGA pinout) and sheet 4 (host link) | Owner review of sheet 3 **revision A** and decision on the FPGA I/O plan C-17 ([stage2/sheet3-design-notes.md](stage2/sheet3-design-notes.md) §10) |
+| G-SHEET3 | Drawing sheet 2 (FPGA pinout) and sheet 4 (host link) | Owner review of sheet 3 and decision on the FPGA I/O plan C-17. **Approved 2026-11-19 for design progression**, conditional on the decisions being incorporated and verified: done in revision A1 ([stage2/sheet3-design-notes.md](stage2/sheet3-design-notes.md) §13). Not a PCB-manufacture approval |
 | G-SIM | Freezing sheet 2 (FPGA pinout); any hardware bring-up | `bash hdl/run_checks.sh` reports `ALL HDL CHECKS PASSED`: lint, bus-functional and chain testbenches (random seeds and delay corners), netlist structure check, gate-level hazard test E1, formal prove/bmc/cover ([hdl/verification-matrix.md](hdl/verification-matrix.md)) |
 | G-STA | Freezing the FPGA choice and pinout | Lattice Diamond post-place-and-route analysis at the chosen pins, −4 grade (or the grade bought): every MAXDELAY path ≤ 18 ns at the slow corner (VCCIO min, TJ max), **both edges**, 10 pF load; minimum delays recorded and the hazard setup requirement S_req ≤ (M-7 slot setup − 3 ns) ([stage2/sheet1-timing-budget.md](stage2/sheet1-timing-budget.md) §9) |
 | G-PSU (ER-5) | Installing any powered prototype in an A2000 | PSU measurement record completed and reviewed |
@@ -76,3 +76,21 @@ All recommended decisions D-01 to D-17 from the review §11.1 are adopted. Where
 | 2026-11-19 | **G-SHEET1 approved for design progression** (owner): sheet 1 revision B is the current engineering baseline. This does not constitute final electrical validation, PCB manufacturing approval or closure of the hardware gates. Open requirements: (1) final FPGA pin assignment and post-place-and-route STA including the complete /SLAVEn path; (2) MachXO2 pin budget, I/O bank compatibility and voltage; (3) physical Zorro II timing, including stock 68000 and PiStorm/Emu68 where practical; (4) AutoConfig, power-off isolation, XRDY, DOE and RMW on hardware; (5) A2000 PSU capacity. Tracked in [stage2/sheet3-design-notes.md](stage2/sheet3-design-notes.md) §11 and the risk register |
 | 2026-11-19 | **Sheet 3 revision A** (shared SRAM and arbitration): U301 IS61WV25616EDBLL-10TLI on LD[15:0] (D-04 retained), R301/R302 safe-state pull-ups, decoupling, test points. HDL: `z2_lbus` (arbiter: who may access the memory; Zorro priority; reservation floor makes Zorro timing independent of host traffic, formal X4), `z2_mbx` (queues and level interrupts: who has work to do; single-writer indices with epoch). Hardware semaphores of the review §7.4 not implemented (C-21). `run_checks.sh`: ALL HDL CHECKS PASSED. New gate G-SHEET3. Carrier BOM estimate AUD 77.67–207.48 (was 77.52–206.98) |
 | 2026-11-19 | **Pin budget correction** (sheet-3 reassessment): the four JTAG pins are among the 111 general-purpose I/O (datasheet Table 4.4), not dedicated; pin matrix rev C needed 114 of 111. Recommended plan (105 of 107) and the 107-signal variant both place in Diamond. Decision C-17 is the owner's |
+| 2026-11-19 | **Owner review of sheet 3 rev A.**
+- **PR #3** (STA I/O-standard correction) approved and merged.
+- **C-17 revised:**
+  - retain the LCMXO2-2000HC provisionally;
+  - remove ZF_OVR_N/ZF_DTACK_N from the FPGA;
+  - two LEDs;
+  - keep PROGRAMN/INITN/DONE as configuration pins and keep JTAG;
+  - 102 signals, 104 available, 2 spare;
+  - LCMXO2-4000HC fallback if complete timing or fitting fails;
+  - do not rely on 112 sites until C-19 is resolved.
+- **C-21 approved:** no hardware semaphores; multiple producers on one processor are serialised in software.
+- **New requirements:**
+  - canonical byte order and cross-endian test patterns (done: [hdl/byte-order-spec.md](hdl/byte-order-spec.md));
+  - sheet 4 verifies the real SPI slave, CDC, buffering and ordering;
+  - continue tracking the 50 MHz margin and PiStorm/Emu68;
+  - preserve all hardware gates.
+- **C-17b:** four LEDs on RP2040 GPIO investigated (sheet-3 notes §8.2; owner decision C-26).
+- **G-SHEET3 approved for design progression** once incorporated (sheet 3 rev A1). Not a PCB-manufacture approval |

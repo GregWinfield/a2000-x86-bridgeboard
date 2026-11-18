@@ -6,6 +6,15 @@
 # Pin LOCATEs are assigned with sheet 2; until then Diamond places the I/O (exploration only).
 # Syntax follows the Lattice Diamond preference reference [K]; check it on the first Diamond run.
 
+# Configuration pins (C-17, owner 2026-11-19): PROGRAMN, INITN and DONE stay dedicated configuration pins;
+# the JTAG port stays enabled. JTAGENB (pin 120) is not used for any signal (C-19: the datasheet counts one
+# bank-0 pad as reserved for configuration; it is most likely JTAGENB). SN (pin 70) must not be driven low
+# while the device is erased (Hardware Checklist FPGA-TN-02154 section 6), so no externally driven input goes
+# there; the fit test prohibits it entirely (sheet 2 may place an FPGA output on it).
+SYSCONFIG SDM_PORT=PROGRAMN_DONE_INITN JTAG_PORT=ENABLE ;
+PROHIBIT SITE "120" ;
+PROHIBIT SITE "70" ;
+
 BLOCK RESETPATHS ;
 BLOCK ASYNCPATHS ;
 FREQUENCY PORT "clk_core" 50.000000 MHz ;
@@ -77,8 +86,6 @@ IOBUF PORT "ZF_DBUF_DIR"  IO_TYPE=LVCMOS33 DRIVE=8 SLEWRATE=SLOW PULLMODE=NONE ;
 IOBUF PORT "ZF_CFGOUT_N"  IO_TYPE=LVCMOS33 DRIVE=8 SLEWRATE=SLOW PULLMODE=NONE ;
 IOBUF PORT "ZF_INT2_N"    IO_TYPE=LVCMOS33 DRIVE=8 SLEWRATE=SLOW PULLMODE=NONE ;
 IOBUF PORT "ZF_INT6_N"    IO_TYPE=LVCMOS33 DRIVE=8 SLEWRATE=SLOW PULLMODE=NONE ;
-IOBUF PORT "ZF_OVR_N"     IO_TYPE=LVCMOS33 DRIVE=8 SLEWRATE=SLOW PULLMODE=NONE ;
-IOBUF PORT "ZF_DTACK_N"   IO_TYPE=LVCMOS33 DRIVE=8 SLEWRATE=SLOW PULLMODE=NONE ;
 IOBUF PORT "ZF_ARM"       IO_TYPE=LVCMOS33 DRIVE=8 SLEWRATE=SLOW PULLMODE=NONE ;
 IOBUF PORT "EN_OK"        IO_TYPE=LVCMOS33 PULLMODE=NONE ;
 IOBUF PORT "ZB_AS_N"      IO_TYPE=LVCMOS33 PULLMODE=NONE ;

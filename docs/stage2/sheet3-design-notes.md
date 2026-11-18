@@ -1,6 +1,6 @@
 # Sheet 3: shared SRAM and memory arbitration, design notes (revision A)
 
-**Status:** 2026-11-19, ready for review. **Not validated:** the hardware gates (G-STA final, G-PSU, measurements M-1 to M-13) are open.
+**Status:** revision A1, 2026-11-19. Incorporates the owner's review of revision A (§13): C-17 decided, C-21 approved, canonical byte order defined. **G-SHEET3 is approved for design progression** once these are incorporated and verified (done; §13), which does not authorise PCB manufacture. **Not validated:** the hardware gates (G-STA final, G-PSU, measurements M-1 to M-13) are open.
 
 **Gate.** G-SHEET1 was approved by the owner on 2026-11-19 "for design progression, pending final hardware verification". That approval started this sheet. Its five open requirements are carried in §11 and in the risk register.
 
@@ -22,7 +22,7 @@
 | Safe handling of simultaneous access requests | Fixed priority, decided in one clock on synchronised signals. A host access never starts during a Zorro reservation. The whole /AS is reserved, so RMW (TAS) is atomic | X1, X4, A5/A6 in the HDL spec; tb_shm S4 (TAS with the host hammering the same word) |
 | Defined mailbox ownership and synchronisation | Two single-producer, single-consumer queues. Every index register has one writer side; index writes carry the epoch and are range-checked; link reset by either side or /BUSRST; level interrupts derived from queue state | Formal M1–M5; tb_shm S5/S6 |
 | RP2040 firmware never responds to individual Zorro cycles | Every Zorro cycle (SRAM or register) completes in FPGA hardware. The host side only reads and writes memory and registers on its own schedule, and its absence, reset or hang cannot stall a Zorro cycle | Host-port contract H-6; tb_z2 runs with the host idle and busy |
-| Reassess FPGA pin availability before finalising the SRAM interface | Done (§8). The SRAM interface keeps 23 pins plus the shared LD bus. **The overall budget was 3 pins short**: the four JTAG pins are part of the 111 I/O. A recommended plan fits, proven by Diamond place-and-route; owner decision C-17 | Datasheet Table 4.4 [V S49]; Diamond pad/map reports [V S62]; fit tests |
+| Reassess FPGA pin availability before finalising the SRAM interface | Done (§8). The SRAM interface keeps 23 pins plus the shared LD bus. The overall budget was 3 pins short (JTAG pins are part of the 111 I/O). **Owner decision C-17: 102 signals**, verified with the Lattice package pinout and a Diamond fit (§8.1) | Lattice pinout file [V S63]; datasheet Table 4.4 [V S49]; Diamond pad/map reports [V S62]; fit test |
 
 **Added principle (owner, 2026-11-19).** "SRAM arbitration should be controlling who may access memory. The queues and interrupts control who has work to do." This is implemented as two separate blocks with no shared responsibility ([shared-memory-spec.md](../hdl/shared-memory-spec.md) §1):
 - the arbiter has no queue knowledge;
@@ -106,30 +106,82 @@ Interrupts are levels from queue state, so they cannot be lost.
 
 ## 8. FPGA pin availability (reassessment)
 
-**Correction to the pin matrix.**
+**Correction to the pin matrix (revision A of this sheet).**
 - **What revision C said:** 110 of 111 I/O, with "JTAG uses dedicated pins".
-- **What the data show:**
-  - MachXO2 datasheet Table 4.4 (LCMXO2-2000, 144 TQFP) gives **111 general-purpose I/O**: banks 27/28/28/8/10/10, plus 1 pin reserved for configuration [V S49].
-  - The 33 dual-function I/O within those 111 include TMS, TCK, TDI and TDO.
-  - With the JTAG port enabled, which we need (D-12 and the JTAG header), Diamond reserves those four: "Number of PIO sites used: … + 4(JTAG) out of 112" [V S62].
-- **Result:** the usable count is **107** (datasheet basis) or 108 (Diamond's 112 sites; the extra site corresponds to the datasheet's "reserved for configuration" pin, not yet identified, concern C-19).
+- **What the data show:** the four JTAG pins (TMS, TCK, TDI, TDO) are among the 111 general-purpose I/O of the 144 TQFP (datasheet Table 4.4 [V S49]), and Diamond reserves them while the JTAG port is enabled [V S62].
+- **Result:** revision C needed 110 + 4 = 114 pins of 111.
 
-| Plan | Signals | Config pins reserved | Needed | Fits 107? | Diamond fit test |
-|---|---|---|---|---|---|
-| Pin matrix rev C as written | 107 | 3 (PROGRAMN, INITN, DONE) | 110 + 4 JTAG = 114 | **No (−3)** | – |
-| Rev C signals, config pins released | 107 | 0 | 107 + 4 | 0 spare | `fit_top_rc`: places, 107 + 4 of 112 |
-| **Recommended:** /OVR and /DTACK not routed (C-14), config pins released | **105** | 0 | 105 + 4 | **2 spare** (3 by Diamond) | `fit_top`: places, 105 + 4 of 112; 0 timing errors |
-| LCMXO2-4000HC-4TG144C | 105–107 | 0–3 | – | 115 GPIO (datasheet Table 1.1, rev 4.7) → 4–8 spare | Not run; pin compatibility and price TBV |
+### 8.1 Decision (owner, 2026-11-19) and its verification
 
-- **SRAM interface:** unchanged and not reducible without cost. It needs 18 address + 5 control pins and uses the shared LD bus.
-  - The only cheap saving would be tying /CE low, with pull-ups on /OE and /WE instead (−1 pin). That loses the single-resistor deselect, so it is not recommended.
-- **Bank voltages:** with every port LVCMOS33, Diamond places all of them with every used bank at VCCIO 3.3 V. The pad check in `run_diamond.sh` enforces this.
-- **Dual-function configuration pins.** Diamond's auto-placement put SRAM_OE_N on PROGRAMN, SRAM_UB_N on DONE, LED0 on INITN, ZB_A17 on JTAGENB and SA0 on MCLK. Sheet 2 must assign these pins deliberately:
-  - which signals may use them;
-  - how they behave during configuration;
-  - which SYSCONFIG settings apply.
+**Decision.** Retain the LCMXO2-2000HC for Rev 1, provisionally:
+- remove ZF_OVR_N and ZF_DTACK_N from the FPGA;
+- reduce the five diagnostic LEDs to two;
+- keep PROGRAMN, INITN and DONE as configuration pins, and keep JTAG.
 
-  That needs the MachXO2 configuration guide (concern C-18). Proposed rule: only LEDs, debug pins, or inputs whose configuration-time state is harmless.
+This gives **102 signals**. Use the smaller FPGA only if complete design timing and fitting pass, and retain the LCMXO2-4000HC as the fallback. Do not rely on Diamond's 112-site count until C-19 is resolved.
+
+| Item | Count | Source |
+|---|---|---|
+| Package I/O pads (Lattice pinout file, TQFP144) | 112: banks 0–5 = 28/28/28/8/10/10 | [V S63] |
+| Datasheet general-purpose I/O | **111** (bank 0 = 27) + 1 reserved for configuration | [V S49] Table 4.4 |
+| JTAG (TMS, TCK, TDI, TDO), JTAG port enabled | −4 | [V S62] |
+| PROGRAMN, INITN, DONE kept (`SYSCONFIG SDM_PORT=PROGRAMN_DONE_INITN`) | −3 | Diamond SYSCONFIG [V S60] |
+| **Available** | **104** | |
+| **Required** | **102**: 32 Zorro in, 5 Zorro out, 2 transceiver control, 2 card enable, 16 LD, 23 SRAM, 6 host link, 3 X4 power/status, 3 I²C, 2 LEDs, 3 DIP, 1 clock, 4 debug | Pin matrix §4 |
+| **Spare** | **2** | |
+
+**C-19 (the reserved pad).**
+- **What is known.** The pinout file lists 28 pads in bank 0, while Table 4.4 counts 27 GPIO there; every other bank matches. The reserved pad is therefore one of bank 0's configuration-related pads. The datasheet revision history also says revision 2.0 updated the I/O total "to include JTAGENB".
+- **How it is handled.** The documents do not name the pad, so it is handled conservatively: **JTAGENB (pin 120) carries no signal.** It gets the Hardware Checklist's 1 kΩ pull-up ("JTAG mode") [V S64], so JTAG stays available even if a future bitstream disabled the JTAG port.
+- **The count.** The budget above uses the datasheet's 111, as directed.
+
+**Placement rules found during verification (for sheet 2).**
+
+| Pin(s) | Rule | Source |
+|---|---|---|
+| PROGRAMN 119, INITN 110, DONE 109 | Configuration only; 4.7 kΩ pull-ups to VCCIO0 | [V S64] Table 6.1 and figures |
+| JTAGENB 120 | Not used (C-19); 1 kΩ pull-up | [V S64] |
+| TCK 131 | 4.7 kΩ pull-down; TMS/TDI/TDO have weak internal pull-ups | [V S64] |
+| **SN 70** | **Must not be driven low while the device is erased** ("ensure SN and Programn are not driven low"). No externally driven input; an FPGA output (Hi-Z when erased) with a pull-up is acceptable | [V S64] §6 |
+| SI 71, SO 45, MCLK/CCLK 44, CSSPIN 40 | Ordinary I/O in user mode, with the slave and master SPI ports disabled. Usable, given that SN stays high when the device is erased | [V S64]; Diamond defaults [V S62] |
+| Clock | `clk_core` on a PCLK pin | [V S63] |
+
+**Verification.**
+- **Fit test.** The 102-signal fit test (`Z2_TOP=fit_top`) was run with:
+  - `SYSCONFIG SDM_PORT=PROGRAMN_DONE_INITN JTAG_PORT=ENABLE`;
+  - JTAGENB and SN prohibited, a conservative 103 available sites.
+
+  Results: it places **102 + 4 JTAG of 112** with PROGRAMN/INITN/DONE reported as "Reserved: sysCONFIG"; **0 setup and 0 hold errors**; every port LVCMOS33 with every bank at 3.3 V; worst Zorro path 15.14 ns; 50 MHz slack 3.66 ns.
+- **z2_top.** At both grades: 0 errors, worst 14.94 ns.
+- **Not yet done.** The **physical pin assignment** (which signal on which pin and bank) is sheet 2's job. Its STA at the real pins is gate G-STA.
+- **Fallback.** If that run fails, the fallback is the LCMXO2-4000HC (115 GPIO), after the pin-compatibility check with the TQFP144 migration file [V S63].
+
+### 8.2 Option C-17b: four LEDs on the X4's RP2040 GPIO, one FPGA READY LED (owner request, 2026-11-19)
+
+| Question | Finding | Source |
+|---|---|---|
+| GPIO availability | The X4's 40-pin header carries RP2040 GP2–GP29. GP0/GP1 go to the N100's UART1 (R314/R315), not to the header. GP23 also has an unfitted 0 Ω (R316, NC) to an N100 GPIO. This design uses GP8–GP11 (SPI1), GP22 (IRQ), GP27 (ATTN) and, optionally, GP2/GP14/GP15/GP26 (JTAG). **Free: GP3–GP7, GP12, GP13, GP16–GP21, GP23–GP25, GP28, GP29.** Proposed LEDs: **GP16–GP19** (header pins 27, 28, 26, 32), contiguous for one firmware mask; ground pins 25, 30 and 34 adjacent. GP20/GP21 stay reserved for a UART | [V S1] sheet 21; pin matrix §3 |
+| RP2040 pad behaviour | After reset every GPIO is an input with pull-down (PDE = 1), Schmitt trigger, drive setting 4 mA (2/4/8/12 mA selectable); the sum of sourced currents ≤ IIOVDD_MAX = 50 mA. IOVDD = P3V_RP, switched from the S0-only P3V3_S. RUN follows PLTRST, so the RP2040 is in reset or unpowered whenever the N100 is | [V S65] §2.19, Table 625; [V S1] sheet 21 |
+| Electrical connection | The architecture forbids loading the X4's header 3.3 V or backfeeding the X4 (R-27, ER-3). So each LED signal passes an **SN74AVC4T774** like every other header signal (sheet 4): VCCB = X4_3V3_REF (µA only), VCCA = carrier +3V3, all four channels B→A, OE tied active. The A outputs (±12 mA at 3.0–3.6 V) drive the LEDs from the carrier's +3V3 (≈ 2 mA each, 680–750 Ω) | [V S66] SCES693I |
+| N100/RP2040 unpowered | P3V3_S at 0 V. The translator's VCC isolation puts both ports Hi-Z, and Ioff blocks backflow into the X4. The LEDs are off: each output Hi-Z, with the LED and resistor to GND | [V S66] |
+| RP2040 in reset or BOOTSEL | Its pads are inputs with pull-downs, so the translator inputs read low and the LEDs are off. Add 100 kΩ pull-downs on the B inputs for the case where P3V3_S is up but P3V_RP is switched off (Q32) | [V S65], [V S1] |
+| Cost | One more SN74AVC4T774 (USD 0.42–1.65 [Vs S26]), 4 LEDs and 8 resistors: about AUD 2–4 | – |
+
+**Pin budget with C-17b:** 101 FPGA signals, so **3 spare** (instead of 2).
+
+**Trade-off:**
+- **Gain:** one more spare FPGA pin, and four LEDs that can show PC-side state the FPGA cannot know (USB link, Windows driver, SPI activity).
+- **Cost:** the four LEDs are dark whenever the X4 is off, and they depend on RP2040 firmware.
+- **Standalone diagnostics** come from one FPGA LED, READY, which already encodes the whole card state in this revision of the HDL:
+  - off: not armed, or FPGA blank;
+  - slow blink: armed, waiting for AutoConfig;
+  - steady: configured;
+  - fast blink: watchdog fault.
+
+**Recommendation.**
+- **Adopt C-17b if the extra spare pin is wanted.** The isolation follows the existing sheet-4 scheme and adds no new risk.
+- **Sheet 2 can take either choice without re-layout.** It assigns READY and FAULT to FPGA pins; under C-17b the FAULT pin simply becomes the third spare.
+- **Owner decision** (C-26).
 
 ## 9. Verification summary
 
@@ -148,15 +200,17 @@ Defects found during this work are listed in [../hdl/verification-results.md](..
 
 | ID | Concern | Severity | Proposed resolution / status |
 |---|---|---|---|
-| **C-17** | FPGA I/O budget: rev C needs 114 of 111 pins once JTAG is counted (§8) | **High** | **Owner decision.** Recommended: /OVR and /DTACK not routed (C-14) and PROGRAMN/INITN/DONE released, giving 105 of 107 (fit test passes). Alternative: LCMXO2-4000HC, after pin-compatibility and price checks |
+| **C-17** | FPGA I/O budget: rev C needed 114 of 111 pins once JTAG is counted | High | **Decided (owner):** 102 signals, 2 spare; configuration pins and JTAG kept. Verified by the Diamond fit (§8.1); physical assignment and G-STA at sheet 2; LCMXO2-4000HC fallback |
 | C-18 | Dual-function configuration pins (PROGRAMN, INITN, DONE, JTAGENB, MCLK, SN, SI, SO, CSSPIN) | Medium | Check configuration-time behaviour against the MachXO2 configuration guide before sheet 2; restrict to tolerant signals |
-| C-19 | The datasheet's one "reserved for configuration" pin vs Diamond's 112 sites | Low | Identify it from the Lattice pinout file; plan with 107 until then |
+| C-19 | The datasheet's one "reserved for configuration" pad vs 112 pads in the pinout file | Low | **Bounded:** it is in bank 0. Handled conservatively: JTAGENB carries no signal and the budget uses 111 (§8.1). Ask Lattice to name the pad |
 | C-20 | SRAM second source not yet verified | Low | Verify alternates from their datasheets before listing them |
-| C-21 | Hardware semaphores from the architecture review §7.4 are not implemented | Low | Owner to confirm: queues need no locks; add later only for a multi-writer structure |
-| C-22 | Host port waits up to one Zorro cycle (≤ 2.6 µs, watchdog-bounded); the SPI slave is not designed yet | Medium | Sheet 4: buffer at least one Zorro-cycle's worth of SPI data, or use ATTN as busy; quiesce before reconfiguration (H-5) |
+| C-21 | Hardware semaphores from the architecture review §7.4 are not implemented | Low | **Approved (owner):** not required for the two SPSC queues. Multiple producers on the same processor must be serialised in software ([shared-memory-spec.md](../hdl/shared-memory-spec.md) §1) |
+| C-22 | Host port waits up to one Zorro cycle (≤ 2.6 µs, watchdog-bounded); the SPI slave is not designed yet | Medium | Sheet 4 must verify the real SPI slave, the clock-domain crossing, host-request buffering and ordering (owner requirement 3; [shared-memory-spec.md](../hdl/shared-memory-spec.md) §6) |
 | C-23 | 50 MHz register-path slack 2.7 ns at Stage 3 (START decision path) | Low–Medium | Watch at each sheet; if below 1 ns, pipeline the START decision (one extra clock, still deterministic) |
 | C-24 | Zero-wait SRAM cycles: thin margins in the model | Low | Stays disabled until G-ZEROWAIT |
-| C-25 | PiStorm/Emu68 and other non-68000 masters: address setup, strobe widths and cycle gaps unknown. The design assumes ≥ 1 clock of /AS negation between cycles for host progress, and slot setup ≥ S_req | Medium | New measurement M-12; risk R-41 |
+| C-25 | PiStorm/Emu68 and other non-68000 masters: address setup, strobe widths and cycle gaps unknown. The design assumes ≥ 1 clock of /AS negation between cycles for host progress, and slot setup ≥ S_req | Medium | New measurement M-12; risk R-41 (tracked, owner requirement 4) |
+| C-26 | Option C-17b: four LEDs moved to RP2040 GPIO through an isolating translator, one FPGA READY LED (§8.2) | Low | **Owner decision.** Feasible and recommended if the third spare pin is wanted. Sheet 2 is compatible with either choice |
+| C-27 | Byte order across a big-endian Amiga and little-endian RP2040/x86 | Medium | **Defined:** [byte-order-spec.md](../hdl/byte-order-spec.md). Shared memory is a byte array, multi-byte values are big-endian, SPI is MSB first. Vectors for BridgeDiag and firmware; hardware lanes checked by tb_shm S12 |
 
 ## 11. Open requirements carried from the G-SHEET1 approval
 
@@ -175,3 +229,17 @@ Defects found during this work are listed in [../hdl/verification-results.md](..
 | M-11 | SRAM access waveforms: tSA, tAW, /WE width, tSD; read data valid before XRDY release | TP301–TP305, Zorro slot | Every limit of [sheet3-timing-budget.md](sheet3-timing-budget.md) §2 met with ≥ 50 % of the computed margin |
 | M-12 | Bus cycles from a PiStorm/Emu68 (and any accelerator in use): address setup to /AS, strobe widths, /AS gap between cycles, RMW sequence | Logic analyser at the slot | Setup ≥ M-7 criterion; gap ≥ 1 FPGA clock for host progress; RMW as in S57 or the card's behaviour re-verified |
 | M-13 | Host SRAM traffic at full SPI rate during Amiga memory-copy loops to the card | Software test + logic analyser | No data errors; Zorro wait states unchanged with and without host traffic |
+
+## 13. Owner review of revision A (2026-11-19) and how it is incorporated
+
+| Item | Incorporated in | Verified by |
+|---|---|---|
+| PR #3 approved | Merged by the owner | – |
+| C-17: 102 signals, 2000HC provisionally, 4000HC fallback, no reliance on 112 sites | §8.1; pin matrix rev E §4; `z2_top` (no /OVR, /DTACK; two LEDs); LPF SYSCONFIG and PROHIBIT | Diamond fit 102 + 4 JTAG of 112; z2_top both grades; HDL suite |
+| C-17b (four LEDs on RP2040 GPIO) investigated | §8.2 | X4 schematic, RP2040 and SN74AVC4T774 datasheets |
+| C-21 approved; multiple producers on one processor serialised in software | [shared-memory-spec.md](../hdl/shared-memory-spec.md) §1 | – |
+| 1. Canonical byte order | [byte-order-spec.md](../hdl/byte-order-spec.md) | tb_shm S12 |
+| 2. Cross-endian test patterns | [../test/cross-endian-vectors.csv](../test/cross-endian-vectors.csv) | tb_shm S12 (V1–V4, V6) |
+| 3. Sheet 4 verifies the real SPI slave, CDC, buffering and ordering | [shared-memory-spec.md](../hdl/shared-memory-spec.md) §6 (requirements HL-1 to HL-6) | At sheet 4 |
+| 4. 50 MHz margin and PiStorm/Emu68 tracked | R-43 (slack now 3.66–4.76 ns), R-41 and M-12 | Each Diamond run |
+| 5. Hardware gates preserved | §11, §12; baseline gate list | – |

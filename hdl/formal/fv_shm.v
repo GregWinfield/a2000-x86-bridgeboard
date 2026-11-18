@@ -34,7 +34,8 @@ module fv_shm (
     wire [17:0] zq_addr, SA;
     wire        zq_ce, zq_oe, zq_we, zq_ub, zq_lb, z_res, z_quiet, zs_drv, h_quiet, h_busy;
     wire        zr_we, z_irq, zrst, busrst, configured, mode_b, en_ok_s, lb_ack, mb_ack, rp_irq_n;
-    wire [3:0]  zr_widx, zr_ridx, led, f_st;
+    wire [3:0]  zr_widx, zr_ridx, f_st;
+    wire [1:0]  led;
     wire [1:0]  zr_be;
     wire [2:0]  f_res_cnt, f_h_st, f_h_idle_cnt;
     wire        f_nat_go, f_oe_wr_q, f_ld_oe, f_own_h, f_h_start;

@@ -12,6 +12,7 @@
 //   S8  FPGA reload: SRAM deselected while blank, contents kept (host quiesced first)
 //   S9  FPGA reconfiguration during a host write (characterisation: no contention, other words kept)
 //   S10 watchdog and /BERR on SRAM cycles; S11 zero-wait mode on SRAM (characterisation, G-ZEROWAIT)
+//   S12 canonical byte order: cross-endian vectors V1-V4, V6 through both ports
 `timescale 1ns/1ps
 module tb_shm;
     parameter integer SEED = 1;
@@ -392,6 +393,35 @@ module tb_shm;
         $display("S11 zero-wait SRAM write+read: %s (read %h, waits %0d)", (d === 16'h2EE0) ? "OK" : "WRONG DATA",
                  d, m.last_waits);
         wr16(B + 24'h6, 16'h0000);
+
+        // ---------------- S12 canonical byte order (docs/hdl/byte-order-spec.md; vectors in
+        // docs/test/cross-endian-vectors.csv). SRAM byte 2n = D15-D8 = /UDS lane = host h_be[1] =
+        // h_rdata[15:8]; byte 2n+1 = D7-D0 = /LDS = h_be[0] = h_rdata[7:0]; multi-byte values big-endian.
+        for (i = 0; i < 8; i = i + 1)                                  // V1: Amiga byte writes
+            wr8(B + 24'h2E00 + i, (i == 0) ? 8'h01 : (i == 1) ? 8'h23 : (i == 2) ? 8'h45 : (i == 3) ? 8'h67 :
+                                  (i == 4) ? 8'h89 : (i == 5) ? 8'hAB : (i == 6) ? 8'hCD : 8'hEF);
+        rd16(B + 24'h2E00, d); expect16("S12 V1 Amiga word at +0", d, 16'h0123);
+        rd16(B + 24'h2E06, d); expect16("S12 V1 Amiga word at +6", d, 16'hCDEF);
+        hmem_rd(18'h01700, d); expect16("S12 V1 host word 0 (bytes 0,1)", d, 16'h0123);
+        hmem_rd(18'h01701, d); expect16("S12 V1 host word 1 (bytes 2,3)", d, 16'h4567);
+        hmem_rd(18'h01702, d); expect16("S12 V1 host word 2 (bytes 4,5)", d, 16'h89AB);
+        hmem_rd(18'h01703, d); expect16("S12 V1 host word 3 (bytes 6,7)", d, 16'hCDEF);
+        hmem_wr(18'h01704, 16'hC3FF, 2'b10);                            // V2: host upper byte only
+        hmem_wr(18'h01704, 16'hFF3C, 2'b01);                            //     host lower byte only
+        rd16(B + 24'h2E08, d); expect16("S12 V2 host byte lanes seen by the Amiga", d, 16'hC33C);
+        wr8(B + 24'h2E0A, 8'hA5); wr8(B + 24'h2E0B, 8'h5A);              //     Amiga even, then odd byte
+        hmem_rd(18'h01705, d); expect16("S12 V2 Amiga byte lanes seen by the host", d, 16'hA55A);
+        for (k = 0; k < 16; k = k + 1) wr16(B + 24'h2F00 + 2 * k, 16'h0001 << k);   // V3: walking one
+        for (k = 0; k < 16; k = k + 1) begin
+            hmem_rd(18'h01780 + k, d); expect16("S12 V3 walking one (data-lane order)", d, 16'h0001 << k);
+        end
+        hmem_wr(18'h01790, 16'h1234, 2'b11); hmem_wr(18'h01791, 16'h0001, 2'b11);   // V4: queue header
+        hmem_wr(18'h01792, 16'h8001, 2'b11); hmem_wr(18'h01793, 16'h0010, 2'b11);
+        rd16(B + 24'h2F20, d); expect16("S12 V4 header seq", d, 16'h1234);
+        rd16(B + 24'h2F24, d); expect16("S12 V4 header flags", d, 16'h8001);
+        wr16(B + 24'h2F30, 16'hDEAD); wr16(B + 24'h2F32, 16'hBEEF);      // V6: 32-bit big-endian (MOVE.L)
+        hmem_rd(18'h01798, d); expect16("S12 V6 high word first", d, 16'hDEAD);
+        hmem_rd(18'h01799, d); expect16("S12 V6 low word second", d, 16'hBEEF);
 
         #(2000.0);
         errors = errors + c.u301.errors + c.dut.u_host.errors;
