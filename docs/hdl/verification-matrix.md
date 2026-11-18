@@ -9,8 +9,8 @@
 
 | Requirement | Evidence | Pass criterion | Status |
 |---|---|---|---|
-| Entire combinational decode, /SLAVEn assertion and release | Diamond TRACE with [../../hdl/syn/z2_top.lpf](../../hdl/syn/z2_top.lpf), [../../hdl/syn/run_diamond.sh](../../hdl/syn/run_diamond.sh) | Every path ≤ 18 ns at the slow corner, both edges, 15 pF | **Pass, exploratory** (worst 14.79 ns, Diamond-placed pins, both grades): [../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md). Final at the sheet-2 pinout |
-| Budget closes with real buffer delays | [../stage2/sheet1-timing-budget.md](../stage2/sheet1-timing-budget.md) §2 | ≤ 35 ns | **20.6 ns with STA** |
+| Entire combinational decode, /SLAVEn assertion and release | Diamond TRACE with [../../hdl/syn/z2_top.lpf](../../hdl/syn/z2_top.lpf), [../../hdl/syn/run_diamond.sh](../../hdl/syn/run_diamond.sh) | Every path ≤ 18 ns at the slow corner, both edges, 15 pF | **Pass, exploratory** (worst 15.31 ns after the I/O-standard correction; Diamond-placed pins, both grades): [../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md). Final at the sheet-2 pinout |
+| Budget closes with real buffer delays | [../stage2/sheet1-timing-budget.md](../stage2/sheet1-timing-budget.md) §2 | ≤ 35 ns | **20.7 ns with STA** |
 | Simulation with the delay allocation | tb_z2 at FPGA_TMAX 18 and 7.24 ns, all-max/all-min corners (C5b, C5c) | No ASSERT-FAIL | **Pass** (2026-11-18) |
 | Shorter predecode if needed | Hazard analysis §6 (O1–O5) | Applied only if G-STA margin < 3 ns | Documented |
 
