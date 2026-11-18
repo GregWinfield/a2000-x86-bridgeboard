@@ -76,3 +76,57 @@ All defects were in the verification code. **The RTL committed in 704ea69 needed
 | 7 | Formal basecase failed after a 2026-11-19 RTL edit | A `//` comment placed mid-line in the `initial` block commented out four initial values. Simulation passed because the power-on reset clears those registers; formal starts from the declared initial state | Line fixed; full suite re-run: ALL HDL CHECKS PASSED |
 
 Post-place-and-route timing (Lattice Diamond) is recorded separately in [../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md).
+
+## 5. Stage 3 (sheet 3 revision A), 2026-11-19
+
+`bash hdl/run_checks.sh` → **ALL HDL CHECKS PASSED** (same tools as §1).
+
+### 5.1 Results
+
+| Check | Runs | Result |
+|---|---|---|
+| Lint (`iverilog -Wall`, RTL with the host-port stub) | 1 | Clean |
+| tb_z2 (unchanged tests; SRAM fitted; VERSION $0A02; T3/T16 now write and read the SRAM) | 4 seeds + 4 corners | 5 552 checks each, **0 failures** |
+| **tb_z2 with continuous random host SRAM traffic** (`-DHOST_BG`) | 4 seeds | 5 552 checks each, **0 failures**; about 4 760–4 790 host transfers per run, all data correct; host latency mean ≈ 186 ns, max 2.40–2.64 µs |
+| **tb_shm** S1–S11 | 4 seeds + 2 corners | 99 checks each, **0 failures** |
+| tb_shm S3 determinism | 6 runs × 120 cycles × host off/on | Read action always START + 6, write action always DS + 1, off and on; slot /AS → XRDY range unchanged |
+| SRAM model AC checks | every run | **0 violations** |
+| tb_chain | 4 seeds | 0 failures (card model now includes sheet 3) |
+| Formal z2_core (F1–F20) | prove / bmc / cover | PASS |
+| **Formal fv_shm** (X1–X6, M1–M5, F1–F20, every input free) | prove (k-induction) / bmc 64 / cover | **PASS / PASS / all reached** |
+| Yosys MachXO2 estimate | – | 634 LUT4, 85 CCU2D, 386 FF (about 30 % of the XO2-2000); the host path is tied off by the stub |
+
+### 5.2 Diamond (exploratory, Diamond-placed pins)
+
+| Run | Errors | Worst Zorro path | SRAM clock-to-out | 50 MHz slack |
+|---|---|---|---|---|
+| Stage 3 z2_top, −4 C / −4 I | 0 / 0 | 14.87 / 15.09 ns (A16 → XRDY) | 9.95 / 9.60 ns max, 2.93 / 2.74 ns min | 2.73 / 3.41 ns |
+| Fit test 105 signals / 107 signals (−4 C) | 0 / 0 | – | 9.94 / 10.09 ns max | 4.15 / 3.98 ns |
+
+Pad check (every port LVCMOS33, every used bank at 3.3 V): pass in every run.
+
+### 5.3 Mutation check of the shared-memory proof
+
+| Mutant | Caught by |
+|---|---|
+| A reservation floor too low (ZRES = 2) | X4: k-induction fails; real counterexample within 64 steps |
+| B host starts without `z_quiet` | X3: induction; real counterexample within 64 steps |
+| C host starts during a Zorro reservation | X1/X2: counterexample within 20 steps |
+| D host /WE pulse two clocks | X5: counterexample within 20 steps |
+| E Zorro read go without `h_quiet` | **Equivalent:** X4 proves the check is redundant given ZRES. It is kept in the RTL as a defensive guard |
+| F index write without the epoch check | M4: real counterexample within 64 steps |
+| G producer may overrun (no free-space check) | M1: counterexample within 20 steps |
+| H SRAM /WE on a register target | F17/F5: real counterexample within 64 steps |
+
+### 5.4 Defects found and fixed during Stage 3
+
+| # | Where | Symptom | Cause | Fix |
+|---|---|---|---|---|
+| 8 | **RTL** (z2_core) | k-induction failure of the one-clock /WE property | A /BERR in the clock after the SRAM /WE pulse started took the ABORT branch without clearing `zq_we`, so /WE stayed low for 2 clocks. Harmless (address stable), but not the specified pulse; too deep for the 24-step base case | Clear `zq_we` on the /BERR exit; invariant `zq_we → WR_CAP & wr_cnt = GUARD + 1` added |
+| 9 | **RTL** (z2_mbx), simulation only | A read after a write-1-to-clear returned the old value | `assign zr_rdata = rd(zr_ridx)`: a continuous assignment of a function is re-evaluated only when its arguments change, not when the registers it reads change (synthesis would be correct) | `always @*` multiplexers. Found by tb_shm S5 |
+| 10 | SRAM model | First reads returned X; drive window never closed | Delayed `tick <= #T ~tick` toggles computed their value at scheduling time, so the second of two pending toggles changed nothing and an evaluation was lost | Evaluate on input changes plus a 0.5 ns poll while enabled |
+| 11 | Card model | False "address changed during a write" at an FPGA reload | FPGA pins modelled as tri-stating instantly; the float register was loaded after the pin multiplexer had already seen the old value | Pins hold their level briefly, then pull-ups (≈ 20 ns) and the weak pull-down (≥ 80 ns) take over; float registers track the driven values |
+| 12 | Diamond summary script | Wrong slack for a failing CLOCK_TO_OUT; data-path delay only | TRACE writes "exceeds requirements" for failures; CLOCK_TO_OUT totals are in "totaling" | Parser rewritten; earlier MAXDELAY results unchanged |
+| 13 | Constraint | LD clock-to-out 12.05 ns against a 12 ns allocation chosen without derivation | Allocation, not a requirement | Allocation derived: 16 ns (sheet-3 timing budget §3) |
+
+Earlier finding (Stage 2, same day): the exploratory STA had analysed most ports as LVCMOS25. That is corrected in the STA record, and `run_diamond.sh` now fails on any non-LVCMOS33 port.

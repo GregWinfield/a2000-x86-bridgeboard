@@ -7,8 +7,8 @@ An open-source, modern successor to the Commodore A2386SX bridgeboard. It is a g
 | Stage | Description | State |
 |---|---|---|
 | 1 | Architecture review | **Done**: decisions adopted as the [Rev 1 baseline](docs/02-rev1-baseline.md) (2026-11-18) |
-| 2 | Zorro II minimum system | **Sheet 1 revision B, in review** (card-enable gating, RMW-capable HDL): [schematic PDF](docs/stage2/sheet1-schematic.pdf), [design notes](docs/stage2/sheet1-design-notes.md), [timing budget](docs/stage2/sheet1-timing-budget.md), [hazard analysis](docs/stage2/sheet1-hazard-analysis.md), [ERC report](docs/stage2/sheet1-erc-report.md), [HDL spec](docs/hdl/zorro-interface-spec.md), [RTL and testbenches](hdl/). HDL verification **passes** (G-SIM); exploratory Diamond STA **passes** ([STA results](docs/stage2/sheet1-sta-results.md)); final G-STA at the sheet-2 pinout |
-| 3 | Shared memory, SPI, interrupts | Waits for gate G-SHEET1 (owner review of sheet 1 revision B) |
+| 2 | Zorro II minimum system | **Sheet 1 revision B: approved for design progression** (G-SHEET1, 2026-11-19; hardware gates open): [schematic PDF](docs/stage2/sheet1-schematic.pdf), [design notes](docs/stage2/sheet1-design-notes.md), [timing budget](docs/stage2/sheet1-timing-budget.md), [hazard analysis](docs/stage2/sheet1-hazard-analysis.md), [ERC report](docs/stage2/sheet1-erc-report.md), [HDL spec](docs/hdl/zorro-interface-spec.md), [RTL and testbenches](hdl/). HDL verification **passes** (G-SIM); exploratory Diamond STA **passes** ([STA results](docs/stage2/sheet1-sta-results.md)); final G-STA at the sheet-2 pinout |
+| 3 | Shared memory, SPI, interrupts | **Sheet 3 revision A (shared SRAM, arbitration, queues and interrupts), in review**: [design notes](docs/stage2/sheet3-design-notes.md), [timing budget](docs/stage2/sheet3-timing-budget.md), [HDL spec](docs/hdl/shared-memory-spec.md), [schematic PDF](docs/stage2/sheet3-schematic.pdf), [ERC report](docs/stage2/sheet3-erc-report.md). The SPI host link follows with sheet 4 |
 | 4 | RP2040 firmware + Windows test utility | – |
 | 5 | Integration, drivers, RDP investigation | – |
 | 6 | PCB | – |
@@ -35,12 +35,12 @@ An open-source, modern successor to the Commodore A2386SX bridgeboard. It is a g
 
 - **Open:** `hardware/kicad/a2000-bridgeboard.kicad_pro` in KiCad 10 (made with 10.0.8).
 - **Libraries:** project symbols and footprints are in `hardware/kicad/lib/`, referenced through the project `sym-lib-table` and `fp-lib-table`.
-- **Hierarchy:** the root sheet holds the six sheets from the brief. Only sheet 1 is drawn; sheets 2–6 are labelled placeholders.
+- **Hierarchy:** the root sheet holds the six sheets from the brief. Sheets 1 and 3 are drawn; sheets 2 and 4–6 are labelled placeholders.
 
 ```text
 docs/                  architecture, baseline, stage reports, specs, BOM, risks, test records
 hardware/kicad/        KiCad 10 project (root + sheets 1-6, project libraries)
-hdl/                   FPGA RTL, testbenches, formal, constraints   [Stage 2, verification pending]
+hdl/                   FPGA RTL, testbenches, formal, constraints   [Stages 2-3, simulation and formal passing]
 firmware/rp2040/       RP2040 bridge firmware                         [Stage 4]
 software/windows/      Windows service / test utility                 [Stage 4-5]
 software/amiga/        Amiga driver / library / tools                 [Stage 5]

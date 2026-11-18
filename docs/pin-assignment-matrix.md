@@ -1,6 +1,6 @@
 # Pin-assignment matrix
 
-**Status:** maintained document. Revision C, 2026-11-18. Section 2 reflects sheet 1 rev B as built; sections 3 and 4 are still plans.
+**Status:** maintained document. Revision D, 2026-11-19. Section 2 reflects sheet 1 rev B as built; section 4 is corrected by the sheet-3 reassessment; section 3 is still a plan.
 - FPGA *package* pin numbers are assigned on KiCad sheet 2.
 - Connector pin numbers below are verified [V].
 - Carrier connections are proposals pending review.
@@ -187,9 +187,11 @@ Header mapping: [V S1 sh.21], matches [V S5]. RP2040 alternate functions: [K S41
 - **U_b:** IRQ_N and ATTN (A→B), plus 2 spare.
 - **U_c (JTAG):** TCK, TMS, TDI (B→A) and TDO (A→B). /OE comes from a DIP switch, so the external JTAG header has priority when the switch is off.
 
-## 4. FPGA I/O budget (LCMXO2-2000HC-4TG144C, 111 I/O)
+## 4. FPGA I/O budget (LCMXO2-2000HC-4TG144C)
 
-Revision B recount (sheet 1 rev B). The Stage 1 count omitted `ZF_OVR_N` and `ZF_DTACK_N`, which are FPGA nets on sheet 1; they are included now.
+> **Revision D correction (2026-11-19).** The MachXO2 datasheet counts **111 general-purpose I/O** for the 144 TQFP: banks 0–5 = 27/28/28/8/10/10, plus 1 pin reserved for configuration (Table 4.4 [V S49]). The 33 dual-function I/O within the 111 include **TMS, TCK, TDI and TDO**. With the JTAG port enabled, which this design needs, Diamond reserves them ("PIO sites used: n + 4(JTAG) out of 112" [V S62]). **The table below therefore needs 114 pins, not 110.** The JTAG pins are not dedicated, contrary to revision C. Recommended plan and Diamond fit tests: [stage2/sheet3-design-notes.md](stage2/sheet3-design-notes.md) §8. Decision C-17.
+
+Revision C table (sheet 1 rev B). The Stage 1 count omitted `ZF_OVR_N` and `ZF_DTACK_N`, which are FPGA nets on sheet 1; they are included.
 
 | Group | Pins |
 |---|---|
@@ -208,11 +210,12 @@ Revision B recount (sheet 1 rev B). The Stage 1 count omitted `ZF_OVR_N` and `ZF
 | Debug/expansion header | 4 |
 | **Subtotal** | **107** |
 | PROGRAMN, INITN, DONE (kept) | 3 |
-| **Total** | **110 of 111** |
+| **Total** | **110**, plus **4 JTAG = 114 of 111: does not fit** (rev D) |
+| **Recommended (rev D):** drop ZF_OVR_N, ZF_DTACK_N; PROGRAMN/INITN/DONE used as I/O for tolerant signals | **105 + 4 JTAG = 109 of 111 (2 spare)**; Diamond fit test `fit_top` places 105 + 4 of 112 |
 
 **Concern C-14 (sheet 2).** One spare pin is too tight. Planned resolution, at no cost to Rev 1 function: do not route `ZF_OVR_N` and `ZF_DTACK_N` to the FPGA. R106/R107 already hold the U105 inputs high and R119/R120 (DNP) isolate the outputs, giving **108 of 111**. Alternative: LCMXO2-4000HC in the same package (I/O count TBV against the MachXO2 data sheet before relying on it).
 
-JTAG uses dedicated pins. Bank assignments (planned for sheet 2):
+JTAG uses four of the general-purpose pins while the JTAG port is enabled (rev D). Dual-function configuration pins (PROGRAMN, INITN, DONE, JTAGENB, MCLK, SN, SI, SO, CSSPIN) need deliberate assignment (C-18). Bank assignments (planned for sheet 2):
 - Zorro inputs and outputs grouped on banks nearest the edge connector;
 - `LD` and `SA` on the banks facing the SRAM;
 - RP2040 and JTAG signals towards the X4 connector.

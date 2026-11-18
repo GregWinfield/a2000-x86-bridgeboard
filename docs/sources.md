@@ -88,6 +88,9 @@ Prices are snapshots taken through search results on 2026-11-18. They are indica
 | S59 | YosysHQ OSS CAD Suite, release 2026-10-31, `oss-cad-suite-windows-x64-20261031.tgz` from `https://github.com/YosysHQ/oss-cad-suite-build/releases/tag/2026-10-31` | Tool provenance: SHA-256 `4e845291d99e1711e4c3a005661132deef8f8cc0afaf1e3fd0f4811cc103e783` matched the published value. Contains Icarus Verilog, Yosys, SymbiYosys, nextpnr-machxo2. **Not yet executed** on the development machine |
 | S60 | Lattice Diamond 3.14 (3.14.0.75.2) installed help: *Constraints Reference Guide* (MAXDELAY, OUTPUT LOAD, TEMPERATURE, VOLTAGE, BLOCK) and *Diamond Project Tcl Commands*, `C:/lscc/diamond/3.14/docs/webhelp/eng/` (published 2024-10-08) | [V]. MAXDELAY FROM/TO with optional MIN (hold); OUTPUT LOAD default 0 pF; default derating 1.0 = TJ 85 °C commercial / 100 °C industrial; BLOCK ASYNCPATHS affects pad→FF frequency analysis only; prj_project / prj_syn / prj_run syntax |
 
+| S61 | ISSI IS61/64WV25616EDBLL datasheet, Rev. A2 (2020-07-14), `https://www.issi.com/WW/pdf/61-64WV25616EDBLL.pdf`. ISSI's site refuses automated download; the copy used is the web.archive.org capture of 2022-11-16 of that URL (14 pages) | [V]. TSOP-II-44 pin configuration; −10 read/write AC table; DC table (VDD 2.4–3.6 V, VIH 2.0 V); package outline 44L 400 mil TSOP-II rev F. Used for sheet 3, the SRAM model and the timing budget |
+| S62 | Lattice Diamond 3.14 reports for LCMXO2-2000HC-4TG144C/I from this project's runs (2026-11-19): PAR pad report (pinout by pin number, bank VCCIO, dual functions, "Reserved: sysCONFIG" for TMS/TCK/TDI/TDO with JTAG_PORT=ENABLE) and map report ("Number of PIO sites used: n + 4(JTAG) out of 112"); default SYSCONFIG (SDM_PORT=DISABLE, JTAG_PORT=ENABLE) | [V] (tool output). Pin reassessment, fit tests |
+
 ## Standards / general references (not fetched in this review)
 
 | ID | Source | How used |

@@ -1,6 +1,6 @@
 # HDL interface specification: Zorro II slave and AutoConfig (Stage 2 minimum system)
 
-**Status:** revision B, 2026-11-18.
+**Status:** revision C, 2026-11-19 (Stage 3: SRAM target, shared registers; see [shared-memory-spec.md](shared-memory-spec.md)).
 - The RTL now exists in [../../hdl/rtl/](../../hdl/rtl/) (MIT, D-13).
 - The verification suite (simulation, formal, netlist checks) **passes** (2026-11-18, [verification-results.md](verification-results.md)).
 - Post-place-and-route timing (G-STA) is pending.
@@ -22,7 +22,7 @@
 - **read-modify-write support (C-13)**;
 - **reset-boundary arming (C-03/C-04)**.
 
-**Out of scope for Stage 2:** SRAM arbitration, SPI slave, mailboxes and power control (Stage 3+).
+**Stage 3 adds** (specified in [shared-memory-spec.md](shared-memory-spec.md)): the SRAM target with the mode A banked window, the local-bus arbiter `z2_lbus`, and the queue and interrupt block `z2_mbx`. **Still out of scope:** the SPI slave (sheet 4) and power control (sheet 5).
 
 ## 2. Files and module partition
 
@@ -32,7 +32,10 @@
 | `z2_asgate.v` | `z2_asgate2`, `z2_asgate3` | The single-LUT final gates. /AS (and /BERR) are the controlling inputs. Kept hierarchy (C-02) |
 | `z2_decode.v` | `z2_decode` | Combinational select and output terms (§5) |
 | `z2_core.v` | `z2_core` | Synchronisers, /BUSRST filter, arming, AutoConfig, bus FSM, registers, watchdog. Formal properties under `` `ifdef FORMAL `` |
-| `z2_top.v` | `z2_top` | Pins, power-on reset, LD tristate, /OVR and /DTACK held inactive |
+| `z2_top.v` | `z2_top` | Pins, power-on reset, LD tristate, /OVR and /DTACK held inactive; host-port demultiplexer |
+| `z2_lbus.v` | `z2_lbus` | Stage 3 local-bus arbiter and SRAM sequencer (shared-memory spec §3) |
+| `z2_mbx.v` | `z2_mbx` | Stage 3 queues and interrupts (shared-memory spec §4) |
+| `z2_hostif_stub.v` | `z2_hostif` | Host-port placeholder until the sheet-4 SPI slave |
 
 ## 3. Top-level ports (`z2_top`)
 
@@ -48,7 +51,9 @@
 | `ZF_SLAVE_N`, `ZF_XRDY`, `ZF_DBUF_OE_N` | out | same | Combinational (§5). LVCMOS33, 8 mA, FAST |
 | `ZF_DBUF_DIR`, `ZF_CFGOUT_N`, `ZF_INT2_N`, `ZF_INT6_N` | out | same | Registered, except `ZF_CFGOUT_N` (combinational from /CFGINn) |
 | `ZF_OVR_N`, `ZF_DTACK_N` | out | same | Constant 1 in Rev 1. May be left unrouted at sheet 2 (C-14) |
-| `LD[15:0]` | inout | LD0–LD15 | No FPGA pull or keeper (U103 bus-hold) |
+| `LD[15:0]` | inout | LD0–LD15 | No FPGA pull or keeper (U103 bus-hold). Shared with U301 (sheet 3) |
+| `SA[17:0]`, `SRAM_CE_N`, `SRAM_OE_N`, `SRAM_WE_N`, `SRAM_UB_N`, `SRAM_LB_N` | out | sheet 3 | U301 address and control, each straight from one flip-flop |
+| `RP_IRQ_N` | out | sheet 4 | Host-side interrupt (z2_mbx), registered, active low |
 | `clk_core` | in | (sheet 2) | 50 MHz [A] |
 | `DIP_MODE_B`, `DIP_INT6`, `DIP_DISABLE` | in | (sheet 6) | Sampled during /BUSRST and at power-on |
 | `LED[3:0]` | out | (sheet 6) | armed, configured, interrupt, watchdog flag (ORed with CONTROL test bits) |
@@ -156,9 +161,9 @@ any state --(/BERR)--> ABORT ;  any non-IDLE state --(/AS negated)--> IDLE (end 
 
 - **DIR changes** only when `oe_rd_q`, `oe_wr_q` and `ld_oe` have all been 0 for ≥ GUARD (2) clocks.
 - **An enable is raised** only after DIR has been stable for ≥ GUARD clocks. `oe_wr_q` also needs `ld_oe` off for GUARD clocks.
-- **FPGA LD drive:** `ld_oe == oe_rd_q`, and only with `dir_q = 1` (U103 A port is then an input).
+- **Read data source:** `oe_rd_q == (ld_oe | zq_oe)`: the FPGA (registers) or U301 (SRAM), never both, and only with `dir_q = 1` (U103 A port is then an input).
 - **U103 drives LD** only with `dir_q = 0` and `oe_wr_q`.
-- In Stage 3, the SRAM may drive LD only when neither is set.
+- Stage 3: host accesses use LD only while the Zorro side does not reserve the bus, and every Zorro local-bus action waits for the reservation floor (ZRES) and a quiet host side. Formal X1–X4 ([shared-memory-spec.md](shared-memory-spec.md) §5).
 
 ### 7.3 Read timing
 
@@ -216,12 +221,12 @@ $48 alone also configures. A /BERR during the configuring write cancels it.
 
 ## 9. Stage 2 test registers (board window, same offsets in both modes)
 
-16-bit, big-endian, even offsets. **Reads have no side effects** (R-17). Registers occupy $0000–$0FFF. The rest of the window (the Stage 3 SRAM) reads $0000 and ignores writes.
+16-bit, big-endian, even offsets. **Reads have no side effects** (R-17). Registers occupy $0000–$0FFF. The rest of the window is the shared SRAM ([shared-memory-spec.md](shared-memory-spec.md) §3.4). The shared queue and interrupt registers are at $0040–$005A ([shared-memory-spec.md](shared-memory-spec.md) §4.3).
 
 | Offset | Name | Access | Reset | Description |
 |---|---|---|---|---|
 | $0000 | MAGIC | R | $4252 | "BR" |
-| $0002 | VERSION | R | $0A01 | [15:8] hardware revision, [7:0] HDL version |
+| $0002 | VERSION | R | $0A02 | [15:8] hardware revision, [7:0] HDL version (02 = Stage 3) |
 | $0004 | STATUS | R | – | b0 mode B; b1 INT_SEL; b2 zero-wait; b4 DIP mode B; b5 DIP INT6; b6 DIP disable; b8 watchdog tripped (sticky); **b9 EN_OK; b10 armed** |
 | $0006 | CONTROL | R/W | $0000 (b2 from DIP) | b0 ZERO_WAIT_EN (gate G-ZEROWAIT); b1 IRQ_EN; b2 INT_SEL; b7..4 LED test; b8 write 1 clears the watchdog flag (high byte) |
 | $0008 / $000A | SCRATCH0 / 1 | R/W | $0000 at power-on | Byte lanes honoured; survive /BUSRST; TAS target for RMW tests |
@@ -233,6 +238,7 @@ $48 alone also configures. A /BERR during the configuring write cancels it.
 | $0016 | WDOG_EVENTS | R | 0 (power-on) | Watchdog releases |
 | **$0018** | **RMW_CYCLES** | R | 0 | **Cycles with two data phases (C-13)** |
 | **$001A** | **BERR_EVENTS** | R | 0 (power-on) | **/BERR assertions seen while armed** (collision monitor, M-4) |
+| $0020 | BANK | R/W | 0 (/BUSRST) | Mode A banked window $8000–$FFFF: SRAM bank 0–15 (32 KB each) |
 
 **Interrupt.** Registered: asserted while `armed & IRQ_EN & IRQ_STATUS.b0` on the line chosen by INT_SEL, and gated in hardware by U107.
 

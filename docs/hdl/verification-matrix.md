@@ -70,4 +70,20 @@
 |---|---|---|
 | **G-SIM** (new) | `bash hdl/run_checks.sh` prints `ALL HDL CHECKS PASSED`: lint, tb_z2 (4 seeds + 4 corner runs), tb_chain (4 seeds), structure check, tb_hazard E1 = 0, formal prove/bmc/cover | **Passed 2026-11-18** |
 | **G-STA** | Diamond, as in the timing budget §9 | **Exploratory run passed 2026-11-19**; final run at the sheet-2 pinout |
-| G-SHEET1 | Owner review of sheet 1 revision B | Pending |
+| G-SHEET1 | Owner review of sheet 1 revision B | **Approved 2026-11-19** for design progression |
+
+## Sheet 3 (Stage 3): shared SRAM, arbitration, queues and interrupts
+
+Evidence executed on 2026-11-19 ([verification-results.md](verification-results.md) §5). Test IDs: [../../hdl/sim/tb_shm.v](../../hdl/sim/tb_shm.v) (S*), formal [../../hdl/formal/fv_shm.v](../../hdl/formal/fv_shm.v) (X*, M*).
+
+| Owner priority / requirement | Evidence | Pass criterion | Status |
+|---|---|---|---|
+| Correct arbitration Zorro ↔ SPI side | X1, X2, X3, X6 (k-induction); tb_z2 4 seeds with continuous host traffic; tb_shm | Proof holds; 0 failures; SRAM model 0 AC violations; LD contention monitor silent | **Pass** |
+| Deterministic Zorro timing | **X4** (k-induction); tb_shm S3 (host off/on) | Proof holds; local-bus action at one fixed clock offset in every cycle, identical off/on | **Pass** (START + 6 reads, DS + 1 writes) |
+| Simultaneous requests, RMW atomicity | X1, X4; tb_shm S4 (TAS while the host writes the same word) | Proof holds; M1 monitor silent; TAS results correct | **Pass** |
+| Mailbox ownership and synchronisation | M1–M5; tb_shm S5 (both directions, full, stale epoch, wrong owner, byte write), S6 (link resets, events) | Proof holds; every rejection and event as specified | **Pass** |
+| No RP2040 response to Zorro cycles | Design (host-port contract H-6); tb_z2 passes with the host idle and with continuous host traffic | – | **Pass** (by construction; checked) |
+| SRAM AC limits (ISSI −10) | SRAM model checks on every access; timing budget §2 with Diamond tCO | 0 violations; every margin positive | **Pass** (model and budget); hardware M-11 open |
+| Safe state while the FPGA is blank or reloading | tb_shm S8 (deselected, /WE high, contents kept); card model pin-float timing | /CE, /WE high; no LD drive; data kept | **Pass** (model); hardware M-9/M-11 open |
+| FPGA pin availability | Diamond fit tests `fit_top`, `fit_top_rc`; pad check | Places with JTAG enabled, all banks 3.3 V, 0 timing errors | **Pass** (count); bank-level assignment and C-18 open (sheet 2) |
+| Schematic connectivity | `audit_sheet3.py` (120 checks), ERC | 0 failures; only documented ERC entries | **Pass** |
