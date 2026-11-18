@@ -5,7 +5,7 @@
 //   1k pull-up on every /SLAVEn (RP800, sheet 8); Buster flags a collision (/BERR) when two
 //   or more /SLAVEn are asserted together.
 // Slot 1 and slot 3 hold simple behavioural AutoConfig boards; slot 2 holds the bridgeboard
-// (card_sheet1 = sheet-1 circuit + RTL). Scenarios: normal, unpowered, blank FPGA, late power,
+// (card_model = sheet-1 and sheet-3 circuits + RTL). Scenarios: normal, unpowered, blank FPGA, late power,
 // FPGA reload while running, power loss while running, DIP disable, DISABLE jumper, /BUSRST in
 // the middle of the scan, shut-up. Every scenario must configure exactly the expected boards,
 // in chain order, with no collision.
@@ -96,7 +96,7 @@ module tb_chain;
         .READ(Z_READ), .DOE(Z_DOE), .CFGIN_N(CFGIN1_N), .BUSRST_N(Z_BUSRST_N), .D(Z_D),
         .SLAVE_N(SLAVE1_N), .CFGOUT_N(CFGOUT1_N));
     wire d_drv, ld_conflict, card_en_n, en_ok;
-    card_sheet1 #(.SEED(SEED), .SUP_TD(5000.0)) s2 (
+    card_model #(.SEED(SEED), .SUP_TD(5000.0)) s2 (
         .Z_A(Z_A), .Z_AS_N(Z_AS_N), .Z_UDS_N(Z_UDS_N), .Z_LDS_N(Z_LDS_N), .Z_READ(Z_READ), .Z_DOE(Z_DOE),
         .Z_E7M(clk7), .Z_CFGIN_N(CFGIN2_N), .Z_BUSRST_N(Z_BUSRST_N), .Z_BERR_N(Z_BERR_N),
         .Z_D(Z_D), .Z_SLAVE_N(SLAVE2_N), .Z_CFGOUT_N(CFGOUT2_N), .Z_XRDY(Z_XRDY),

@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: MIT
+# Formal verification of the shared-memory subsystem (Stage 3): z2_core + z2_lbus + z2_mbx with
+# every input free (fv_shm.v). Run from hdl/formal:  sby -f fv_shm.sby
+#   prove : k-induction of X1-X6 (arbitration, LD ownership, determinism, SRAM write protocol,
+#           bounded host wait), z2_core F1-F20 and z2_mbx M1-M5
+#   bmc   : 64-step bounded check from reset (deep enough to configure the card and run cycles)
+#   cover : the interleavings exist (host access followed closely by a Zorro action, and so on)
+[tasks]
+prove
+bmc
+cover
+
+[options]
+prove: mode prove
+prove: depth 20
+bmc: mode bmc
+bmc: depth 64
+cover: mode cover
+cover: depth 80
+
+[engines]
+smtbmc yices
+
+[script]
+read -formal z2_sync.v z2_asgate.v z2_decode.v z2_core.v z2_lbus.v z2_mbx.v fv_shm.v
+chparam -set WDOG_LIMIT 8 z2_core
+prep -top fv_shm
+
+[files]
+../rtl/z2_sync.v
+../rtl/z2_asgate.v
+../rtl/z2_decode.v
+../rtl/z2_core.v
+../rtl/z2_lbus.v
+../rtl/z2_mbx.v
+fv_shm.v

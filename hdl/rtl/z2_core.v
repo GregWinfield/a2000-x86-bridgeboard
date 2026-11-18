@@ -6,13 +6,19 @@
 //     across a read phase and a write phase, MC68000 TAS) is handled as two phases
 //   * transceiver direction/enable sequencing with guard intervals (no contention)
 //   * Stage 2 test registers, interrupt test, XRDY wait states with a watchdog
-// Specification: docs/hdl/zorro-interface-spec.md (revision B).
+//   * Stage 3: SRAM target (mode A: fixed window + 16 x 32 KB banked window; mode B: linear)
+//     through the local-bus arbiter z2_lbus, and a register port to the queue/interrupt block
+//     z2_mbx. Local-bus actions never happen before START + ZRES, so host (SPI-side) traffic
+//     cannot change Zorro timing.
+// Specification: docs/hdl/zorro-interface-spec.md (revision C), docs/hdl/shared-memory-spec.md.
 `default_nettype none
 module z2_core #(
     parameter integer GUARD      = 2,           // clocks: OE off -> DIR change -> OE on
     parameter integer WDOG_LIMIT = 100,         // XRDY watchdog, clocks (2.0 us at 50 MHz), < 256
+    parameter integer ZRES       = 4,           // reservation floor: no local-bus action while res_cnt < ZRES
+    parameter integer SRAM_RD_WAIT = 2,         // SRAM read: clocks from the read start to the XRDY release
     parameter [7:0]   HW_REV     = 8'h0A,
-    parameter [7:0]   HDL_VER    = 8'h01,
+    parameter [7:0]   HDL_VER    = 8'h02,
     parameter [15:0]  MFR_ID     = 16'h07DB,    // prototype manufacturer ID 2011, TBV (R-18)
     parameter [7:0]   PRODUCT_ID = 8'h01,
     parameter [31:0]  SERIAL     = 32'h0000_0001
@@ -46,7 +52,35 @@ module z2_core #(
     output wire        zf_dbuf_dir,
     output wire        zf_dbuf_oe_n,
     output wire        zf_arm,
-    output wire [3:0]  led
+    output wire [3:0]  led,
+    // Stage 3: local-bus arbiter (z2_lbus). zq_* are requests; z2_lbus puts them on the pins.
+    output reg  [17:0] zq_addr,
+    output reg         zq_ce, zq_oe, zq_we, zq_ub, zq_lb,
+    output wire        z_res,        // Zorro reservation: the host may not start an SRAM access
+    output wire        z_quiet,      // every Zorro-side local-bus driver off for >= GUARD clocks
+    input  wire        zs_drv,       // SRAM outputs enabled for a Zorro read (z2_lbus pin registers)
+    input  wire        h_quiet,      // host idle, its drivers off for >= GUARD clocks
+    // Stage 3: shared registers (z2_mbx), board-window offsets $0040-$005E
+    output reg         zr_we,
+    output reg  [3:0]  zr_widx,
+    output reg  [1:0]  zr_be,
+    output reg  [15:0] zr_wdata,
+    output wire [3:0]  zr_ridx,
+    input  wire [15:0] zr_rdata,
+    input  wire        z_irq,        // queue/event interrupt request from z2_mbx
+    output wire        zrst_o,
+    output wire        busrst_o,
+    output wire        configured_o,
+    output wire        mode_b_o,
+    output wire        en_ok_o
+`ifdef FORMAL
+    ,                                // observation for the shared-memory proof (formal/fv_shm.v)
+    output wire [3:0]  f_st,
+    output wire [2:0]  f_res_cnt,
+    output wire        f_nat_go,     // a local-bus action is due by Zorro-side conditions alone
+    output wire        f_oe_wr_q,
+    output wire        f_ld_oe
+`endif
 );
     // ------------------------------------------------------------------ state
     localparam [3:0] ST_IDLE   = 4'd0,  ST_START  = 4'd1,  ST_IGNORE = 4'd2,  ST_WAITDS = 4'd3,
@@ -73,6 +107,9 @@ module z2_core #(
     reg         busrst_q;
     reg         mode_b_l, armed;
     reg  [15:0] brd_rdata;
+    reg  [3:0]  bank;                 // mode A banked window: SRAM bank (16 x 32 KB)
+    reg  [1:0]  rd_cnt;               // read: clocks until the XRDY release
+    reg  [2:0]  res_cnt;              // clocks since START (saturating), for the reservation floor
 
     initial begin
         st = ST_IDLE; configured = 1'b0; shutup = 1'b0; pend_cfg = 1'b0; pend_shut = 1'b0; base = 8'h00;
@@ -86,6 +123,9 @@ module z2_core #(
         wdog_events = 16'h0000; rmw_cycles = 16'h0000; berr_events = 16'h0000; ticks = 16'h0000;
         tick_pre = 10'd0; berr_s_d = 1'b0; brst_cnt = 2'd0; busrst_q = 1'b0; mode_b_l = 1'b0; armed = 1'b0;
         zf_int2_n = 1'b1; zf_int6_n = 1'b1;
+        bank = 4'd0; rd_cnt = 2'd0; res_cnt = 3'd0;
+        zq_addr = 18'd0; zq_ce = 1'b0; zq_oe = 1'b0; zq_we = 1'b0; zq_ub = 1'b0; zq_lb = 1'b0;
+        zr_we = 1'b0; zr_widx = 4'd0; zr_be = 2'b00; zr_wdata = 16'h0000;
     end
 
     // ------------------------------------------------------------------ synchronisers
@@ -126,7 +166,12 @@ module z2_core #(
     // pull-down passes the chain (empty-slot behaviour).
     assign zf_cfgout_n = zb_cfgin_n | ~(configured | shutup);
     assign zf_arm      = armed;
-    assign led         = led_r | {wd_flag, irq_en & irq_pend, configured, armed};
+    assign led         = led_r | {wd_flag, irq_en & (irq_pend | z_irq), configured, armed};
+    assign zrst_o       = zrst;
+    assign busrst_o     = busrst_q;
+    assign configured_o = configured;
+    assign mode_b_o     = mode_b_l;
+    assign en_ok_o      = en_ok_s;
 
     // ------------------------------------------------------------------ read data
     function [7:0] ac_reg;               // logical AutoConfig register values
@@ -154,6 +199,12 @@ module z2_core #(
     wire [3:0]  ac_phys   = (ac_r == 6'h00) ? ac_nib : ~ac_nib;  // all but $00/$02 inverted
     wire        reg_space = mode_b_l ? (addr_q[18:12] == 7'd0) : (addr_q[15:12] == 4'd0);
     wire [10:0] ridx      = addr_q[11:1];
+    wire        tgt_mem   = ~tgt_ac & ~reg_space;                // board window outside the registers
+    wire        mbx_space = (ridx[10:4] == 7'd2);                // $0040-$005E: z2_mbx registers
+    assign      zr_ridx   = ridx[3:0];
+    // SRAM word address. Mode A: $1000-$7FFF -> SRAM $01000-$07FFF; $8000-$FFFF -> bank x 32 KB.
+    // Mode B: the 512 KB window maps linearly (the first 4 KB are the registers).
+    wire [17:0] sram_wa   = mode_b_l ? addr_q[18:1] : (addr_q[15] ? {bank, addr_q[14:1]} : {4'd0, addr_q[14:1]});
     wire [15:0] status_w  = {5'd0, armed, en_ok_s, wd_flag, 1'b0, dip_disable, dip_int6, dip_mode_b,
                              1'b0, zero_wait, int_sel, mode_b_l};
     wire [15:0] control_w = {8'd0, led_r, 1'b0, int_sel, irq_en, zero_wait};
@@ -173,14 +224,20 @@ module z2_core #(
             11'd11:  brd_rdata = wdog_events;          // $0016 WDOG_EVENTS
             11'd12:  brd_rdata = rmw_cycles;           // $0018 RMW_CYCLES
             11'd13:  brd_rdata = berr_events;          // $001A BERR_EVENTS
+            11'd16:  brd_rdata = {12'd0, bank};        // $0020 BANK (mode A)
             default: brd_rdata = 16'h0000;             // $0012 IRQ_SET (write-only), reserved
         endcase
     end
-    wire [15:0] rdata = tgt_ac ? {ac_phys, 12'hFFF} : (reg_space ? brd_rdata : 16'h0000);
+    wire [15:0] rdata = tgt_ac ? {ac_phys, 12'hFFF} : (mbx_space ? zr_rdata : brd_rdata);
 
     // ------------------------------------------------------------------ helpers
     wire oe_quiet    = (oe_idle_cnt >= GUARD);   // every enable off for >= GUARD clocks
     wire dir_settled = (dir_cnt >= GUARD);       // DIR unchanged for >= GUARD clocks
+    wire res_ok      = (res_cnt >= ZRES);        // reservation floor reached (property X4)
+    // The Zorro side reserves the local bus from the clock /AS is seen until the cycle ends,
+    // except for a cycle it is ignoring (another card's): host accesses may then proceed.
+    assign z_res     = (st == ST_IDLE) ? as_s : (st != ST_IGNORE);
+    assign z_quiet   = oe_quiet;
     wire lane_hi     = uds_s;                    // D15..D8
     wire lane_lo     = lds_s;                    // D7..D0
 
@@ -210,16 +267,17 @@ module z2_core #(
 
     // ------------------------------------------------------------------ interrupt outputs (registered)
     always @(posedge clk) begin
-        zf_int2_n <= ~(armed & irq_en & irq_pend & ~int_sel);
-        zf_int6_n <= ~(armed & irq_en & irq_pend &  int_sel);
+        zf_int2_n <= ~(armed & irq_en & (irq_pend | z_irq) & ~int_sel);
+        zf_int6_n <= ~(armed & irq_en & (irq_pend | z_irq) &  int_sel);
     end
 
     // ------------------------------------------------------------------ main sequential logic
     always @(posedge clk) begin
         // guard counters (saturating)
-        if (oe_rd_q | oe_wr_q | ld_oe) oe_idle_cnt <= 3'd0;
+        if (oe_rd_q | oe_wr_q | ld_oe | zs_drv) oe_idle_cnt <= 3'd0;
         else if (oe_idle_cnt != 3'd7)  oe_idle_cnt <= oe_idle_cnt + 3'd1;
         if (dir_cnt != 3'd7)           dir_cnt     <= dir_cnt + 3'd1;
+        zr_we <= 1'b0;                                  // one-clock register write strobe to z2_mbx
 
         // direction controller: DIR changes only while every enable has been off for GUARD clocks
         if ((dir_q != dir_req) && !oe_rd_q && !oe_wr_q && !ld_oe && oe_quiet) begin
@@ -241,6 +299,7 @@ module z2_core #(
             match_en <= 1'b0; cmp <= 8'hE8; care_lo <= 1'b1;
             sel_q <= 1'b0; tgt_ac <= 1'b0; ph_any <= 1'b0; ph_two <= 1'b0; ph_rd <= 1'b0; held <= 1'b0;
             oe_rd_q <= 1'b0; oe_wr_q <= 1'b0; ld_oe <= 1'b0; dir_req <= 1'b0;
+            zq_ce <= 1'b0; zq_oe <= 1'b0; zq_we <= 1'b0; zq_ub <= 1'b0; zq_lb <= 1'b0; bank <= 4'd0; res_cnt <= 3'd0;
             hold_q <= 1'b1;
             zero_wait <= 1'b0; irq_en <= 1'b0; int_sel <= dip_int6; irq_pend <= 1'b0; led_r <= 4'd0;
             wd_cnt <= 8'd0; wd_trip <= 1'b0;
@@ -271,6 +330,10 @@ module z2_core #(
             end else if (!hold_q)
                 wd_cnt <= 8'd0;
 
+            // ---- reservation floor: clocks since START
+            if (st == ST_IDLE)          res_cnt <= 3'd0;
+            else if (res_cnt != 3'd7)   res_cnt <= res_cnt + 3'd1;
+
             // ---- bus-cycle FSM
             if ((st != ST_IDLE) && !as_s) begin
                 // end of the bus cycle: everything off, bookkeeping, back to idle
@@ -283,6 +346,7 @@ module z2_core #(
                 end
                 pend_cfg <= 1'b0; pend_shut <= 1'b0; sel_q <= 1'b0;
                 oe_rd_q <= 1'b0; oe_wr_q <= 1'b0; ld_oe <= 1'b0; dir_req <= 1'b0;
+                zq_ce <= 1'b0; zq_oe <= 1'b0; zq_we <= 1'b0; zq_ub <= 1'b0; zq_lb <= 1'b0;
                 hold_q <= ~zero_wait;
                 st <= ST_IDLE;
             end else begin
@@ -333,17 +397,30 @@ module z2_core #(
                     else if (!ds_s) begin
                         dir_req <= 1'b0;
                         st      <= ST_BETWN;
-                    end else if (dir_q && dir_req && dir_settled && !oe_wr_q && (!stall_test || wd_trip)) begin
-                        ld_dout <= wd_trip ? 16'hFFFF : rdata;
-                        ld_oe   <= 1'b1;                 // FPGA drives LD (U103 A port is an input)
+                    end else if (dir_q && dir_req && dir_settled && !oe_wr_q && res_ok && h_quiet &&
+                                 (!stall_test || wd_trip)) begin
                         oe_rd_q <= 1'b1;                 // transceiver may drive Zorro with DOE & DS
+                        if (tgt_mem && !wd_trip) begin   // SRAM drives LD (pins one clock later)
+                            zq_addr <= sram_wa;
+                            zq_ce   <= 1'b1; zq_oe <= 1'b1; zq_ub <= 1'b1; zq_lb <= 1'b1;
+                            rd_cnt  <= SRAM_RD_WAIT;
+                        end else begin                   // FPGA drives LD (U103 A port is an input)
+                            ld_dout <= wd_trip ? 16'hFFFF : rdata;
+                            ld_oe   <= 1'b1;
+                            rd_cnt  <= 2'd0;
+                        end
                         st      <= ST_RD_DRV;
                     end
                 end
 
-                ST_RD_DRV: begin                         // data on LD for one clock: release XRDY
-                    hold_q <= 1'b0;
-                    st     <= ST_RD_HLD;
+                ST_RD_DRV: begin                         // data on LD: release XRDY after rd_cnt clocks
+                    if (rd_cnt == 2'd0) begin
+                        hold_q <= 1'b0;
+                        st     <= ST_RD_HLD;
+                    end else begin
+                        rd_cnt <= rd_cnt - 2'd1;
+                        if (berr_s) st <= ST_ABORT;
+                    end
                 end
 
                 ST_RD_HLD: begin                         // hold data until the strobe is negated
@@ -352,6 +429,7 @@ module z2_core #(
                     else if (!ds_s) begin                // normal end, or S7 of an RMW cycle
                         oe_rd_q <= 1'b0;
                         ld_oe   <= 1'b0;
+                        zq_oe   <= 1'b0; zq_ce <= 1'b0; zq_ub <= 1'b0; zq_lb <= 1'b0;
                         dir_req <= 1'b0;
                         st      <= ST_BETWN;
                     end
@@ -362,23 +440,44 @@ module z2_core #(
                         st <= ST_ABORT;
                     else if (!ds_s)
                         st <= ST_BETWN;
-                    else if (!dir_q && !dir_req && dir_settled && oe_quiet) begin
+                    else if (!dir_q && !dir_req && dir_settled && oe_quiet && res_ok && h_quiet) begin
                         oe_wr_q <= 1'b1;                 // transceiver B->A drives LD
                         wr_cnt  <= 3'd0;
+                        if (tgt_mem) begin               // SRAM write: address, /CE, lanes first
+                            zq_addr <= sram_wa;
+                            zq_ce   <= 1'b1; zq_ub <= lane_hi; zq_lb <= lane_lo;
+                        end
                         st      <= ST_WR_CAP;
                     end
                 end
 
                 ST_WR_CAP: begin                         // let data settle through U103, then capture
-                    if (berr_s)
-                        st <= ST_ABORT;
+                    if (berr_s) begin
+                        zq_we <= 1'b0;                   // an SRAM write strobe never exceeds one clock
+                        st    <= ST_ABORT;
+                    end
                     else if (!ds_s) begin
                         oe_wr_q <= 1'b0;
                         ph_rd   <= 1'b0;
+                        zq_we   <= 1'b0; zq_ce <= 1'b0; zq_ub <= 1'b0; zq_lb <= 1'b0;
                         st      <= ST_BETWN;
                     end else if (wr_cnt < GUARD)
                         wr_cnt <= wr_cnt + 3'd1;
-                    else if (!stall_test || wd_trip) begin
+                    else if (tgt_mem) begin
+                        // SRAM write: data has been on LD for GUARD clocks; one-clock /WE pulse
+                        // (pins one clock later), then release XRDY (/WE is already high).
+                        if (wr_cnt == GUARD) begin
+                            if (!wd_trip && !stall_test) zq_we <= 1'b1;   // a watchdog trip discards the write
+                            if (!stall_test || wd_trip) wr_cnt <= wr_cnt + 3'd1;
+                        end else if (wr_cnt == GUARD + 1) begin
+                            zq_we  <= 1'b0;
+                            wr_cnt <= wr_cnt + 3'd1;
+                        end else begin
+                            zq_ce <= 1'b0; zq_ub <= 1'b0; zq_lb <= 1'b0;
+                            hold_q <= 1'b0;              // release XRDY
+                            st     <= ST_WR_HLD;
+                        end
+                    end else if (!stall_test || wd_trip) begin
                         if (!wd_trip) begin               // a watchdog release discards the write
                             if (tgt_ac) begin
                                 if (lane_hi) begin
@@ -410,8 +509,15 @@ module z2_core #(
                                     end
                                     11'd8:   if (lane_lo && ld_in[0]) irq_pend <= 1'b0;  // IRQ_STATUS W1C
                                     11'd9:   if (lane_lo && ld_in[0]) irq_pend <= 1'b1;  // IRQ_SET
+                                    11'd16:  if (lane_lo) bank <= ld_in[3:0];            // BANK
                                     default: ;
                                 endcase
+                                if (mbx_space) begin                                    // z2_mbx
+                                    zr_we    <= 1'b1;
+                                    zr_widx  <= ridx[3:0];
+                                    zr_be    <= {lane_hi, lane_lo};
+                                    zr_wdata <= ld_in;
+                                end
                             end
                         end
                         hold_q <= 1'b0;                  // release XRDY
@@ -431,6 +537,7 @@ module z2_core #(
 
                 ST_ABORT: begin                          // /BERR: release everything, wait for /AS
                     oe_rd_q <= 1'b0; oe_wr_q <= 1'b0; ld_oe <= 1'b0; dir_req <= 1'b0;
+                    zq_ce <= 1'b0; zq_oe <= 1'b0; zq_we <= 1'b0; zq_ub <= 1'b0; zq_lb <= 1'b0;
                     hold_q  <= 1'b0;
                     pend_cfg <= 1'b0; pend_shut <= 1'b0;
                 end
@@ -450,6 +557,16 @@ module z2_core #(
     end
 
 `ifdef FORMAL
+    // ---- observation ports (formal/fv_shm.v): the go conditions WITHOUT h_quiet. Property X4
+    //      there proves h_quiet is already true whenever one of them holds, so host activity
+    //      never delays a Zorro local-bus action.
+    assign f_st      = st;
+    assign f_res_cnt = res_cnt;
+    assign f_nat_go  = ((st == ST_RD_DIR) && !berr_s && ds_s && dir_q && dir_req && dir_settled && !oe_wr_q && res_ok) ||
+                       ((st == ST_WR_DIR) && !berr_s && ds_s && !dir_q && !dir_req && dir_settled && oe_quiet && res_ok);
+    assign f_oe_wr_q = oe_wr_q;
+    assign f_ld_oe   = ld_oe;
+
     // ==================================================================== formal properties
     // Run with hdl/formal/z2_core.sby (SymbiYosys). Inputs are unconstrained: every
     // property must hold for ANY sequence of Zorro, EN_OK, DIP and reset inputs.
@@ -467,15 +584,30 @@ module z2_core #(
         if (!zf_xrdy)    assert(!zb_as_n && zb_berr_n && sel_c && hold_q);
         // F4  /SLAVEn only with /AS asserted and the address selected
         if (!zf_slave_n) assert(!zb_as_n && sel_c);
-        // F5  local-bus ownership: the FPGA and U103 never drive LD together
-        assert(ld_oe == oe_rd_q);
+        // F5  local-bus ownership: the FPGA, the SRAM and U103 never drive LD together.
+        //     A read drives LD from the FPGA (registers) or the SRAM, never both; U103's A port
+        //     is then an input (dir_q = 1).
+        assert(oe_rd_q == (ld_oe | zq_oe));
+        assert(!(ld_oe && zq_oe));
         assert(!(ld_oe && oe_wr_q));
+        assert(!(zq_oe && oe_wr_q));
         if (ld_oe)   assert(dir_q);
+        if (zq_oe)   assert(dir_q && zq_ce && !zq_we);
         if (oe_wr_q) assert(!dir_q);
+        // F17 an SRAM write strobe only inside a write phase, with /CE, never with /OE
+        if (zq_we)   assert(zq_ce && !zq_oe && oe_wr_q && (st == ST_WR_CAP) && (wr_cnt == GUARD + 1));
+        if (zq_ce)   assert((st == ST_RD_DRV) || (st == ST_RD_HLD) || (st == ST_WR_CAP) || (st == ST_ABORT));
+        // helper invariants for the SRAM paths (k-induction)
+        if (st == ST_WR_CAP) assert((zq_ce == tgt_mem) && oe_wr_q && !zq_oe && (wr_cnt <= (tgt_mem ? GUARD + 2 : GUARD)));
+        if ((st == ST_RD_DRV) || (st == ST_RD_HLD)) assert(zq_oe == zq_ce);
+        if (st == ST_RD_HLD) assert(rd_cnt == 2'd0);
         // F6  /CFGOUTn asserted only with /CFGINn and configured or shut up
         if (!zf_cfgout_n) assert(!zb_cfgin_n && (configured || shutup));
         // F7  idle means everything released
-        if (st == ST_IDLE) assert(!oe_rd_q && !oe_wr_q && !ld_oe);
+        if (st == ST_IDLE) assert(!oe_rd_q && !oe_wr_q && !ld_oe && !zq_ce && !zq_oe && !zq_we);
+        // F18 the reservation covers every state that may act on the local bus
+        if ((st != ST_IDLE) && (st != ST_IGNORE)) assert(z_res);
+        if (st == ST_IGNORE) assert(!oe_rd_q && !oe_wr_q && !ld_oe && !zq_ce);
         // helper invariants (aid k-induction)
         if (oe_rd_q) assert((st == ST_RD_DRV) || (st == ST_RD_HLD) || (st == ST_ABORT));
         if (oe_wr_q) assert((st == ST_WR_CAP) || (st == ST_WR_HLD) || (st == ST_ABORT));
@@ -506,6 +638,13 @@ module z2_core #(
         // F9  an enable is raised only after DIR has been stable for GUARD clocks
         if (oe_rd_q && !$past(oe_rd_q)) assert($past(dir_q) && ($past(dir_cnt) >= GUARD));
         if (oe_wr_q && !$past(oe_wr_q)) assert(!$past(dir_q) && ($past(dir_cnt) >= GUARD) && ($past(oe_idle_cnt) >= GUARD));
+        // F19 every local-bus action waits for the reservation floor and for a quiet host side
+        if ((oe_rd_q && !$past(oe_rd_q)) || (oe_wr_q && !$past(oe_wr_q)))
+            assert($past(res_ok) && $past(h_quiet));
+        // F20 SRAM write strobe: exactly one clock, address and lanes unchanged around it
+        if ($past(zq_we)) assert(!zq_we);
+        if (zq_we) assert((zq_addr == $past(zq_addr)) && (zq_ub == $past(zq_ub)) && (zq_lb == $past(zq_lb)) && $past(zq_ce));
+        if ($past(zq_we) && !$past(zrst)) assert((zq_addr == $past(zq_addr)) && (zq_ce || (st == ST_IDLE) || (st == ST_BETWN) || (st == ST_ABORT)));
         // F10 arming only inside a Zorro reset with EN_OK; EN_OK loss disarms next clock
         if (armed && !$past(armed)) assert($past(busrst_q) && $past(en_ok_s) && !$past(dip_disable));
         if (!$past(en_ok_s)) assert(!armed);

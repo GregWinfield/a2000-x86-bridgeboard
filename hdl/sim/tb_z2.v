@@ -70,7 +70,7 @@ module tb_z2;
                  .D(Z_D), .XRDY(Z_XRDY), .BERR_N(Z_BERR_N), .clk7(clk7));
 
     wire d_drv, ld_conflict, card_en_n, en_ok;
-    card_sheet1 #(.SEED(SEED), .FPGA_TMAX(FPGA_TMAX), .SUP_TD(5000.0)) c (
+    card_model #(.SEED(SEED), .FPGA_TMAX(FPGA_TMAX), .SUP_TD(5000.0)) c (
         .Z_A(Z_A), .Z_AS_N(Z_AS_N), .Z_UDS_N(Z_UDS_N), .Z_LDS_N(Z_LDS_N), .Z_READ(Z_READ), .Z_DOE(Z_DOE),
         .Z_E7M(clk7), .Z_CFGIN_N(Z_CFGIN_N), .Z_BUSRST_N(Z_BUSRST_N), .Z_BERR_N(Z_BERR_N),
         .Z_D(Z_D), .Z_SLAVE_N(Z_SLAVE_N), .Z_CFGOUT_N(Z_CFGOUT_N), .Z_XRDY(Z_XRDY),
@@ -285,6 +285,12 @@ module tb_z2;
         expect1("T0 armed, unconfigured: /CFGOUTn driven negated", Z_CFGOUT_N, 1'b1);
         r_armed = 1'b1;
         Z_BUSRST_N = 1'b1;
+`ifdef HOST_BG
+        // Stage 3: continuous random host (SPI-side) SRAM traffic in a private region for the
+        // rest of the run. Every Zorro check must still pass (arbitration cannot disturb Zorro).
+        c.dut.u_host.bg_base = 18'h20000; c.dut.u_host.bg_gap = 3; c.dut.u_host.bg_en = 1'b1;
+        $display("tb_z2: host background traffic ON (SRAM words %h-%h)", 18'h20000, 18'h20FFF);
+`endif
         #(3000.0);
 
         // ---------------- T1/T2 AutoConfig (mode A), configure at $E90000
@@ -294,7 +300,7 @@ module tb_z2;
 
         // ---------------- T3 registers, word and byte writes
         rd16(B + 24'h0, d);  expect16("MAGIC", d, 16'h4252);
-        rd16(B + 24'h2, d);  expect16("VERSION", d, 16'h0A01);
+        rd16(B + 24'h2, d);  expect16("VERSION", d, 16'h0A02);
         rd16(B + 24'h4, d);  expect16("STATUS", d, 16'h0600);
         wr16(B + 24'h6, 16'h0050); rd16(B + 24'h6, d); expect16("CONTROL", d, 16'h0050);
         wr16(B + 24'h6, 16'h0000);
@@ -302,7 +308,10 @@ module tb_z2;
         wr8 (B + 24'h8, 8'hAB);    rd16(B + 24'h8, d); expect16("SCRATCH0 UDS byte", d, 16'hAB34);
         wr8 (B + 24'h9, 8'hCD);    rd16(B + 24'h8, d); expect16("SCRATCH0 LDS byte", d, 16'hABCD);
         wr16(B + 24'hA, 16'h5AA5); rd16(B + 24'hA, d); expect16("SCRATCH1", d, 16'h5AA5);
-        rd16(B + 24'h1000, d); expect16("SRAM window (Stage 2 reads 0)", d, 16'h0000);
+        // Stage 3: the rest of the window is the shared SRAM (sheet 3)
+        wr16(B + 24'h1000, 16'h3C5A); rd16(B + 24'h1000, d); expect16("SRAM fixed window word", d, 16'h3C5A);
+        wr8 (B + 24'h1001, 8'hE1);   rd16(B + 24'h1000, d); expect16("SRAM LDS byte", d, 16'h3CE1);
+        wr8 (B + 24'h1000, 8'h7B);   rd16(B + 24'h1000, d); expect16("SRAM UDS byte", d, 16'h7BE1);
 
         // ---------------- T4 RMW (TAS) with byte strobes, DOE variants, write-drive timing (C-13)
         for (k = 0; k < 4; k = k + 1) begin
@@ -466,12 +475,16 @@ module tb_z2;
         autoconfig_check_and_configure(8'h20, 1'b1);
         B = 24'h200000;
         rd16(24'h200000, d); expect16("mode B MAGIC", d, 16'h4252);
-        rd16(24'h27FFFE, d); expect16("mode B top of window", d, 16'h0000);
+        wr16(24'h27FFFE, 16'hBEEF); rd16(24'h27FFFE, d); expect16("mode B top of window (SRAM)", d, 16'hBEEF);
         bus(0, 24'h280000, 2'b11, 16'h0);              // just outside: no answer
         bus(0, 24'h1FFFFE, 2'b11, 16'h0);
         dip_mode_b = 1'b0;
 
         // ---------------- T17 FPGA reconfigured while the Amiga runs: transparent until /BUSRST
+`ifdef HOST_BG
+        // the host side quiesces before a reconfiguration (rule H-4, shared-memory spec section 5)
+        c.dut.u_host.bg_en = 1'b0; wait (c.dut.u_host.busy == 1'b0);
+`endif
         fpga_cfg = 1'b0; r_armed = 1'b0; r_cfg = 1'b0; #(2000.0);
         expect1("reconfiguring FPGA: card disabled", card_en_n, 1'b1);
         fpga_cfg = 1'b1; #(4000.0);
@@ -487,6 +500,15 @@ module tb_z2;
         bus(0, 24'hE80000, 2'b11, 16'h0);
 
         #(1000.0);
+`ifdef HOST_BG
+        $display("tb_z2: host transfers %0d SRAM, latency mean %0.1f ns, max %0.1f ns; BFM errors %0d",
+                 c.dut.u_host.n_sram, c.dut.u_host.sum_lat / (c.dut.u_host.n_sram + 1.0e-9),
+                 c.dut.u_host.max_lat, c.dut.u_host.errors);
+        errors = errors + c.dut.u_host.errors;
+`endif
+        errors = errors + c.u301.errors;
+        $display("tb_z2: SRAM model writes %0d, read enables %0d, timing errors %0d", c.u301.writes, c.u301.reads,
+                 c.u301.errors);
         $display("TB_RESULT %s tb_z2 SEED=%0d errors=%0d checks=%0d", (errors == 0) ? "PASS" : "FAIL",
                  SEED, errors, checks);
         $finish;
