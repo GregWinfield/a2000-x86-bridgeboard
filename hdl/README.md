@@ -2,7 +2,7 @@
 
 Original HDL for the bridgeboard FPGA (Lattice LCMXO2-2000HC-4TG144C). **Licence: MIT** (D-13); every file carries an SPDX header. Specification: [../docs/hdl/zorro-interface-spec.md](../docs/hdl/zorro-interface-spec.md). Requirement-to-evidence map: [../docs/hdl/verification-matrix.md](../docs/hdl/verification-matrix.md).
 
-> **Status (2026-11-19): `run_checks.sh` → ALL HDL CHECKS PASSED** for Stages 2–4 (39 testbench runs, 9 formal tasks; [../docs/hdl/verification-results.md](../docs/hdl/verification-results.md) §5.8). Diamond STA at the frozen pins: every constraint met on the **LCMXO2-4000HC**. With the sheet-4 host link the design **no longer fits the 2000HC** (1090 of 1056 slices): decision C-30 is the owner's ([../docs/stage2/sheet4-sta-results.md](../docs/stage2/sheet4-sta-results.md)).
+> **Status (2026-11-19): `run_checks.sh` → ALL HDL CHECKS PASSED** for Stages 2–4 (39 testbench runs, 9 formal tasks; [../docs/hdl/verification-results.md](../docs/hdl/verification-results.md) §5.8). Diamond STA at the frozen pins: every constraint met on the **LCMXO2-4000HC**. With the sheet-4 host link the design **no longer fits the 2000HC** (1090 of 1056 slices): **C-30 approved, the Rev 1 FPGA is the LCMXO2-4000HC-4TG144C**, and `run_diamond.sh` defaults to it ([../docs/stage2/sheet4-sta-results.md](../docs/stage2/sheet4-sta-results.md)).
 
 ## Layout
 

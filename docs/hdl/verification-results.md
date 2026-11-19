@@ -190,3 +190,24 @@ The earlier runs (lint, tb_z2 random and delay corners, tb_z2 and tb_shm with th
 - an optimistic simulated MISO delay.
 
 Details: [../stage2/sheet4-design-notes.md](../stage2/sheet4-design-notes.md) §10.
+
+### 5.9 Sheet 4 revision A1 and sheet 2 revision A2 (owner review of PR #7), 2026-11-19
+
+| Change | Check | Result |
+|---|---|---|
+| No RTL or constraint-logic change (device and file headers only) | Full `run_checks.sh` | **ALL HDL CHECKS PASSED** (39 testbench runs, 9 formal tasks) |
+| C-30: pin plan on the MachXO2-4000 pinout; the 4000HC-only pads kept free | `pinplan.py`: freeze check, compatibility with the 2000HC pinout | 101 signals on their frozen pins; 0 problems; LPF LOCATEs unchanged; 6 spare |
+| C-30: sheet 2 U201 regenerated from the 4000 pinout | Netlist comparison of U201 before and after; `audit_sheet2.py` | No connected pin changed (only the names of the 6 unconnected spare pins); 1100 checks, 0 failures |
+| S4-6 rev A1: U402 /OE from comparator U405 | `audit_sheet4.py`; mutation test; ERC | 204 checks, 0 failures; 17 of 17 faults detected; 51 expected ERC entries |
+| S4-6 analysis | `tools/analysis/k4_transient.py` | Rev A: +0.6 V above IOVDD for 0.7–7.4 ms, 31–49 mA GPIO turn-on. Rev A1: ≤ +0.29 V, GP24 ≤ 0.36 mA ([../stage2/sheet4-s46-isolation.md](../stage2/sheet4-s46-isolation.md)). *The rev A1 figure assumed a 9.5 V/ms maximum slope and a typical delay; withdrawn in rev A2 (§5.10)* |
+| Diamond default device | `run_diamond.sh` without a device argument | LCMXO2-4000HC; reproduces the z2_top commercial figures exactly |
+
+### 5.10 Sheet 4 revision A2 (owner review of PR #8), 2026-11-19
+
+| Change | Check | Result |
+|---|---|---|
+| No RTL, LPF or pin change | Full `run_checks.sh` on this tree | **ALL HDL CHECKS PASSED** (39 testbench runs, 9 formal tasks) |
+| S4-6 rev A2: TLV3201 + Q401/Q402, threshold 0.940, R424 removed | `audit_sheet4.py`; mutation test; ERC | **213 checks, 0 failures**; **25 of 25** injected faults detected (new: R424 path re-created, Q402 bypassed, Q402 gate on the comparator, Q401 swapped, a resistor across the domains, rev A1 values, TLV7021 fitted); 51 ERC entries, identical to rev A1 apart from coordinates |
+| Other sheets | `audit_sheet1/2/3.py`; netlist comparison with rev A1 | 418 / 1103 / 159 checks, 0 failures (sheet 2: +3 checks for the new net names); every pin outside sheet 4 on the same net as in rev A1 |
+| S4-6 worst-case analysis | `tools/analysis/k4_transient.py` (closed form, cross-checked by a 1 ns time-stepped simulation to 1 mV) | Rev A1: within VIH max only to ≈ 18 V/ms on typical delays, so its claim is withdrawn. Rev A2: ≤ 160 ns latency from datasheet maxima; **guaranteed within VIH max to 314 V/ms and within the absolute maximum to 1564 V/ms**. X4 worst case ≤ 94 V/ms [E]. R424 path quantified (≤ 27 µA at the trip, up to 0.29 mA, released GP24 held at 2.67–2.83 V) ([../stage2/sheet4-s46-isolation.md](../stage2/sheet4-s46-isolation.md)) |
+| Not verifiable here | – | Hardware M-16 (a–f): trip point, latency, K4 slope and pin levels, defaults, idle state, noise. Open |

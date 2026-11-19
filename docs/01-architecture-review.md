@@ -397,6 +397,7 @@ The Zorro +5 V/+12 V/−5 V/−12 V pins are **not connected**. All Zorro GND pi
 | Load | Typical | Design max |
 |---|---|---|
 | 3.3 V logic: FPGA, SRAM, buffers, 5 LEDs, INA226, oscillator (via LDO, so input current ≈ output) | 0.12 A | 0.25 A |
+| *C-30 update (2026-11-19):* FPGA now LCMXO2-4000HC: static core current typ 8.45 mA instead of 4.80 mA (+3.7 mA); JTAG programming typ 26.8 mA instead of 22.1 mA (MachXO2 data sheet Tables 3.10, 3.11 [V S49]). Sheet 4 adds U405 (≤ 10 µA, from the X4's header 3.3 V) and translator quiescent current (µA) | +0.004 A | within the 0.25 A design maximum; dynamic FPGA power to be estimated with the Diamond Power Calculator at sheet 5 |
 | `+5V_BUS` translator side (bus switching) | 0.02 A | 0.05 A |
 | **Total** | **≈ 0.14 A (0.7 W)** | **0.3 A (1.5 W); fuse sized ≈ 0.75–1 A** |
 

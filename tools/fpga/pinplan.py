@@ -1,10 +1,14 @@
 # SPDX-License-Identifier: MIT
-"""FPGA pin assignment for sheet 2 (LCMXO2-2000HC-4TG144), generated from the Lattice pinout file.
+"""FPGA pin assignment for sheet 2, generated from the Lattice pinout files.
+
+Device: LCMXO2-4000HC-4TG144 since owner decision C-30 (2026-11-19). The assignment was made on the
+LCMXO2-2000HC and frozen at G-SHEET2; C-30 keeps it pin for pin.
 
 usage: python -I tools/fpga/pinplan.py <repo>
 
-Inputs : tools/fpga/MachXO2-2000_TQFP144_pins.csv (facts-only extract of Lattice document 42568 rev 1.2, S63) and the PLAN below;
-         tools/fpga/MachXO2-4000_TQFP144_pins.csv (extract of Lattice document 42571 rev 1.5, S63) for the fallback check.
+Inputs : tools/fpga/MachXO2-4000_TQFP144_pins.csv (facts-only extract of Lattice document 42571 rev 1.5, S63) and the PLAN below;
+         tools/fpga/MachXO2-2000_TQFP144_pins.csv (extract of Lattice document 42568 rev 1.2, S63): the G-SHEET2 basis,
+         checked for pin compatibility.
 Outputs: the LOCATE block in hdl/syn/z2_top.lpf (between the generated markers),
          hdl/syn/fit_top_extra.lpf (pins that exist only in the fit test until sheets 4-6 are drawn),
          docs/stage2/sheet2-pin-assignment.md (the pin table).
@@ -13,8 +17,9 @@ Rules checked here (sheet-3 notes section 8.1, Hardware Checklist FPGA-TN-02154,
   * SN carries an FPGA output only (it must not be driven low while the device is erased);
   * clk_core on a PCLK input; I2C on the primary I2C pins (SCL/SDA);
   * every pad used at most once; every signal placed in the bank the plan names;
-  * fallback (owner decision C-17): on the LCMXO2-4000HC TQFP144 every assigned pin is an I/O pad in the
-    same bank, and the reserved, SN, clock and I2C functions sit on the same package pins;
+  * pin compatibility with the LCMXO2-2000HC (the G-SHEET2 basis): every assigned pin is an I/O pad in the
+    same bank there too, and the reserved, SN, clock and I2C functions sit on the same package pins. The
+    4000HC-only pads 31, 63 and 103 (NC on the 2000HC) are kept free (C-30);
   * freeze: no pin may differ from the G-SHEET2-approved assignment (tools/fpga/pins_gsheet2.csv) except
     the deliberate changes listed in CHANGES, each with its owner decision.
 """
@@ -35,7 +40,10 @@ CHANGES = {"LED[0]": ("LED_READY", "C-26: the one FPGA LED, renamed"),
 MOVES = {"RP_SCK": (5, "S4-3: SCK-clocked SPI slave needs a primary-clock input: PCLKT5_0"),
          "RP_IRQ_N": (1, "S4-3: swapped with RP_SCK")}
 # Pads kept free on purpose (not given to any signal by the automatic assignment)
-KEEP_FREE = {67: "freed by C-26 (option C-17b); spare"}
+KEEP_FREE = {67: "freed by C-26 (option C-17b); spare",
+             31: "4000HC-only I/O pad (NC on the 2000HC): kept free so the G-SHEET2 assignment is unchanged (C-30)",
+             63: "4000HC-only I/O pad (NC on the 2000HC): kept free (C-30)",
+             103: "4000HC-only I/O pad (NC on the 2000HC): kept free (C-30)"}
 
 # (signal, direction, bank, preferred pin or None, group). Order within a bank = pad order.
 PLAN = []
@@ -87,27 +95,27 @@ def load_pads(csv_path):
     return pads
 
 
-def migration(repo: Path, assign):
-    """Problems moving this assignment to the LCMXO2-4000HC-4TG144 (empty list = pin-compatible)."""
-    a = load_pads(repo / "tools/fpga/MachXO2-2000_TQFP144_pins.csv")
-    b = load_pads(repo / "tools/fpga/MachXO2-4000_TQFP144_pins.csv")
+def compat_2000(repo: Path, assign):
+    """Problems using this assignment on the LCMXO2-2000HC-4TG144, the G-SHEET2 basis (empty list = pin-compatible)."""
+    a = load_pads(repo / "tools/fpga/MachXO2-4000_TQFP144_pins.csv")
+    b = load_pads(repo / "tools/fpga/MachXO2-2000_TQFP144_pins.csv")
     probs = []
     for name, pin in sorted(assign.items(), key=lambda t: t[1]):
         if pin not in b:
-            probs.append(f"{name}: pin {pin} is not an I/O pad on the 4000")
+            probs.append(f"{name}: pin {pin} is not an I/O pad on the 2000")
         elif b[pin][0] != a[pin][0]:
-            probs.append(f"{name}: pin {pin} bank {a[pin][0]} on the 2000, {b[pin][0]} on the 4000")
+            probs.append(f"{name}: pin {pin} bank {a[pin][0]} on the 4000, {b[pin][0]} on the 2000")
     for fn in sorted(RESERVED | {"SN", "PCLKT0_1", "SDA", "SCL"}):
         pa = sorted(q for q, v in a.items() if fn in re.split(r"[/ ]", v[2]))
         pb = sorted(q for q, v in b.items() if fn in re.split(r"[/ ]", v[2]))
         if pa != pb:
-            probs.append(f"{fn}: pins {pa} on the 2000, {pb} on the 4000")
+            probs.append(f"{fn}: pins {pa} on the 4000, {pb} on the 2000")
     return probs, b
 
 
 def compute(repo: Path):
     """Assign every PLAN signal to a pad. Returns (assign {signal: pin}, usable pads, spare {bank: [pins]}, errors)."""
-    pads = load_pads(repo / "tools/fpga/MachXO2-2000_TQFP144_pins.csv")
+    pads = load_pads(repo / "tools/fpga/MachXO2-4000_TQFP144_pins.csv")         # C-30: the Rev 1 device
     usable = {p: v for p, v in pads.items() if not (set(re.split(r"[/ ]", v[2])) & RESERVED)}
     free = {b: sorted(p for p, v in usable.items() if v[0] == b and p not in KEEP_FREE) for b in "012345"}
     errors, assign = [], {}
@@ -177,8 +185,8 @@ def main(repo: Path):
     if errors:
         print("ERRORS:", *errors, sep="\n  ")
         return 1
-    mig, pads4 = migration(repo, assign)
-    print(f"LCMXO2-4000HC fallback: {len(mig)} problems", *mig, sep="\n  ")
+    mig, pads2 = compat_2000(repo, assign)
+    print(f"LCMXO2-2000HC (G-SHEET2 basis) pin compatibility: {len(mig)} problems", *mig, sep="\n  ")
     if mig:
         return 1
 
@@ -202,8 +210,10 @@ def main(repo: Path):
         + "\n".join(fit) + "\n", encoding="utf-8")
 
     # ---- documentation table
-    md = ["# Sheet 2: FPGA pin assignment (LCMXO2-2000HC-4TG144, revision A)", "",
-          "Generated by `tools/fpga/pinplan.py` from the Lattice pinout data (facts-only extract of the MachXO2-2000 Pinout rev 1.2, [V S63]) and the plan in that script.",
+    md = ["# Sheet 2: FPGA pin assignment (LCMXO2-4000HC-4TG144, revision A2)", "",
+          "Generated by `tools/fpga/pinplan.py` from the Lattice pinout data (facts-only extract of the MachXO2-4000 Pinout rev 1.5, [V S63]) and the plan in that script.",
+          "", "- **C-30, owner approval 2026-11-19:** the Rev 1 FPGA is the **LCMXO2-4000HC-4TG144C** (the design no longer fits the 2000HC). "
+          "The G-SHEET2 assignment, made on the 2000HC, is kept pin for pin; the 4000HC-only pads 31, 63 and 103 (NC on the 2000HC) are kept free.",
           "", "- Every bank runs at VCCIO 3.3 V, and every port is LVCMOS33 (`z2_top.lpf`).",
           "- **Reserved, no signal:** PROGRAMN 119, INITN 110, DONE 109 (configuration, `SDM_PORT`); TMS 130, TCK 131, TDI 136, TDO 137 (JTAG); JTAGENB 120 (C-19).",
           f"- **Signals:** {n_sig}. **Spare pads:** {sum(len(v) for v in spare.values())} " + ", ".join(f"bank {b}: {', '.join(map(str, v))}" for b, v in spare.items()) + ".",
@@ -211,17 +221,16 @@ def main(repo: Path):
           "(PCLKT5_0, primary-clock input for the SCK-clocked SPI slave); RP_IRQ_N moved from pin 5 to pin 1.",
           "- **C-26 (option C-17b), owner approval 2026-11-19:** the FAULT LED moved to the RP2040, so pin 67 is spare. "
           "Every other pin is unchanged from the G-SHEET2-approved assignment (`tools/fpga/pins_gsheet2.csv`; `pinplan.py` fails on any other difference).",
-          "- **Fallback LCMXO2-4000HC-4TG144C** (owner decision C-17), checked against the MachXO2-4000 pinout rev 1.5 [V S63]:",
-          "  every assigned pin is an I/O pad in the same bank, and PROGRAMN, INITN, DONE, JTAGENB, TMS, TCK, TDI, TDO, SN,",
-          "  PCLKT0_1, SDA and SCL are the same package pins. The pad names differ (column *4000 pad*); the LPF uses pin numbers.",
-          "  On the 4000, the 2000's NC pins 31, 63 and 103 are I/O pads; they stay unconnected.", "",
-          "| Pin | Bank | Pad | Dual function | Signal | Dir | Group | 4000 pad |", "|---|---|---|---|---|---|---|---|"]
+          "- **Pin compatibility with the LCMXO2-2000HC** (the G-SHEET2 basis), checked against the MachXO2-2000 pinout rev 1.2 [V S63]:",
+          "  every assigned pin is an I/O pad in the same bank there too, and PROGRAMN, INITN, DONE, JTAGENB, TMS, TCK, TDI, TDO, SN,",
+          "  PCLKT0_1, SDA and SCL are the same package pins. The pad names differ (column *2000 pad*); the LPF uses pin numbers.", "",
+          "| Pin | Bank | Pad | Dual function | Signal | Dir | Group | 2000 pad |", "|---|---|---|---|---|---|---|---|"]
     for name, direction, bank, pin, group in sorted(PLAN, key=lambda t: assign[t[0]]):
         p = assign[name]
-        md.append(f"| {p} | {usable[p][0]} | {usable[p][1]} | {usable[p][2] if usable[p][2] != '-' else ''} | `{name}` | {direction} | {group} | {pads4[p][1]} |")
+        md.append(f"| {p} | {usable[p][0]} | {usable[p][1]} | {usable[p][2] if usable[p][2] != '-' else ''} | `{name}` | {direction} | {group} | {pads2[p][1]} |")
     for b, v in spare.items():
         for p in v:
-            md.append(f"| {p} | {b} | {usable[p][1]} | {usable[p][2] if usable[p][2] != '-' else ''} | *spare* | – | – | {pads4[p][1]} |")
+            md.append(f"| {p} | {b} | {usable[p][1]} | {usable[p][2] if usable[p][2] != '-' else ''} | *spare* | – | – | {pads2.get(p, ('', 'NC', ''))[1]} |")
     (repo / "docs/stage2/sheet2-pin-assignment.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     print("LPF LOCATEs:", len(z2), "z2_top +", len(fit), "fit-only; table written")
     return 0

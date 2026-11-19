@@ -3,10 +3,13 @@
 
 J401 is the X4 GPIO ribbon header (pin map: docs/pin-assignment-matrix.md section 3, [V S1 sh.21]).
 Every X4 header signal passes an SN74AVC4T774 (A port = carrier +3V3), so the X4 is never loaded or
-back-fed (ER-3, R-27, C-29): VCC isolation and Ioff [V S66]. B ports: U401, U403, U404 (inputs from the
-RP2040 only) on X4_3V3_REF; U402 (every FPGA -> RP2040 output) on RP_VIO, an RP2040 GPIO driven high by
-firmware, so no B output can rise above the RP2040's own IOVDD, which the X4's K4 key can switch off
-while the header 3.3 V stays up (Q32, [V S1 sh.21]; decision S4-6). Translator pinout
+back-fed (ER-3, R-27, C-29): VCC isolation and Ioff [V S66]. Every B port is on X4_3V3_REF. U402 carries
+every FPGA -> RP2040 output. Its /OE (RP_EN_N, R429 pull-up to VCCA) is pulled low only through Q401 and Q402
+(BSS138) in series: Q401 is switched by comparator U405 (TI TLV3201, X4 domain, guaranteed tPD <= 55 ns), which
+compares GP24 with 0.940 x X4_3V3_REF; Q402 is switched by GP24 itself, so U402 stays disabled whenever GP24 is
+not driven, whatever U405 does below its 2.7 V minimum supply. The outputs are therefore Hi-Z within 160 ns of
+the RP2040's IOVDD (which the X4's K4 key can switch off while the header 3.3 V stays up: Q32, [V S1 sh.21])
+falling below the threshold (decision S4-6, rev A2; docs/stage2/sheet4-s46-isolation.md). Translator pinout
 from the SCES693I application figure (PW package): 1 DIR1, 2 DIR2, 3-6 A1-A4, 7 DIR3, 8 DIR4, 9 OE,
 10 GND, 11 B4, 12 B3, 13 B2, 14 B1, 15 VCCB, 16 VCCA. DIR high = A->B, low = B->A; OE high = isolated.
 """
@@ -21,7 +24,7 @@ J401_SIG = {23: ("X4_GP10_SCK", "U401", 1), 24: ("X4_GP9_CS_N", "U401", 2), 19: 
             37: ("X4_GP14_TCK", "U403", 1), 35: ("X4_GP15_TMS", "U403", 2), 36: ("X4_GP26_TDI", "U403", 3),
             27: ("X4_GP16_LED", "U404", 1), 28: ("X4_GP17_LED", "U404", 2),
             26: ("X4_GP18_LED", "U404", 3), 32: ("X4_GP19_LED", "U404", 4)}
-J401_VIO = {22: "X4_GP24_VIO"}                            # GP24 driven high by firmware: U402's B supply (S4-6)
+J401_EN = {22: "X4_GP24_EN"}                              # GP24 driven high by firmware: U402 enable sense (S4-6)
 J401_REF = (1, 17)                                        # P3V3_S: reference only (ER-3)
 J401_GND = (6, 9, 14, 20, 25, 30, 34, 39)
 J401_NC = (2, 4, 3, 5, 7, 8, 10, 11, 12, 13, 15, 29, 31, 33, 40)   # 5 V pins and reserved GPIO
@@ -30,7 +33,11 @@ XLAT = {"U401": [("RP_SCK", "BA"), ("RP_CS_N", "BA"), ("RP_MOSI", "BA"), (None, 
         "U402": [("RP_IRQ_N", "AB"), ("RP_ATTN", "AB"), ("RP_MISO", "AB"), ("FPGA_TDO", "AB")],
         "U403": [("FPGA_TCK", "BA"), ("FPGA_TMS", "BA"), ("FPGA_TDI", "BA"), (None, "AB")],
         "U404": [("LED_RP0", "BA"), ("LED_RP1", "BA"), ("LED_RP2", "BA"), ("LED_RP3", "BA")]}
-VCCB = {"U401": "X4_3V3_REF", "U402": "RP_VIO", "U403": "X4_3V3_REF", "U404": "X4_3V3_REF"}
+VCCB = {"U401": "X4_3V3_REF", "U402": "X4_3V3_REF", "U403": "X4_3V3_REF", "U404": "X4_3V3_REF"}
+OE = {"U401": "GND", "U402": "RP_EN_N", "U403": "RP_JTAG_EN_N", "U404": "GND"}
+# U405 TLV3201AIDBVR (TI SBOS561C, DBV): 1 OUT (push-pull), 2 GND, 3 IN+, 4 IN-, 5 VCC
+# Q401, Q402 BSS138 (SOT-23): 1 G, 2 S, 3 D (Diodes DS30144 top view; onsemi BSS138/D marking diagram)
+EN_REF_RATIO = (6.34, 100.0)                              # R427 / R428 (kOhm): IN- = 100 / 106.34 = 0.9404 x X4_3V3_REF
 # B outputs driving the ribbon: series source terminations
 SERIES = {("U402", 1): "R412", ("U402", 2): "R413", ("U402", 3): "R411", ("U402", 4): "R414"}
 # B-side 100k pull-downs: every RP2040 -> carrier input is defined while the RP2040 is unpowered or in reset
@@ -58,10 +65,37 @@ def sym_avc4t774():
                      keywords="level translator dual supply ioff", ref_at=(-10.16, 23.0), value_at=(-10.16, -26.0))
 
 
+def sym_tlv3201():
+    """TI TLV3201AIDBVR comparator, push-pull output (SBOS561C): DBV 1 OUT, 2 GND, 3 IN+, 4 IN-, 5 VCC."""
+    p = [Pin("3", "+", "input", -10.16, 2.54, 0, 2.54), Pin("4", "-", "input", -10.16, -2.54, 0, 2.54),
+         Pin("1", "OUT", "output", 10.16, 0, 180, 2.54),
+         Pin("5", "VCC", "power_in", 0, 7.62, 270, 2.54), Pin("2", "GND", "power_in", 0, -7.62, 90, 2.54)]
+    return SymbolDef("TLV3201DBV", "U", "TLV3201AIDBVR", "Package_TO_SOT_SMD:SOT-23-5",
+                     "https://www.ti.com/lit/ds/symlink/tlv3201.pdf",
+                     "40 ns comparator, push-pull output, rail-to-rail inputs (TI SBOS561C). DBV: 1 OUT, 2 GND, 3 IN+, "
+                     "4 IN-, 5 VCC. tPD <= 55 ns (VOD 20 mV, -40..125 C); inputs diode-clamped to both rails", p,
+                     rects={1: [(-7.62, 5.08, 7.62, -5.08)]},
+                     extra_props={"Manufacturer": "Texas Instruments", "MPN": "TLV3201AIDBVR"},
+                     keywords="comparator push-pull", ref_at=(-7.62, 8.9), value_at=(-7.62, -9.2))
+
+
+def sym_bss138():
+    """BSS138 N-channel MOSFET, SOT-23: 1 G, 2 S, 3 D (Diodes DS30144 top view; onsemi BSS138/D marking diagram)."""
+    p = [Pin("1", "G", "input", -7.62, 0, 0, 3.81), Pin("3", "D", "passive", 0, 7.62, 270, 2.54),
+         Pin("2", "S", "passive", 0, -7.62, 90, 2.54)]
+    return SymbolDef("BSS138", "Q", "BSS138", "Package_TO_SOT_SMD:SOT-23",
+                     "https://www.diodes.com/assets/Datasheets/ds30144.pdf",
+                     "N-channel MOSFET 50 V 200 mA, VGS(th) 0.5-1.5 V; Ciss <= 50 pF, Coss <= 25 pF, Crss <= 8 pF "
+                     "(Diodes DS30144). SOT-23: 1 G, 2 S, 3 D", p,
+                     rects={1: [(-3.81, 5.08, 3.81, -5.08)]},
+                     extra_props={"Manufacturer": "Diodes Incorporated", "MPN": "BSS138-7-F"},
+                     keywords="mosfet n-channel logic level", ref_at=(5.08, 2.54), value_at=(5.08, -2.54))
+
+
 def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
     REV, DATE, COMPANY, LICENCE = consts
     sch = Schematic("sheet4", "A2", "x86 SBC interconnect (RP2040 host link)", REV, DATE,
-                    ["Sheet 4 of 6 (Stage 4, rev A). NOT VALIDATED: design review pending (G-SHEET4).",
+                    ["Sheet 4 of 6 (Stage 4, rev A2). G-SHEET4 conditional; S4-6 circuit for review. NOT VALIDATED.",
                      "X4 ribbon J401; 4 x SN74AVC4T774 (SPI, IRQ/ATTN, JTAG option, RP2040 LEDs)",
                      "Protocol: docs/hdl/host-link-protocol.md; notes: sheet4-design-notes.md",
                      f"Licence: {LICENCE}"],
@@ -96,8 +130,8 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
             pwr(GNDS, e[0], e[1], 270 if side < 0 else 90)
         elif pn in J401_NC:
             sch.noconnect(pt)
-        elif pn in J401_VIO:
-            sch.label(J401_VIO[pn], stub(pt, side), "left" if side < 0 else "right")
+        elif pn in J401_EN:
+            sch.label(J401_EN[pn], stub(pt, side), "left" if side < 0 else "right")
         else:
             sch.label(J401_SIG[pn][0], stub(pt, side), "left" if side < 0 else "right")
     # X4_3V3_REF comes from the X4 through J401 (a passive pin): declare it driven
@@ -168,6 +202,8 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
         oe = u.p("9")
         if uref == "U403":                                  # JTAG option: DIP switch (sheet 6), default isolated
             sch.hlabel("RP_JTAG_EN_N", "input", stub(oe, -10.16), "left")
+        elif uref == "U402":                                # S4-6: enabled only while the RP2040's I/O supply is up
+            sch.label("RP_EN_N", stub(oe, -10.16), "left")
         else:
             e = stub(oe, -5.08)
             pwr(GNDS, e[0], e[1], 270)
@@ -195,43 +231,76 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
                       ref_at=(x + 1.8, y - 1.3), val_at=(x + 1.8, y + 1.3), ref_just="left", val_just="left")
         pwr(GNDS, *r.p("2"))
         sch.label(x4net[(uref, ch)], stub(r.p("1"), 0, -5.08), "right")
-    # RP2040-side defaults while U402 is isolated with the RP2040 running (carrier +3V3 off, X4 on its own
-    # 12 V): IRQ_N must read "no interrupt" whatever the RP2040's pad pull (its reset default is a pull-down
-    # [V S65]), so R424 10k pulls it up to RP_VIO (live only while the RP2040 drives GP24); ATTN reads
-    # "not ready" through R425 100k to GND
-    for i, (ref, val, top, bottom) in enumerate((("R424", "10k", "RP_VIO", "X4_GP22_IRQ_N"),
-                                                 ("R425", "100k", "X4_GP27_ATTN", None))):
-        x, y = 121.92 + 15.24 * i, 241.3
-        r = sch.place(R, ref, val, x, y, 0, footprint="Resistor_SMD:R_0603_1608Metric",
-                      props={"Spec": "0603 1%; RP2040-side default while U402 is isolated (S4-6)"},
+    # RP2040-side default while U402 is isolated with the RP2040 running (carrier +3V3 off, X4 on its own
+    # 12 V): ATTN reads "not ready" through R425 100k to GND. IRQ_N has no resistor: firmware enables the
+    # RP2040's own GP22 pull-up (50-80 k [V S65]) before it raises GP24 or enables the interrupt (FW-6), so
+    # nothing on the carrier can source current into GP24 (S4-6 rev A2: R424 removed)
+    x, y = 137.16, 241.3
+    r = sch.place(R, "R425", "100k", x, y, 0, footprint="Resistor_SMD:R_0603_1608Metric",
+                  props={"Spec": "0603 1%; RP2040-side default while U402 is isolated (S4-6)"},
+                  ref_at=(x + 1.8, y - 1.3), val_at=(x + 1.8, y + 1.3), ref_just="left", val_just="left")
+    sch.label("X4_GP27_ATTN", stub(r.p("1"), 0, -5.08), "right")
+    pwr(GNDS, *r.p("2"))
+    # ---------------- S4-6 (rev A2): fail-safe output enable for U402. Comparator U405 (TLV3201, supplied by the
+    # X4's header 3.3 V like the translators' B sides) compares GP24 (IN+) with 0.940 x X4_3V3_REF (IN-). /OE is
+    # pulled to VCCA by R429 and low only through Q401 (gate: U405 OUT) and Q402 (gate: GP24 through R431) in series.
+    # GP24 above the reference: OUT high, both on, U402 drives. GP24 below it (K4, brownout, reset, BOOTSEL, firmware
+    # not started): OUT low, Q401 off within the 160 ns budget, U402 Hi-Z. GP24 not driven (X4 ramping, reset):
+    # Q402 off whatever U405's output (U405 is unspecified below 2.7 V). The two MOSFET gates are the only links from
+    # the X4 domain into the carrier's /OE node, so neither domain can back-feed the other.
+    U5, QN = syms["TLV3201"], syms["BSS138"]
+    cx, cy = 180.34, 236.22
+    cmp_ = sch.place(U5, "U405", "TLV3201AIDBVR", cx, cy, 0, footprint="Package_TO_SOT_SMD:SOT-23-5",
+                     ref_at=(cx - 7.62, cy - 8.9), val_at=(cx - 7.62, cy + 9.2))
+    sch.label("X4_3V3_REF", stub(cmp_.p("5"), 0, -5.08), "right")
+    e = stub(cmp_.p("2"), 0, 5.08)
+    pwr(GNDS, e[0], e[1])
+    sch.label("RP_EN_SENSE", stub(cmp_.p("3"), -7.62), "left")
+    sch.label("RP_EN_REF", stub(cmp_.p("4"), -7.62), "left")
+    sch.label("RP_EN_CMP", stub(cmp_.p("1"), 7.62), "right")
+    # Q401 above Q402: the top drain is /OE, the GP24-gated transistor sits at GND (no /OE swing couples into GP24)
+    qx, qy1, qy2 = 375.92, 223.52, 248.92
+    q1 = sch.place(QN, "Q401", "BSS138", qx, qy1, 0, footprint="Package_TO_SOT_SMD:SOT-23",
+                   props={"Spec": "BSS138-7-F (Diodes); U402 enable, switched by U405 (fast path)"},
+                   ref_at=(qx + 5.08, qy1 - 2.54), val_at=(qx + 5.08, qy1 + 2.54), ref_just="left", val_just="left")
+    q2 = sch.place(QN, "Q402", "BSS138", qx, qy2, 0, footprint="Package_TO_SOT_SMD:SOT-23",
+                   props={"Spec": "BSS138-7-F (Diodes); U402 enable, switched by GP24 (default off)"},
+                   ref_at=(qx + 5.08, qy2 - 2.54), val_at=(qx + 5.08, qy2 + 2.54), ref_just="left", val_just="left")
+    sch.label("RP_EN_N", stub(q1.p("3"), 0, -5.08), "right")
+    sch.label("RP_EN_CMP", stub(q1.p("1"), -7.62), "left")
+    sch.wire(q1.p("2"), q2.p("3"))
+    sch.label("RP_EN_MID", (qx, round((q1.p("2")[1] + q2.p("3")[1]) / 2, 4)), "right")
+    sch.label("RP_EN_GATE", stub(q2.p("1"), -7.62), "left")
+    pwr(GNDS, *q2.p("2"))
+    parts = (("R426", "1k", "X4_GP24_EN", "RP_EN_SENSE", "series input resistor (GP24 -> comparator IN+)"),
+             ("R427", "6.34k", "X4_3V3_REF", "RP_EN_REF", "reference divider top: IN- = 0.940 x X4_3V3_REF"),
+             ("R428", "100k", "RP_EN_REF", None, "reference divider bottom"),
+             ("R429", "1k", "+3V3", "RP_EN_N", "/OE pull-up to VCCA: U402 disabled unless Q401 and Q402 conduct"),
+             ("R430", "100k", "X4_GP24_EN", None, "GP24 pull-down: disabled while GP24 is not driven"),
+             ("R431", "1k", "X4_GP24_EN", "RP_EN_GATE", "Q402 gate resistor: GP24 edge current <= 3.6 mA"))
+    for i, (ref, val, top, bottom, why) in enumerate(parts):
+        x, y = 215.9 + 15.24 * i, 241.3
+        r = sch.place(R, ref, val, x, y, 0, footprint="Resistor_SMD:R_0603_1608Metric", props={"Spec": "0603 1%; " + why},
                       ref_at=(x + 1.8, y - 1.3), val_at=(x + 1.8, y + 1.3), ref_just="left", val_just="left")
-        sch.label(top, stub(r.p("1"), 0, -5.08), "right")
+        if top == "+3V3":
+            pwr(P3, *r.p("1"))
+        else:
+            sch.label(top, stub(r.p("1"), 0, -5.08), "right")
         if bottom is None:
             pwr(GNDS, *r.p("2"))
         else:
             sch.label(bottom, stub(r.p("2"), 0, 5.08), "right")
-    # U402's B supply (S4-6): GP24 -> R416 -> RP_VIO, with C on the VCCB pin (above) and a 100k bleed, so
-    # VCCB = 0 and U402 isolates whenever GP24 is not driven high (RP2040 unpowered, in reset or in BOOTSEL)
-    x, y = 152.4 + 15.24 * 6, 241.3
-    r = sch.place(R, "R416", "47R", x, y, 0, footprint="Resistor_SMD:R_0603_1608Metric",
-                  props={"Spec": "0603 1%; limits the GPIO's inrush into U402's VCCB decoupling (value TBV, M-16)"},
-                  ref_at=(x + 1.8, y - 1.3), val_at=(x + 1.8, y + 1.3), ref_just="left", val_just="left")
-    sch.label("X4_GP24_VIO", stub(r.p("1"), 0, -5.08), "right")
-    sch.label("RP_VIO", stub(r.p("2"), 0, 5.08), "right")
-    x = 152.4 + 15.24 * 7
-    r = sch.place(R, "R417", "100k", x, y, 0, footprint="Resistor_SMD:R_0603_1608Metric",
-                  props={"Spec": "0603 1%; RP_VIO bleed: U402 isolates when GP24 floats"},
-                  ref_at=(x + 1.8, y - 1.3), val_at=(x + 1.8, y + 1.3), ref_just="left", val_just="left")
-    pwr(GNDS, *r.p("2"))
-    sch.label("RP_VIO", stub(r.p("1"), 0, -5.08), "right")
-    fl = (152.4 + 15.24 * 8 + 5.08, 236.22)                 # RP_VIO is driven through R416 (passive): declare it
-    sch.label("RP_VIO", stub(fl, 0, 3.81), "right")
-    sch.place(FLAG, "#FLG4002", "PWR_FLAG", fl[0], fl[1], 0, ref_at=(fl[0], fl[1] - 8.0), val_at=(fl[0] - 1.27, fl[1] - 3.2),
-              val_just="right")
-    tp = sch.place(TP, "TP407", "TestPoint", fl[0] + 15.24, fl[1], 0, footprint="TestPoint:TestPoint_Pad_D1.5mm",
-                   in_bom=False, ref_at=(fl[0] + 16.9, fl[1] - 4.2), val_at=(fl[0] + 16.9, fl[1] - 2.6), hide_value=True,
-                   ref_just="left")
-    sch.label("RP_VIO", stub(tp.p("1"), 0, 3.81), "right")
+    cx9, cy9 = 215.9 + 15.24 * 6, 241.3
+    c9 = sch.place(C, "C409", "100n", cx9, cy9, 0, footprint="Capacitor_SMD:C_0603_1608Metric",
+                   props={"Spec": "0603 X7R 25 V", "Note": "U405 VCC"},
+                   ref_at=(cx9 + 2.5, cy9 - 1.3), val_at=(cx9 + 2.5, cy9 + 1.3), ref_just="left", val_just="left")
+    sch.label("X4_3V3_REF", stub(c9.p("1"), 0, -3.81), "right")
+    pwr(GNDS, *c9.p("2"))
+    for k, (ref, net) in enumerate((("TP407", "RP_EN_N"), ("TP408", "RP_EN_CMP"))):
+        tx = 215.9 + 15.24 * (7 + k)
+        tp = sch.place(TP, ref, "TestPoint", tx, 236.22, 0, footprint="TestPoint:TestPoint_Pad_D1.5mm",
+                       in_bom=False, ref_at=(tx + 1.6, 232.0), val_at=(tx + 1.6, 233.6), hide_value=True, ref_just="left")
+        sch.label(net, stub(tp.p("1"), 0, 3.81), "right")
 
     # ---------------- test points (FPGA side)
     for k, net in enumerate(("RP_SCK", "RP_MISO", "RP_CS_N", "RP_ATTN")):
@@ -247,15 +316,16 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
         "DESIGN NOTES (summary; full analysis in docs/stage2/sheet4-design-notes.md)\n"
         "1. Every X4 signal passes an SN74AVC4T774 (A = carrier +3V3). VCC isolation + Ioff: no back-feed when a side is off (C-29).\n"
         "   U401/U403/U404 carry RP2040 -> carrier inputs only; B = X4_3V3_REF (header 3.3 V, reference only: uA; ER-3).\n"
-        "2. U402 carries EVERY carrier -> RP2040 output (IRQ_N, ATTN, MISO, TDO). Its B supply is RP_VIO = RP2040 GP24, driven\n"
-        "   high by firmware (S4-6): the X4's K4 key can cut the RP2040's IOVDD while the header 3.3 V stays up (Q32,\n"
-        "   [V S1 sh.21]); no B output can then exceed the RP2040's own supply, and U402 isolates when GP24 is not high.\n"
+        "2. U402 carries EVERY carrier -> RP2040 output (IRQ_N, ATTN, MISO, TDO). Its /OE (RP_EN_N) is low only while Q401\n"
+        "   (U405: GP24 > 0.940 x X4_3V3_REF) and Q402 (GP24 driven) both conduct; disabled <= 160 ns after GP24 falls below the\n"
+        "   threshold. The X4's K4 key can cut IOVDD while the header 3.3 V stays up (Q32, [V S1 sh.21]) (S4-6 rev A2).\n"
         "3. U401 SPI (mode 0, GPIO chip select); U403 JTAG option (D-12: OE from a DIP switch, default isolated, so J201\n"
         "   on sheet 2 has priority); U404 four RP2040 LEDs (C-26). B-side 100k pull-downs on every RP2040 -> carrier input.\n"
         "4. Default resistors (R-51): CS_N high, SCK/MOSI low, MISO/ATTN low (not ready), IRQ_N 2.2k pull-up, strong\n"
         "   enough against the blank FPGA's weak pull-down (305 uA max: 2.6 V). Host-link pins use PULLMODE=NONE in the LPF.\n"
-        "5. R411-R414 33R source terminations on the ribbon drivers; R416 47R GP24 inrush limit (values TBV at layout, M-16).\n"
-        "   R424/R425: with the carrier off and the X4 running, U402 is isolated: IRQ_N reads high (no interrupt), ATTN low.\n"
+        "5. R411-R414 33R source terminations on the ribbon drivers (values TBV at layout). With U402 isolated and the RP2040\n"
+        "   running, IRQ_N reads high through the RP2040's own GP22 pull-up (firmware FW-6) and ATTN low through R425.\n"
+        "   Nothing on the carrier sources current into GP24 (R424 removed). Analysis: sheet4-s46-isolation.md.\n"
         "6. Not yet validated: an ERC-clean result does not imply electrical or timing correctness.",
         (25.4, 300.0), 1.27)
     return sch

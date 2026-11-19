@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Lattice Diamond batch flow for gate G-STA (C-01): LSE synthesis, map, place & route and TRACE
-# timing analysis of z2_top on LCMXO2-2000HC-4TG144C with hdl/syn/z2_top.lpf.
+# timing analysis of z2_top on LCMXO2-4000HC-4TG144C (C-30) with hdl/syn/z2_top.lpf.
 # Commands follow the Diamond 3.14 "Diamond Project Tcl Commands" reference.
 #
 # Run from an empty work directory (the project is created in the current directory):
@@ -13,8 +13,8 @@ set here [file dirname [file normalize [info script]]]
 set rtl  [file normalize "$here/../rtl"]
 
 file copy -force "$here/z2_top.lpf" [file join [pwd] z2_sta.lpf]
-# Device: default commercial -4; set Z2_DEV=LCMXO2-2000HC-4TG144I for the industrial grade (100 C default).
-set dev [expr {[info exists ::env(Z2_DEV)] ? $::env(Z2_DEV) : "LCMXO2-2000HC-4TG144C"}]
+# Device: default LCMXO2-4000HC commercial -4 (C-30); set Z2_DEV=LCMXO2-4000HC-4TG144I for the industrial grade.
+set dev [expr {[info exists ::env(Z2_DEV)] ? $::env(Z2_DEV) : "LCMXO2-4000HC-4TG144C"}]
 puts "G-STA device: $dev"
 prj_project new -name z2_sta -impl impl1 -dev $dev -lpf z2_sta.lpf
 prj_syn set lse
