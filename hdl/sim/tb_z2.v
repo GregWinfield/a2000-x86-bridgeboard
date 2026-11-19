@@ -4,6 +4,13 @@
 // buffer enable/direction, DOE, /AS release, reset, wait states, bus errors) and C-13 (RMW).
 // Every check failure prints "ASSERT-FAIL"; the run script fails on any such line.
 // Parameters: SEED (delay skew and random timing), FPGA_TMAX (FPGA pin-to-pin allocation, ns).
+`ifdef HOST_BFM
+`define HOST c.dut.u_host
+`define HOST_ABORT begin c.dut.u_host.h_req = 1'b0; c.dut.u_host.busy = 1'b0; end
+`else
+`define HOST c.spi
+`define HOST_ABORT c.spi.abort
+`endif
 `timescale 1ns/1ps
 `ifndef DLY_MODE
 `define DLY_MODE 0
@@ -75,7 +82,7 @@ module tb_z2;
         .Z_E7M(clk7), .Z_CFGIN_N(Z_CFGIN_N), .Z_BUSRST_N(Z_BUSRST_N), .Z_BERR_N(Z_BERR_N),
         .Z_D(Z_D), .Z_SLAVE_N(Z_SLAVE_N), .Z_CFGOUT_N(Z_CFGOUT_N), .Z_XRDY(Z_XRDY),
         .Z_INT2_N(Z_INT2_N), .Z_INT6_N(Z_INT6_N),
-        .clk_core(clk), .pwr3(pwr3), .pwr5(pwr5), .jumper(jumper), .fpga_cfg(fpga_cfg),
+        .clk_core(clk), .pwr3(pwr3), .pwr5(pwr5), .jumper(jumper), .fpga_cfg(fpga_cfg), .x4_on(1'b1),
         .dip_mode_b(dip_mode_b), .dip_int6(dip_int6), .dip_disable(dip_disable),
         .d_drv(d_drv), .ld_conflict(ld_conflict), .card_en_n(card_en_n), .en_ok(en_ok));
 
@@ -288,7 +295,7 @@ module tb_z2;
 `ifdef HOST_BG
         // Stage 3: continuous random host (SPI-side) SRAM traffic in a private region for the
         // rest of the run. Every Zorro check must still pass (arbitration cannot disturb Zorro).
-        c.dut.u_host.bg_base = 18'h20000; c.dut.u_host.bg_gap = 3; c.dut.u_host.bg_en = 1'b1;
+        `HOST.bg_base = 18'h20000; `HOST.bg_gap = 3; `HOST.bg_en = 1'b1;
         $display("tb_z2: host background traffic ON (SRAM words %h-%h)", 18'h20000, 18'h20FFF);
 `endif
         #(3000.0);
@@ -300,7 +307,7 @@ module tb_z2;
 
         // ---------------- T3 registers, word and byte writes
         rd16(B + 24'h0, d);  expect16("MAGIC", d, 16'h4252);
-        rd16(B + 24'h2, d);  expect16("VERSION", d, 16'h0A02);
+        rd16(B + 24'h2, d);  expect16("VERSION", d, 16'h0A03);
         rd16(B + 24'h4, d);  expect16("STATUS", d, 16'h0600);
         wr16(B + 24'h6, 16'h00F0); rd16(B + 24'h6, d); expect16("CONTROL (LED test b5..b4 only)", d, 16'h0030);
         expect1("LED test: READY pin forced on", c.dut.LED_READY, 1'b1);
@@ -485,7 +492,7 @@ module tb_z2;
         // ---------------- T17 FPGA reconfigured while the Amiga runs: transparent until /BUSRST
 `ifdef HOST_BG
         // the host side quiesces before a reconfiguration (rule H-4, shared-memory spec section 5)
-        c.dut.u_host.bg_en = 1'b0; wait (c.dut.u_host.busy == 1'b0);
+        `HOST.bg_en = 1'b0; wait (`HOST.busy == 1'b0);
 `endif
         fpga_cfg = 1'b0; r_armed = 1'b0; r_cfg = 1'b0; #(2000.0);
         expect1("reconfiguring FPGA: card disabled", card_en_n, 1'b1);
@@ -504,9 +511,9 @@ module tb_z2;
         #(1000.0);
 `ifdef HOST_BG
         $display("tb_z2: host transfers %0d SRAM, latency mean %0.1f ns, max %0.1f ns; BFM errors %0d",
-                 c.dut.u_host.n_sram, c.dut.u_host.sum_lat / (c.dut.u_host.n_sram + 1.0e-9),
-                 c.dut.u_host.max_lat, c.dut.u_host.errors);
-        errors = errors + c.dut.u_host.errors;
+                 `HOST.n_sram, `HOST.sum_lat / (`HOST.n_sram + 1.0e-9),
+                 `HOST.max_lat, `HOST.errors);
+        errors = errors + `HOST.errors;
 `endif
         errors = errors + c.u301.errors;
         $display("tb_z2: SRAM model writes %0d, read enables %0d, timing errors %0d", c.u301.writes, c.u301.reads,

@@ -42,6 +42,7 @@ module z2_mbx #(
     input  wire [3:0]  zr_widx,
     input  wire [1:0]  zr_be,          // {UDS, LDS} lanes written
     input  wire [15:0] zr_wdata,
+    input  wire        zr_magic,       // registered with zr_we: QCTL, full word, $A55A (z2_core; timing)
     input  wire [3:0]  zr_ridx,
     output wire [15:0] zr_rdata,
     output wire        z_irq,          // Zorro-side request (z2_core gates it with CONTROL.IRQ_EN)
@@ -51,6 +52,7 @@ module z2_mbx #(
     input  wire [3:0]  hr_idx,
     input  wire [1:0]  hr_be,
     input  wire [15:0] hr_wdata,
+    input  wire        hr_magic,       // registered with hr_req: QCTL, full word, $A55A (z2_hostif; timing)
     output reg         hr_ack,
     output reg  [15:0] hr_rdata,
     output reg         h_irq_n         // RP_IRQ_N: host-side request, active low (registered)
@@ -78,16 +80,23 @@ module z2_mbx #(
     // ------------------------------------------------------------------ queue state
     wire [7:0] q0n = q0p - q0c;                     // entries queued (0..QDEPTH, formal M1)
     wire [7:0] q1n = q1p - q1c;
-    wire q0_ne = (q0n != 8'd0), q0_full = (q0n == QDEPTH);
-    wire q1_ne = (q1n != 8'd0), q1_full = (q1n == QDEPTH);
+    // Flags as equality compares, without the subtraction (sheet 4 timing, R-43). Under M1
+    // (0 <= p - c <= QDEPTH = 2^QD_LOG2): p - c = 0 exactly when p = c, and p - c = QDEPTH exactly
+    // when p != c and the low QD_LOG2 bits agree. Formal M6 checks both against the q0n/q1n forms.
+    wire q0_ne = (q0p != q0c), q0_full = q0_ne & (q0p[QD_LOG2-1:0] == q0c[QD_LOG2-1:0]);
+    wire q1_ne = (q1p != q1c), q1_full = q1_ne & (q1p[QD_LOG2-1:0] == q1c[QD_LOG2-1:0]);
 
-    function prod_ok;                               // producer may move p to nv
+    function prod_ok;                               // producer may move p to nv: nv - p <= QDEPTH - (p - c)
         input [7:0] nv, p, c;
-        reg   [7:0] adv, free;
+        reg   [7:0] d, q;
         begin
-            adv = nv - p;
-            free = QDEPTH - (p - c);
-            prod_ok = (adv <= free);
+            // Two parallel subtractions and a compare, not two in series (sheet 4 timing, R-43).
+            // With d = nv - c and q = p - c (mod 256): if q <= QDEPTH (formal M1), "nv - p <= QDEPTH - q"
+            // is exactly "q <= d <= QDEPTH" (d >= q: nv is not behind p, no wrap). If q > QDEPTH (never
+            // reachable) this form rejects, where the series form could accept.
+            d = nv - c;
+            q = p - c;
+            prod_ok = (d >= q) && (d <= QDEPTH);
         end
     endfunction
     function cons_ok;                               // consumer may move c to nv
@@ -122,8 +131,11 @@ module z2_mbx #(
     wire hw      = hr_req & hr_we & ~hr_ack;            // one host register write per request
     wire z_full  = (zr_be == 2'b11);
     wire h_full  = (hr_be == 2'b11);
-    wire z_qrst  = zr_we & (zr_widx == R_QCTL) & z_full & (zr_wdata == QCTL_MAGIC);
-    wire h_qrst  = hw    & (hr_idx  == R_QCTL) & h_full & (hr_wdata == QCTL_MAGIC);
+    // The QCTL magic compare is made at the source, registered with the strobe (zr_magic, hr_magic), so
+    // the link-reset decision is one gate deep (sheet 4 timing, R-43). Formal M7 checks it equals
+    // (index == QCTL) & full word & (data == $A55A) on every write.
+    wire z_qrst  = zr_we & zr_magic;
+    wire h_qrst  = hw    & hr_magic;
     wire brst_up = busrst & ~busrst_d;
     wire flush   = z_qrst | h_qrst | brst_up;
 
@@ -227,6 +239,14 @@ module z2_mbx #(
         if (!$past(flush) && q1p != $past(q1p)) assert($past(hr_wdata[15:8]) == $past(epoch));
         // M5: the host interrupt line follows the enabled sources (one clock)
         assert(h_irq_n == ~(|$past(h_pend)) || $past(por));
+    end
+    always @* begin
+        // M6: the equality-compare flags equal the occupancy definitions
+        assert(q0_ne == (q0n != 8'd0) && q0_full == (q0n == QDEPTH));
+        assert(q1_ne == (q1n != 8'd0) && q1_full == (q1n == QDEPTH));
+        // M7: the precomputed QCTL flags equal the full decode on every write
+        if (zr_we) assert(zr_magic == ((zr_widx == R_QCTL) & z_full & (zr_wdata == QCTL_MAGIC)));
+        if (hw)    assert(hr_magic == ((hr_idx  == R_QCTL) & h_full & (hr_wdata == QCTL_MAGIC)));
     end
 `endif
 endmodule

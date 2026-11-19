@@ -98,3 +98,22 @@ Evidence executed on 2026-11-19 ([verification-results.md](verification-results.
 | Two-LED interface, READY blink code | tb_z2 T3 (CONTROL b5..b4, LED test) | Register and pins as specified | **Pass** |
 | C-26: one FPGA LED (READY pin) plus the internal fault indication | tb_z2 T3 checks `LED_READY` and `fault_ind`; pin freeze in `pinplan.py`; audit (LED_READY on pin 65, no LED_FAULT net) | As specified; only pin 67 changed from the approved assignment | **Pass** (rev A1) |
 | Fail-safe bus behaviour with an erased, configuring or failed FPGA | Sheet-1 design and chain simulation (S3); sheet-2 notes §8; hardware M-6 + **M-14** | Card absent, chain passes, SRAM deselected, READY off | Design/simulation **Pass**; hardware open |
+
+## Sheet 4 (Stage 4): RP2040 host link, revision A (owner decisions S4-1 to S4-5, requirements 1–9)
+
+| Requirement | Evidence | Pass criterion | Status |
+|---|---|---|---|
+| HL-1 protocol and byte order at the pins, normative vectors | tb_spi P1, P2 (vectors from `tools/hostlink/hostlink.py`), P8 | Byte-exact at the pins | **Pass** (simulation) |
+| HL-2 CDC | fv_afifo (multiclock k-induction) and random-rate simulation (tb_spi P15) | Proven; no failure | **Pass** |
+| HL-3 buffering at maximum SCK; overflow impossible or reported | Sizing argument (protocol §9); fv_afifo A2/A5; tb_spi P10, P11 | No loss; overflow refused and flagged | **Pass** |
+| HL-4 ordering | Protocol §7; tb_spi P11 (128-word bursts read back); tb_z2 SPI background (shadow-checked) | Order and data preserved | **Pass** |
+| HL-5 tb_shm through the real slave | tb_shm (SPI build), 4 seeds | All 127 checks; Zorro timing identical with SPI traffic (S3) | **Pass** |
+| HL-6 stress during Amiga copy loops | tb_z2 with continuous SPI background, 4 seeds | All 5 554 checks | **Pass** (simulation); hardware **M-13** open |
+| Req. 1 no partial commit | tb_spi P3, P4, P5, P13, P16 | Target words unwritten; counters | **Pass** |
+| Req. 3 flow control, busy Zorro bus | tb_spi P10; HL-5; HL-6 | No SCK stall needed; busy frames rejected without effect | **Pass** |
+| Req. 4 SCK → MISO timing | [../stage2/sheet4-timing-budget.md](../stage2/sheet4-timing-budget.md); STA | Budget closes: 10 MHz standard, 20 MHz early launch | Paper **Pass**; hardware **M-15** open |
+| Req. 5 async FIFO | fv_afifo | Proven for every clock ratio, stoppage, reset | **Pass** |
+| Req. 6 sheet-3 ordering and atomicity | fv_shm (X1–X6, M1–M7); tb_shm via SPI | Proven; all checks | **Pass** |
+| Req. 7 back-powering and false interrupts | Design-notes §7 state table; audit_sheet4 (S4-6 rules, R-51 defaults, ER-3); tb_spi P0, P13, P14, P16 and always-on checkers | No path; no false interrupt or ATTN | Design/simulation **Pass**; hardware **M-14** (extended), **M-16** open |
+| Req. 8 re-run timing and HDL | run_checks.sh; Diamond 6 runs | All pass | **Pass** on the 4000HC; 2000HC does not fit (**C-30**) |
+| Req. 9 versioning | tb_spi P1, P7 | IDENTIFY fields; wrong major rejected | **Pass** |

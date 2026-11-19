@@ -15,7 +15,13 @@ module card_model #(
     parameter real    FPGA_TMAX = 18.0,   //   (18 ns = sheet-1 allocation, unproven until G-STA)
     parameter real    TCO_MIN   = 2.0,    // FPGA clock-to-out for registered outputs [A]
     parameter real    TCO_MAX   = 9.0,
-    parameter real    SUP_TD    = 5000.0  // supervisor release delay, scaled (real 12-28 ms)
+    parameter real    SUP_TD    = 5000.0, // supervisor release delay, scaled (real 12-28 ms)
+    // host link (sheet 4): SN74AVC4T774 tpd <= 2.8 ns B->A, 2.9 ns A->B at 3.3/3.3 V [V S66], plus
+    // ~1 ns of ribbon and traces each way [E]; FPGA SCK-to-MISO (clock insertion + register + pad)
+    // [E] until the sheet-4 STA replaces it
+    parameter real    SPI_TIN   = 3.8,    // RP2040 pin -> FPGA pin (SCK, CS_N, MOSI)
+    parameter real    SPI_TOUT  = 3.9,    // FPGA pin -> RP2040 pin (MISO, ATTN, IRQ_N)
+    parameter real    SPI_TMISO = 15.4    // FPGA SCK pin -> MISO pin: >= Diamond worst 15.371 ns (sheet4-sta-results)
 ) (
     // slot (Zorro II edge, after the A2000 backplane)
     input  wire [23:1] Z_A,
@@ -29,6 +35,7 @@ module card_model #(
     input  wire        pwr5,         // +5V_BUS valid (Molex)
     input  wire        jumper,       // JP101 DISABLE fitted
     input  wire        fpga_cfg,     // 1 = FPGA configured and running (0 = blank / configuring)
+    input  wire        x4_on,        // 1 = X4 (RP2040) powered; 0 = translators isolate (VCC isolation)
     input  wire        dip_mode_b, dip_int6, dip_disable,
     // observation for the checkers
     output wire        d_drv,        // U103 B port may be driving Z_D
@@ -57,6 +64,8 @@ module card_model #(
     m_bushold #(.W(16)) u_ld_hold (.bus(LD));   // U103 A-port bus-hold keeps the last level
     wire EN_OK;
     wire [17:0] SA_i; wire SRAM_CE_N_i, SRAM_OE_N_i, SRAM_WE_N_i, SRAM_UB_N_i, SRAM_LB_N_i, RP_IRQ_N_i;
+    wire RP_MISO_i, RP_ATTN_i;
+    wire RP_SCK_f, RP_CS_N_f, RP_MOSI_f;                 // FPGA-side SPI inputs (after the translators)
     z2_top dut (
         .clk_core(clk_core),
         .ZB_A(ZB_A), .ZB_AS_N(ZB_AS_N), .ZB_UDS_N(ZB_UDS_N), .ZB_LDS_N(ZB_LDS_N), .ZB_READ(ZB_READ),
@@ -68,6 +77,7 @@ module card_model #(
         .LD(LD),
         .SA(SA_i), .SRAM_CE_N(SRAM_CE_N_i), .SRAM_OE_N(SRAM_OE_N_i), .SRAM_WE_N(SRAM_WE_N_i),
         .SRAM_UB_N(SRAM_UB_N_i), .SRAM_LB_N(SRAM_LB_N_i), .RP_IRQ_N(RP_IRQ_N_i),
+        .RP_SCK(RP_SCK_f), .RP_CS_N(RP_CS_N_f), .RP_MOSI(RP_MOSI_f), .RP_MISO(RP_MISO_i), .RP_ATTN(RP_ATTN_i),
         .DIP_MODE_B(dip_mode_b), .DIP_INT6(dip_int6), .DIP_DISABLE(dip_disable), .LED_READY(led_ready));
 
     // ---------------- sheet 3: SRAM pins (registered outputs, tCO) and U301
@@ -98,6 +108,44 @@ module card_model #(
     assign SRAM_LB_N = fpga_on ? s_lb : f_lb;
     assign RP_IRQ_N  = fpga_on ? s_irq : 1'b1;     // pull-up at the translator input (sheet 4) [A]
     assign rp_irq_n  = RP_IRQ_N;
+
+    // ---------------- sheet 4: host link. RP2040 = SPI master BFM; translators and ribbon as delays.
+    // FPGA side defaults (R-51, sheet-4 resistors): with the X4 off, the translators' A ports are
+    // Hi-Z and the resistors hold CS_N high, SCK and MOSI low. With the FPGA blank, ATTN and MISO are
+    // pulled low and RP_IRQ_N high, so the RP2040 sees "not ready" and no interrupt.
+    wire spi_sck, spi_cs_n, spi_mosi, spi_miso, spi_attn, spi_irq_n;
+    spi_master_bfm spi (.sck(spi_sck), .cs_n(spi_cs_n), .mosi(spi_mosi), .miso(spi_miso), .attn(spi_attn), .irq_n(spi_irq_n));
+    // RP2040 in reset (or booting) with the X4 powered: its pads are inputs with pull-down [V S65], and
+    // the powered translators pass those lows to the A side, so the FPGA sees CS_N asserted with SCK and
+    // MOSI low; the A-side resistors cannot override a driven translator output. Set from the testbench.
+    reg  rp_rst = 1'b0;
+    wire x_sck  = (x4_on & ~rp_rst) ? spi_sck  : 1'b0;
+    wire x_cs_n = x4_on ? (rp_rst ? 1'b0 : spi_cs_n) : 1'b1;
+    wire x_mosi = (x4_on & ~rp_rst) ? spi_mosi : 1'b0;
+    assign #(SPI_TIN) RP_SCK_f  = x_sck;
+    assign #(SPI_TIN) RP_CS_N_f = x_cs_n;
+    assign #(SPI_TIN) RP_MOSI_f = x_mosi;
+    wire f_miso = fpga_on ? RP_MISO_i : 1'b0;
+    wire f_attn = fpga_on ? RP_ATTN_i : 1'b0;
+    assign #(SPI_TMISO + SPI_TOUT) spi_miso = x4_on ? f_miso : 1'b0;
+    assign #(SPI_TOUT) spi_attn  = x4_on ? f_attn : 1'b0;
+    assign #(SPI_TOUT) spi_irq_n = x4_on ? RP_IRQ_N : 1'b1;
+    // z2_hostif's registered QCTL flag must equal the decode of the request it accompanies (z2_mbx M7;
+    // formal fv_shm models the host port as that decode). Counted as an SPI-side error.
+    always @(posedge clk_core)
+        if (dut.u_mbx.hw && (dut.u_mbx.hr_magic !== ((dut.u_mbx.hr_idx == 4'd10) & (dut.u_mbx.hr_be == 2'b11) &
+                                                     (dut.u_mbx.hr_wdata == 16'hA55A)))) begin
+            $display("ASSERT-FAIL %0t hr_magic disagrees with the host request decode", $realtime);
+            spi.errors = spi.errors + 1;
+        end
+`ifndef HOST_BFM
+    // z2_hostif keeps (pb < p_end7) as the register p_lt7 (timing); it must equal the compare at every clock
+    always @(posedge clk_core)
+        if (dut.u_host.p_lt7 !== (dut.u_host.pb < dut.u_host.p_end7)) begin
+            $display("ASSERT-FAIL %0t z2_hostif p_lt7 disagrees with pb < p_end7", $realtime);
+            spi.errors = spi.errors + 1;
+        end
+`endif
     m_sram_is61wv25616 u301 (.a(SA), .io(LD), .ce_n(SRAM_CE_N), .oe_n(SRAM_OE_N), .we_n(SRAM_WE_N),
                              .ub_n(SRAM_UB_N), .lb_n(SRAM_LB_N), .pwr(pwr3), .drv(sram_drv));
 

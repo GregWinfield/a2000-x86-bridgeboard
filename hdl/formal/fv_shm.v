@@ -33,7 +33,7 @@ module fv_shm (
     wire        ld_oe, h_ld_oe;
     wire [17:0] zq_addr, SA;
     wire        zq_ce, zq_oe, zq_we, zq_ub, zq_lb, z_res, z_quiet, zs_drv, h_quiet, h_busy;
-    wire        zr_we, z_irq, zrst, busrst, configured, mode_b, en_ok_s, lb_ack, mb_ack, rp_irq_n;
+    wire        zr_we, zr_magic, z_irq, zrst, busrst, configured, mode_b, en_ok_s, lb_ack, mb_ack, rp_irq_n;
     wire [3:0]  zr_widx, zr_ridx, f_st;
     wire [1:0]  led;
     wire [1:0]  zr_be;
@@ -53,8 +53,8 @@ module fv_shm (
         .zf_dbuf_dir(zf_dbuf_dir), .zf_dbuf_oe_n(zf_dbuf_oe_n), .zf_arm(zf_arm), .led(led),
         .zq_addr(zq_addr), .zq_ce(zq_ce), .zq_oe(zq_oe), .zq_we(zq_we), .zq_ub(zq_ub), .zq_lb(zq_lb),
         .z_res(z_res), .z_quiet(z_quiet), .zs_drv(zs_drv), .h_quiet(h_quiet),
-        .zr_we(zr_we), .zr_widx(zr_widx), .zr_be(zr_be), .zr_wdata(zr_wdata), .zr_ridx(zr_ridx),
-        .zr_rdata(zr_rdata), .z_irq(z_irq),
+        .zr_we(zr_we), .zr_widx(zr_widx), .zr_be(zr_be), .zr_wdata(zr_wdata), .zr_magic(zr_magic),
+        .zr_ridx(zr_ridx), .zr_rdata(zr_rdata), .z_irq(z_irq),
         .zrst_o(zrst), .busrst_o(busrst), .configured_o(configured), .mode_b_o(mode_b), .en_ok_o(en_ok_s),
         .f_st(f_st), .f_res_cnt(f_res_cnt), .f_nat_go(f_nat_go), .f_oe_wr_q(f_oe_wr_q), .f_ld_oe(f_ld_oe));
 
@@ -72,9 +72,12 @@ module fv_shm (
     z2_mbx #(.QD_LOG2(2)) u_mbx (
         .clk(clk), .por(por), .zrst(zrst), .busrst(busrst), .armed(zf_arm), .configured(configured),
         .mode_b(mode_b), .en_ok(en_ok_s),
-        .zr_we(zr_we), .zr_widx(zr_widx), .zr_be(zr_be), .zr_wdata(zr_wdata), .zr_ridx(zr_ridx),
-        .zr_rdata(zr_rdata), .z_irq(z_irq),
+        .zr_we(zr_we), .zr_widx(zr_widx), .zr_be(zr_be), .zr_wdata(zr_wdata), .zr_magic(zr_magic),
+        .zr_ridx(zr_ridx), .zr_rdata(zr_rdata), .z_irq(z_irq),
         .hr_req(h_req & h_reg), .hr_we(h_we), .hr_idx(h_addr[3:0]), .hr_be(h_be), .hr_wdata(h_wdata),
+        // free host port: the source's QCTL flag is modelled as the decode of the held request (H-2);
+        // z2_hostif's registered h_magic is checked against it in simulation (card_model)
+        .hr_magic((h_addr[3:0] == 4'd10) & (h_be == 2'b11) & (h_wdata == 16'hA55A)),
         .hr_ack(mb_ack), .hr_rdata(mb_rdata), .h_irq_n(rp_irq_n));
 
     // ==================================================================== properties

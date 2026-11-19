@@ -18,7 +18,7 @@ set dev [expr {[info exists ::env(Z2_DEV)] ? $::env(Z2_DEV) : "LCMXO2-2000HC-4TG
 puts "G-STA device: $dev"
 prj_project new -name z2_sta -impl impl1 -dev $dev -lpf z2_sta.lpf
 prj_syn set lse
-foreach f {z2_sync.v z2_asgate.v z2_decode.v z2_core.v z2_lbus.v z2_mbx.v z2_hostif_stub.v z2_top.v} {
+foreach f {z2_sync.v z2_asgate.v z2_decode.v z2_core.v z2_lbus.v z2_mbx.v z2_afifo.v z2_spi_slave.v z2_hostif.v z2_top.v} {
     prj_src add [file join $rtl $f]
 }
 # Top level: z2_top (default), or Z2_TOP=fit_top / fit_top_rc for the pin-budget fit test

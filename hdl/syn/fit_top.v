@@ -19,7 +19,7 @@ module fit_top (
     output wire        RP_IRQ_N,
     input  wire        DIP_MODE_B, DIP_INT6, DIP_DISABLE,
     output wire        LED_READY,
-    // planned for sheet 4 (host link): SPI from the RP2040 and the ATTN line
+    // sheet 4 (host link): SPI to the real slave in z2_top
     input  wire        RP_SCK, RP_CS_N, RP_MOSI,
     output wire        RP_MISO, RP_ATTN,
     // planned for sheet 5 (power): X4 eFuse enable, fault, S0 sense; INA226 I2C and alert
@@ -37,15 +37,14 @@ module fit_top (
         .ZF_INT2_N(ZF_INT2_N), .ZF_INT6_N(ZF_INT6_N), .ZF_XRDY(ZF_XRDY),
         .ZF_DBUF_DIR(ZF_DBUF_DIR), .ZF_DBUF_OE_N(ZF_DBUF_OE_N), .LD(LD), .SA(SA), .SRAM_CE_N(SRAM_CE_N),
         .SRAM_OE_N(SRAM_OE_N), .SRAM_WE_N(SRAM_WE_N), .SRAM_UB_N(SRAM_UB_N), .SRAM_LB_N(SRAM_LB_N),
-        .RP_IRQ_N(RP_IRQ_N), .DIP_MODE_B(DIP_MODE_B), .DIP_INT6(DIP_INT6), .DIP_DISABLE(DIP_DISABLE), .LED_READY(LED_READY));
+        .RP_IRQ_N(RP_IRQ_N), .DIP_MODE_B(DIP_MODE_B), .DIP_INT6(DIP_INT6), .DIP_DISABLE(DIP_DISABLE), .LED_READY(LED_READY),
+        .RP_SCK(RP_SCK), .RP_CS_N(RP_CS_N), .RP_MOSI(RP_MOSI), .RP_MISO(RP_MISO), .RP_ATTN(RP_ATTN));
 
     // placeholder logic: every planned input feeds a shift register that drives every planned output
     reg [7:0] sh = 8'd0;
     always @(posedge clk_core)
-        sh <= {sh[6:0], RP_SCK ^ RP_CS_N ^ RP_MOSI ^ X4_PWR_FLT_N ^ X4_S0_SENSE ^ INA_ALERT_N ^ ZB_E7M ^
+        sh <= {sh[6:0], X4_PWR_FLT_N ^ X4_S0_SENSE ^ INA_ALERT_N ^ ZB_E7M ^
                         I2C_SCL ^ I2C_SDA ^ (^DBG)};
-    assign RP_MISO   = sh[0];
-    assign RP_ATTN   = sh[1];
     assign X4_PWR_EN = sh[2];
     assign I2C_SCL   = sh[4] ? 1'b0 : 1'bz;       // open drain
     assign I2C_SDA   = sh[5] ? 1'b0 : 1'bz;

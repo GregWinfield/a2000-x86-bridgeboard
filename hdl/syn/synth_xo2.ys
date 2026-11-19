@@ -2,7 +2,7 @@
 # Open-source MachXO2 synthesis of the whole design (Stage 3): resource use and logic depth only.
 # This is NOT the timing sign-off: gate G-STA requires Lattice Diamond post-place-and-route STA
 # (syn/diamond_sta.tcl). Run from hdl/:  yosys -q -s syn/synth_xo2.ys
-read_verilog -sv rtl/z2_sync.v rtl/z2_asgate.v rtl/z2_decode.v rtl/z2_core.v rtl/z2_lbus.v rtl/z2_mbx.v rtl/z2_hostif_stub.v rtl/z2_top.v
+read_verilog -sv rtl/z2_sync.v rtl/z2_asgate.v rtl/z2_decode.v rtl/z2_core.v rtl/z2_lbus.v rtl/z2_mbx.v rtl/z2_afifo.v rtl/z2_spi_slave.v rtl/z2_hostif.v rtl/z2_top.v
 hierarchy -check -top z2_top
 synth_lattice -family xo2 -top z2_top
 tee -o build/z2_top_xo2_stat.txt stat
