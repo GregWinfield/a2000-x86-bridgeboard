@@ -83,6 +83,7 @@ run tb_hazard sh -c "iverilog -g2005 -Wno-timescale -o build/tb_hazard.vvp sim/m
 if [ "${1:-}" != "quick" ]; then
     run formal sh -c "cd formal && sby -f z2_core.sby"
     run formal_shm sh -c "cd formal && sby -f fv_shm.sby"       # Stage 3: X1-X6, M1-M5 (prove, bmc 64, cover)
+    run formal_afifo sh -c "cd formal && sby -f fv_afifo.sby"   # Stage 4: async FIFO, free clocks (prove, bmc 60, cover)
 fi
 
 # 6. open-source MachXO2 synthesis: resources and logic depth (not timing sign-off)

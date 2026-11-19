@@ -25,7 +25,18 @@ module z2_afifo #(
     input  wire          re,
     output wire [W-1:0]  rdata,
     output wire          rempty
+`ifdef FORMAL
+    ,
+    output wire [AW:0]   f_wbin, f_rbin, f_wgray, f_rgray, f_rq2, f_wq2, f_rq1, f_wq1,
+    input  wire [AW-1:0] f_idx,
+    output wire [W-1:0]  f_mem
+`endif
 );
+`ifdef FORMAL
+    assign f_wbin = wbin; assign f_rbin = rbin; assign f_wgray = wgray; assign f_rgray = rgray;
+    assign f_rq1 = rq1; assign f_rq2 = rq2; assign f_wq1 = wq1; assign f_wq2 = wq2;
+    assign f_mem = mem[f_idx];
+`endif
     reg [W-1:0] mem [0:(1<<AW)-1];
     reg  [AW:0] wbin, wgray;                      // write pointer (binary, Gray)
     reg  [AW:0] rbin, rgray;                      // read pointer (binary, Gray)

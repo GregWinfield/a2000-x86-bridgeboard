@@ -34,3 +34,5 @@ __pycache__/
 .venv/
 hdl/formal/fv_shm/
 hdl/formal/fv_shm_*/
+hdl/formal/fv_afifo/
+hdl/formal/fv_afifo_*/
