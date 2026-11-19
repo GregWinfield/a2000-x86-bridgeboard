@@ -21,7 +21,7 @@ module card_model #(
     // [E] until the sheet-4 STA replaces it
     parameter real    SPI_TIN   = 3.8,    // RP2040 pin -> FPGA pin (SCK, CS_N, MOSI)
     parameter real    SPI_TOUT  = 3.9,    // FPGA pin -> RP2040 pin (MISO, ATTN, IRQ_N)
-    parameter real    SPI_TMISO = 15.0    // FPGA SCK pin -> MISO pin
+    parameter real    SPI_TMISO = 15.4    // FPGA SCK pin -> MISO pin: >= Diamond worst 15.371 ns (sheet4-sta-results)
 ) (
     // slot (Zorro II edge, after the A2000 backplane)
     input  wire [23:1] Z_A,
