@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from kisch import (FP_VERSION, GEN_VERSION, LIB, PROJECT, Pin, Schematic, StdSymbol, SymbolDef, U, f, q,
                    write_symbol_lib)
 from sheet2 import build_sheet2, sym_ecs2520mv, sym_lcmxo2
-from sheet4 import build_sheet4, sym_avc4t774, sym_tlv7021
+from sheet4 import build_sheet4, sym_avc4t774, sym_bss138, sym_tlv3201
 
 KICAD_SYM = Path(r"C:\Program Files\KiCad\10.0\share\kicad\symbols")
 DATE = "2026-11-18"
@@ -28,7 +28,7 @@ DATE3 = "2026-11-19"
 REV3 = "A (draft)"
 DATE2 = "2026-11-19"
 REV2 = "A2"
-REV4 = "A1 (draft)"
+REV4 = "A2 (draft)"
 COMPANY = "A2000 x86 Bridgeboard project"
 LICENCE = "CERN-OHL-S-2.0"
 
@@ -1035,7 +1035,8 @@ def main(repo: Path):
     syms = {"LVC16244": sym_lvc16244(), "LVCH16T245": sym_lvch16t245(), "LVC8T245": sym_lvc8t245(),
             "LVC07A": sym_lvc07a(), "LVC1G00": sym_lvc1g00(), "LVC32A": sym_lvc32a(), "TPS3808": sym_tps3808(),
             "ZORRO": sym_zorro(), "+5V_BUS": sym_power("+5V_BUS"), "IS61WV25616": sym_is61wv25616(),
-            "LCMXO2": sym_lcmxo2(), "ECS2520": sym_ecs2520mv(), "AVC4T774": sym_avc4t774(), "TLV7021": sym_tlv7021()}
+            "LCMXO2": sym_lcmxo2(), "ECS2520": sym_ecs2520mv(), "AVC4T774": sym_avc4t774(), "TLV3201": sym_tlv3201(),
+            "BSS138": sym_bss138()}
     write_symbol_lib(kdir / "lib" / f"{LIB}.kicad_sym", list(syms.values()))
     write_zorro_footprint(kdir / "lib" / f"{LIB}.pretty" / "Zorro2_Edge_2x50_P2.54mm.kicad_mod")
     std = {"R": StdSymbol(KICAD_SYM / "Device.kicad_sym", "Device", "R"),

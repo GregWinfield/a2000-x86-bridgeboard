@@ -7,9 +7,9 @@
 	(title_block
 		(title "x86 SBC interconnect (RP2040 host link)")
 		(date "2026-11-19")
-		(rev "A1 (draft)")
+		(rev "A2 (draft)")
 		(company "A2000 x86 Bridgeboard project")
-		(comment 1 "Sheet 4 of 6 (Stage 4, rev A1). G-SHEET4 conditional; S4-6 circuit for review. NOT VALIDATED.")
+		(comment 1 "Sheet 4 of 6 (Stage 4, rev A2). G-SHEET4 conditional; S4-6 circuit for review. NOT VALIDATED.")
 		(comment 2 "X4 ribbon J401; 4 x SN74AVC4T774 (SPI, IRQ/ATTN, JTAG option, RP2040 LEDs)")
 		(comment 3 "Protocol: docs/hdl/host-link-protocol.md; notes: sheet4-design-notes.md")
 		(comment 4 "Licence: CERN-OHL-S-2.0")
@@ -1693,6 +1693,167 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "a2000-bridgeboard:BSS138"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "Q"
+				(at 5.08 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "BSS138"
+				(at 5.08 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.diodes.com/assets/Datasheets/ds30144.pdf"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "N-channel MOSFET 50 V 200 mA, VGS(th) 0.5-1.5 V; Ciss <= 50 pF, Coss <= 25 pF, Crss <= 8 pF (Diodes DS30144). SOT-23: 1 G, 2 S, 3 D"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Manufacturer" "Diodes Incorporated"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "MPN" "BSS138-7-F"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "mosfet n-channel logic level"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "BSS138_1_1"
+				(rectangle
+					(start -3.81 5.08)
+					(end 3.81 -5.08)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin input line
+					(at -7.62 0 0)
+					(length 3.81)
+					(name "G"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -7.62 90)
+					(length 2.54)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 7.62 270)
+					(length 2.54)
+					(name "D"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "a2000-bridgeboard:SN74AVC4T774PW"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -2088,7 +2249,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "a2000-bridgeboard:TLV7021DBV"
+		(symbol "a2000-bridgeboard:TLV3201DBV"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -2104,7 +2265,7 @@
 					)
 				)
 			)
-			(property "Value" "TLV7021DBVR"
+			(property "Value" "TLV3201AIDBVR"
 				(at -7.62 -9.2 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2125,7 +2286,7 @@
 					)
 				)
 			)
-			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv7011.pdf"
+			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv3201.pdf"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2136,7 +2297,7 @@
 					)
 				)
 			)
-			(property "Description" "Nanopower comparator, open-drain output (TI SLVSDM5F). DBV: 1 OUT, 2 VEE, 3 IN+, 4 IN-, 5 VCC. Inputs clamped to VEE only (6 V regardless of VCC); output off during power-on reset"
+			(property "Description" "40 ns comparator, push-pull output, rail-to-rail inputs (TI SBOS561C). DBV: 1 OUT, 2 GND, 3 IN+, 4 IN-, 5 VCC. tPD <= 55 ns (VOD 20 mV, -40..125 C); inputs diode-clamped to both rails"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2158,7 +2319,7 @@
 					)
 				)
 			)
-			(property "MPN" "TLV7021DBVR"
+			(property "MPN" "TLV3201AIDBVR"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2169,7 +2330,7 @@
 					)
 				)
 			)
-			(property "ki_keywords" "comparator open-drain nanopower"
+			(property "ki_keywords" "comparator push-pull"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2180,7 +2341,7 @@
 					)
 				)
 			)
-			(symbol "TLV7021DBV_1_1"
+			(symbol "TLV3201DBV_1_1"
 				(rectangle
 					(start -7.62 5.08)
 					(end 7.62 -5.08)
@@ -2192,7 +2353,7 @@
 						(type background)
 					)
 				)
-				(pin open_collector line
+				(pin output line
 					(at 10.16 0 180)
 					(length 2.54)
 					(name "OUT"
@@ -2213,7 +2374,7 @@
 				(pin power_in line
 					(at 0 -7.62 90)
 					(length 2.54)
-					(name "VEE"
+					(name "GND"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2655,7 +2816,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "DESIGN NOTES (summary; full analysis in docs/stage2/sheet4-design-notes.md)\n1. Every X4 signal passes an SN74AVC4T774 (A = carrier +3V3). VCC isolation + Ioff: no back-feed when a side is off (C-29).\n   U401/U403/U404 carry RP2040 -> carrier inputs only; B = X4_3V3_REF (header 3.3 V, reference only: uA; ER-3).\n2. U402 carries EVERY carrier -> RP2040 output (IRQ_N, ATTN, MISO, TDO). Its /OE (RP_EN_N) comes from comparator U405:\n   enabled only while GP24 > 0.930 x X4_3V3_REF, i.e. while the RP2040's IOVDD is within 0.29 V of the header 3.3 V.\n   The X4's K4 key can cut IOVDD while the header 3.3 V stays up (Q32, [V S1 sh.21]); U402 is then Hi-Z (S4-6 rev A1).\n3. U401 SPI (mode 0, GPIO chip select); U403 JTAG option (D-12: OE from a DIP switch, default isolated, so J201\n   on sheet 2 has priority); U404 four RP2040 LEDs (C-26). B-side 100k pull-downs on every RP2040 -> carrier input.\n4. Default resistors (R-51): CS_N high, SCK/MOSI low, MISO/ATTN low (not ready), IRQ_N 2.2k pull-up, strong\n   enough against the blank FPGA's weak pull-down (305 uA max: 2.6 V). Host-link pins use PULLMODE=NONE in the LPF.\n5. R411-R414 33R source terminations on the ribbon drivers (values TBV at layout). R424/R425: with the carrier off\n   and the X4 running, U402 is isolated: IRQ_N reads high (no interrupt), ATTN low. Analysis: sheet4-s46-isolation.md.\n6. Not yet validated: an ERC-clean result does not imply electrical or timing correctness."
+	(text "DESIGN NOTES (summary; full analysis in docs/stage2/sheet4-design-notes.md)\n1. Every X4 signal passes an SN74AVC4T774 (A = carrier +3V3). VCC isolation + Ioff: no back-feed when a side is off (C-29).\n   U401/U403/U404 carry RP2040 -> carrier inputs only; B = X4_3V3_REF (header 3.3 V, reference only: uA; ER-3).\n2. U402 carries EVERY carrier -> RP2040 output (IRQ_N, ATTN, MISO, TDO). Its /OE (RP_EN_N) is low only while Q401\n   (U405: GP24 > 0.940 x X4_3V3_REF) and Q402 (GP24 driven) both conduct; disabled <= 160 ns after GP24 falls below the\n   threshold. The X4's K4 key can cut IOVDD while the header 3.3 V stays up (Q32, [V S1 sh.21]) (S4-6 rev A2).\n3. U401 SPI (mode 0, GPIO chip select); U403 JTAG option (D-12: OE from a DIP switch, default isolated, so J201\n   on sheet 2 has priority); U404 four RP2040 LEDs (C-26). B-side 100k pull-downs on every RP2040 -> carrier input.\n4. Default resistors (R-51): CS_N high, SCK/MOSI low, MISO/ATTN low (not ready), IRQ_N 2.2k pull-up, strong\n   enough against the blank FPGA's weak pull-down (305 uA max: 2.6 V). Host-link pins use PULLMODE=NONE in the LPF.\n5. R411-R414 33R source terminations on the ribbon drivers (values TBV at layout). With U402 isolated and the RP2040\n   running, IRQ_N reads high through the RP2040's own GP22 pull-up (firmware FW-6) and ATTN low through R425.\n   Nothing on the carrier sources current into GP24 (R424 removed). Analysis: sheet4-s46-isolation.md.\n6. Not yet validated: an ERC-clean result does not imply electrical or timing correctness."
 		(exclude_from_sim no)
 		(at 25.4 300 0)
 		(effects
@@ -2664,7 +2825,7 @@
 			)
 			(justify left top)
 		)
-		(uuid "30ee4964-e925-5c02-b42c-71d4e5054db2")
+		(uuid "0e395352-d242-539c-b58c-4a9f8f01e902")
 	)
 	(no_connect
 		(at 350.52 116.84)
@@ -2736,7 +2897,7 @@
 	)
 	(wire
 		(pts
-			(xy 190.5 236.22) (xy 198.12 236.22)
+			(xy 368.3 223.52) (xy 360.68 223.52)
 		)
 		(stroke
 			(width 0)
@@ -2786,7 +2947,7 @@
 	)
 	(wire
 		(pts
-			(xy 276.86 237.49) (xy 276.86 232.41)
+			(xy 246.38 237.49) (xy 246.38 232.41)
 		)
 		(stroke
 			(width 0)
@@ -2806,7 +2967,7 @@
 	)
 	(wire
 		(pts
-			(xy 289.56 266.7) (xy 289.56 270.51)
+			(xy 292.1 245.11) (xy 292.1 250.19)
 		)
 		(stroke
 			(width 0)
@@ -2846,7 +3007,7 @@
 	)
 	(wire
 		(pts
-			(xy 320.04 266.7) (xy 320.04 270.51)
+			(xy 322.58 236.22) (xy 322.58 240.03)
 		)
 		(stroke
 			(width 0)
@@ -2873,16 +3034,6 @@
 			(type default)
 		)
 		(uuid "0f523049-1130-5987-a368-eacd6bbea29c")
-	)
-	(wire
-		(pts
-			(xy 180.34 243.84) (xy 180.34 248.92)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0f655c16-4cd2-588b-b4be-14989a752d21")
 	)
 	(wire
 		(pts
@@ -2966,7 +3117,7 @@
 	)
 	(wire
 		(pts
-			(xy 231.14 237.49) (xy 231.14 232.41)
+			(xy 215.9 237.49) (xy 215.9 232.41)
 		)
 		(stroke
 			(width 0)
@@ -2986,7 +3137,7 @@
 	)
 	(wire
 		(pts
-			(xy 307.34 236.22) (xy 307.34 240.03)
+			(xy 276.86 237.49) (xy 276.86 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3036,7 +3187,7 @@
 	)
 	(wire
 		(pts
-			(xy 170.18 233.68) (xy 162.56 233.68)
+			(xy 190.5 236.22) (xy 198.12 236.22)
 		)
 		(stroke
 			(width 0)
@@ -3046,7 +3197,7 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 245.11) (xy 121.92 250.19)
+			(xy 180.34 228.6) (xy 180.34 223.52)
 		)
 		(stroke
 			(width 0)
@@ -3146,7 +3297,7 @@
 	)
 	(wire
 		(pts
-			(xy 274.32 266.7) (xy 274.32 270.51)
+			(xy 292.1 237.49) (xy 292.1 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3266,7 +3417,7 @@
 	)
 	(wire
 		(pts
-			(xy 261.62 245.11) (xy 261.62 250.19)
+			(xy 231.14 245.11) (xy 231.14 250.19)
 		)
 		(stroke
 			(width 0)
@@ -3346,7 +3497,7 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 237.49) (xy 137.16 232.41)
+			(xy 180.34 243.84) (xy 180.34 248.92)
 		)
 		(stroke
 			(width 0)
@@ -3396,7 +3547,7 @@
 	)
 	(wire
 		(pts
-			(xy 231.14 245.11) (xy 231.14 250.19)
+			(xy 215.9 245.11) (xy 215.9 250.19)
 		)
 		(stroke
 			(width 0)
@@ -3446,23 +3597,23 @@
 	)
 	(wire
 		(pts
-			(xy 180.34 228.6) (xy 180.34 223.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7283db34-eda7-55fb-b479-50c848aca210")
-	)
-	(wire
-		(pts
-			(xy 215.9 237.49) (xy 215.9 232.41)
+			(xy 375.92 231.14) (xy 375.92 241.3)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "73d39fd6-4030-5fb6-8fd2-bfdeb32fe4af")
+	)
+	(wire
+		(pts
+			(xy 274.32 266.7) (xy 274.32 270.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "74af9581-dc77-53e8-ac8c-c27db3a5327f")
 	)
 	(wire
 		(pts
@@ -3496,6 +3647,26 @@
 	)
 	(wire
 		(pts
+			(xy 170.18 238.76) (xy 162.56 238.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7df36849-097d-59de-8261-e272f96f8f31")
+	)
+	(wire
+		(pts
+			(xy 337.82 236.22) (xy 337.82 240.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7df38156-1811-5fe0-b54c-d07512077065")
+	)
+	(wire
+		(pts
 			(xy 86.36 73.66) (xy 81.28 73.66)
 		)
 		(stroke
@@ -3513,6 +3684,16 @@
 			(type default)
 		)
 		(uuid "82d9fcd4-0204-5933-bb8e-6a8b092ce201")
+	)
+	(wire
+		(pts
+			(xy 320.04 266.7) (xy 320.04 270.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "83b115cb-0d09-554b-be67-38ddc306d3d6")
 	)
 	(wire
 		(pts
@@ -3706,6 +3887,16 @@
 	)
 	(wire
 		(pts
+			(xy 304.8 266.7) (xy 304.8 270.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a2c62154-6754-5899-a1b6-640395470c6f")
+	)
+	(wire
+		(pts
 			(xy 86.36 66.04) (xy 76.2 66.04)
 		)
 		(stroke
@@ -3766,7 +3957,7 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 266.7) (xy 304.8 270.51)
+			(xy 307.34 237.49) (xy 307.34 233.68)
 		)
 		(stroke
 			(width 0)
@@ -3826,7 +4017,7 @@
 	)
 	(wire
 		(pts
-			(xy 292.1 237.49) (xy 292.1 233.68)
+			(xy 261.62 245.11) (xy 261.62 250.19)
 		)
 		(stroke
 			(width 0)
@@ -3836,7 +4027,7 @@
 	)
 	(wire
 		(pts
-			(xy 246.38 237.49) (xy 246.38 232.41)
+			(xy 231.14 237.49) (xy 231.14 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3906,6 +4097,16 @@
 	)
 	(wire
 		(pts
+			(xy 170.18 233.68) (xy 162.56 233.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d22a565f-8000-5c94-b1c6-adb6c28bc2c3")
+	)
+	(wire
+		(pts
 			(xy 243.84 68.58) (xy 254 68.58)
 		)
 		(stroke
@@ -3966,7 +4167,7 @@
 	)
 	(wire
 		(pts
-			(xy 170.18 238.76) (xy 162.56 238.76)
+			(xy 375.92 215.9) (xy 375.92 210.82)
 		)
 		(stroke
 			(width 0)
@@ -3976,7 +4177,7 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 237.49) (xy 121.92 232.41)
+			(xy 137.16 237.49) (xy 137.16 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3996,7 +4197,7 @@
 	)
 	(wire
 		(pts
-			(xy 215.9 245.11) (xy 215.9 250.19)
+			(xy 368.3 248.92) (xy 360.68 248.92)
 		)
 		(stroke
 			(width 0)
@@ -4043,6 +4244,16 @@
 			(type default)
 		)
 		(uuid "e621eb38-d41b-5b82-828d-bbbf21df5c9d")
+	)
+	(wire
+		(pts
+			(xy 289.56 266.7) (xy 289.56 270.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ea33c467-04ea-5493-900f-a1ca87334084")
 	)
 	(wire
 		(pts
@@ -4194,6 +4405,16 @@
 		)
 		(uuid "0a662f6f-6d5e-5be9-a377-222a687f04a3")
 	)
+	(label "X4_GP24_EN"
+		(at 292.1 232.41 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0b24b0a4-34dc-580c-8875-51675c1613c3")
+	)
 	(label "X4_GP18_LED"
 		(at 370.84 134.62 0)
 		(effects
@@ -4234,6 +4455,16 @@
 		)
 		(uuid "1977e183-f659-5cfa-ba02-51086725c9db")
 	)
+	(label "RP_EN_SENSE"
+		(at 162.56 233.68 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "1b36b890-f954-5fdb-9904-712abb790aaf")
+	)
 	(label "X4_GP17_LED"
 		(at 254 182.88 0)
 		(effects
@@ -4244,8 +4475,8 @@
 		)
 		(uuid "1d3c9d3e-11d6-5d89-9aec-4392431ebd03")
 	)
-	(label "X4_GP24_EN"
-		(at 121.92 232.41 0)
+	(label "X4_GP27_ATTN"
+		(at 137.16 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4254,8 +4485,8 @@
 		)
 		(uuid "1ef51a95-b33d-573a-b9d0-a56fcfba4168")
 	)
-	(label "RP_EN_N"
-		(at 261.62 250.19 0)
+	(label "RP_EN_REF"
+		(at 231.14 250.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4274,13 +4505,13 @@
 		)
 		(uuid "253a047b-70b4-5ee4-ad71-00b9aa6f944c")
 	)
-	(label "RP_EN_N"
-		(at 198.12 236.22 0)
+	(label "RP_EN_CMP"
+		(at 360.68 223.52 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "2b5ac687-5b59-5eab-9056-10f4df982be5")
 	)
@@ -4304,13 +4535,13 @@
 		)
 		(uuid "3b40ed33-638c-59c6-b587-88e773096983")
 	)
-	(label "RP_EN_REF"
-		(at 162.56 233.68 180)
+	(label "RP_EN_CMP"
+		(at 198.12 236.22 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "3bc50dce-8ffd-5344-a7a1-c10da8b0589c")
 	)
@@ -4323,6 +4554,16 @@
 			(justify left bottom)
 		)
 		(uuid "49f2644f-c9e7-55e6-a4dc-518adf6aaaf1")
+	)
+	(label "X4_3V3_REF"
+		(at 307.34 233.68 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "4c3ddfa7-c030-5276-ba83-c850d0a6f1e2")
 	)
 	(label "X4_GP17_LED"
 		(at 167.64 257.81 0)
@@ -4344,8 +4585,8 @@
 		)
 		(uuid "5b57db73-e5ca-5de6-ac57-9217da720e7b")
 	)
-	(label "X4_3V3_REF"
-		(at 231.14 232.41 0)
+	(label "X4_GP24_EN"
+		(at 215.9 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4353,6 +4594,16 @@
 			(justify left bottom)
 		)
 		(uuid "610eb7a4-30bc-5026-93e5-c2b6b6291227")
+	)
+	(label "RP_EN_CMP"
+		(at 337.82 240.03 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "62e50f11-f6e4-5a81-a234-e41b947133df")
 	)
 	(label "X4_GP16_LED"
 		(at 254 180.34 0)
@@ -4383,6 +4634,16 @@
 			(justify left bottom)
 		)
 		(uuid "6fc6bbc0-22aa-518b-b95e-5c0bef8eecaf")
+	)
+	(label "RP_EN_REF"
+		(at 162.56 238.76 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "727b6de9-f75d-56a7-b02b-be86a9969eae")
 	)
 	(label "X4_GP16_LED"
 		(at 152.4 257.81 0)
@@ -4424,6 +4685,16 @@
 		)
 		(uuid "7e421c23-b440-5050-ad70-1fbe998727f3")
 	)
+	(label "RP_EN_N"
+		(at 322.58 240.03 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "7ef665da-958d-5c34-84e6-1b40df671f4e")
+	)
 	(label "X4_3V3_REF"
 		(at 137.16 152.4 0)
 		(effects
@@ -4454,8 +4725,8 @@
 		)
 		(uuid "89ac0ca2-63d8-5968-9f53-964c8bc2b7e1")
 	)
-	(label "X4_GP24_EN"
-		(at 276.86 232.41 0)
+	(label "RP_EN_REF"
+		(at 246.38 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4474,8 +4745,8 @@
 		)
 		(uuid "8fc5caae-d6f9-5c95-af5d-be94a663d516")
 	)
-	(label "RP_EN_REF"
-		(at 246.38 232.41 0)
+	(label "X4_3V3_REF"
+		(at 231.14 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4534,8 +4805,8 @@
 		)
 		(uuid "9f3f0674-41f2-5515-b222-879b12e07e4c")
 	)
-	(label "X4_GP22_IRQ_N"
-		(at 121.92 250.19 0)
+	(label "X4_3V3_REF"
+		(at 180.34 223.52 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4574,8 +4845,8 @@
 		)
 		(uuid "b1ddc597-2b7e-5078-a536-273c556e9688")
 	)
-	(label "RP_EN_REF"
-		(at 231.14 250.19 0)
+	(label "RP_EN_SENSE"
+		(at 215.9 250.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4594,8 +4865,8 @@
 		)
 		(uuid "c03e3eba-7c95-5663-9809-4db01fb0da07")
 	)
-	(label "X4_GP24_EN"
-		(at 215.9 232.41 0)
+	(label "RP_EN_MID"
+		(at 375.92 236.22 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4614,16 +4885,6 @@
 		)
 		(uuid "c2a1c46a-42ea-5ba1-800a-016a400ec466")
 	)
-	(label "X4_GP27_ATTN"
-		(at 137.16 232.41 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "c4e3ab82-1630-5477-a72b-4562157c6703")
-	)
 	(label "X4_3V3_REF"
 		(at 342.9 124.46 180)
 		(effects
@@ -4634,13 +4895,13 @@
 		)
 		(uuid "c5873b4c-4e2e-57a9-8d80-548c3a23e3ab")
 	)
-	(label "RP_EN_SENSE"
-		(at 215.9 250.19 0)
+	(label "RP_EN_GATE"
+		(at 360.68 248.92 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "c6184169-5338-5132-ac95-9afbdd52ac84")
 	)
@@ -4664,6 +4925,16 @@
 		)
 		(uuid "ca02284d-34db-54c5-b6d6-8d7861e7bc01")
 	)
+	(label "RP_EN_GATE"
+		(at 292.1 250.19 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "caa6345c-9ea7-5b9d-ab6a-a61db6f1273a")
+	)
 	(label "X4_GP24_EN"
 		(at 370.84 129.54 0)
 		(effects
@@ -4674,13 +4945,13 @@
 		)
 		(uuid "cc677d42-f0af-5713-9cd0-462f068679e4")
 	)
-	(label "RP_EN_SENSE"
-		(at 162.56 238.76 180)
+	(label "RP_EN_N"
+		(at 375.92 210.82 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "ceb3423c-3855-5cf3-90fd-14a23d24e372")
 	)
@@ -4713,16 +4984,6 @@
 			(justify left bottom)
 		)
 		(uuid "d1b98b69-bfa2-57a7-b129-b9d52609684b")
-	)
-	(label "X4_3V3_REF"
-		(at 180.34 223.52 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d23e961c-b3d3-5648-a49b-2c9cc0f315ec")
 	)
 	(label "X4_GP26_TDI"
 		(at 106.68 232.41 0)
@@ -4764,8 +5025,8 @@
 		)
 		(uuid "e1f42d91-c0f6-5b17-85c6-a937c42514d0")
 	)
-	(label "RP_EN_N"
-		(at 307.34 240.03 0)
+	(label "X4_GP24_EN"
+		(at 276.86 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4774,8 +5035,8 @@
 		)
 		(uuid "e340288e-116b-5326-af6f-36c75dc6fab0")
 	)
-	(label "X4_3V3_REF"
-		(at 292.1 233.68 0)
+	(label "RP_EN_N"
+		(at 261.62 250.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4814,17 +5075,6 @@
 			(justify right)
 		)
 		(uuid "1946bb15-56c2-511a-8887-ab43642ae69f")
-	)
-	(hierarchical_label "RP_SCK"
-		(shape bidirectional)
-		(at 274.32 270.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "34769b79-f2fc-55ea-9907-92cef9b08d60")
 	)
 	(hierarchical_label "RP_SCK"
 		(shape bidirectional)
@@ -4870,6 +5120,17 @@
 		)
 		(uuid "5285aed4-3ad2-5c9e-a22b-ca46ae4678f7")
 	)
+	(hierarchical_label "RP_CS_N"
+		(shape bidirectional)
+		(at 304.8 270.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5595ecc3-e750-502a-bf28-80d6a6945f18")
+	)
 	(hierarchical_label "FPGA_TDO"
 		(shape bidirectional)
 		(at 76.2 187.96 180)
@@ -4892,6 +5153,17 @@
 		)
 		(uuid "65caf618-2ef4-58b5-b941-ccf7a3cf5a96")
 	)
+	(hierarchical_label "RP_SCK"
+		(shape bidirectional)
+		(at 274.32 270.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "6f68229b-684d-5176-8d2f-e1004784566a")
+	)
 	(hierarchical_label "RP_CS_N"
 		(shape bidirectional)
 		(at 30.48 275.59 0)
@@ -4913,17 +5185,6 @@
 			(justify left)
 		)
 		(uuid "a12fb3b6-70f7-584f-9f25-5ae9cae13609")
-	)
-	(hierarchical_label "RP_CS_N"
-		(shape bidirectional)
-		(at 304.8 270.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "a9f7a74a-8215-51b2-a855-0e07f2c10f8e")
 	)
 	(hierarchical_label "RP_CS_N"
 		(shape bidirectional)
@@ -5002,17 +5263,6 @@
 		)
 		(uuid "da40e7c5-a1e3-50da-b5d1-54262ec9f6da")
 	)
-	(hierarchical_label "RP_ATTN"
-		(shape bidirectional)
-		(at 320.04 270.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "dc1e5a34-ea3f-56e1-90e4-8d420138629f")
-	)
 	(hierarchical_label "LED_RP2"
 		(shape bidirectional)
 		(at 203.2 185.42 180)
@@ -5035,17 +5285,6 @@
 		)
 		(uuid "e0ec7408-1b90-5e59-bb9f-b2989b048c47")
 	)
-	(hierarchical_label "RP_MISO"
-		(shape bidirectional)
-		(at 289.56 270.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "e7a972b7-7786-5194-aea1-288e342119b2")
-	)
 	(hierarchical_label "RP_MOSI"
 		(shape bidirectional)
 		(at 60.96 257.81 0)
@@ -5056,6 +5295,28 @@
 			(justify left)
 		)
 		(uuid "f759ec0d-ad1c-54f8-af10-29442696c062")
+	)
+	(hierarchical_label "RP_ATTN"
+		(shape bidirectional)
+		(at 320.04 270.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f96190d4-0b23-5356-93f0-f19d431fdc0c")
+	)
+	(hierarchical_label "RP_MISO"
+		(shape bidirectional)
+		(at 289.56 270.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f9eaa079-4ab3-59ad-b64b-80299e6a09cb")
 	)
 	(hierarchical_label "RP_JTAG_EN_N"
 		(shape input)
@@ -6529,7 +6790,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "1k"
 			(at 217.7 242.6 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6573,7 +6834,7 @@
 				)
 			)
 		)
-		(property "Spec" "0603 1%; series input resistor (GP24 -> comparator IN-)"
+		(property "Spec" "0603 1%; series input resistor (GP24 -> comparator IN+)"
 			(at 215.9 241.3 0)
 			(hide yes)
 			(show_name no)
@@ -7433,8 +7694,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 276.86 245.11 0)
+		(lib_id "power:+3V3")
+		(at 261.62 237.49 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -7444,7 +7705,7 @@
 		(dnp no)
 		(uuid "27e1f496-ff49-52f4-87aa-467db6d3b19c")
 		(property "Reference" "#PWR4070"
-			(at 276.86 248.11 0)
+			(at 261.62 240.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7454,9 +7715,8 @@
 				)
 			)
 		)
-		(property "Value" "GND"
-			(at 276.86 250.11 0)
-			(hide yes)
+		(property "Value" "+3V3"
+			(at 261.62 233.89 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7466,7 +7726,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 276.86 245.11 0)
+			(at 261.62 237.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7477,7 +7737,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 276.86 245.11 0)
+			(at 261.62 237.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7488,7 +7748,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 276.86 245.11 0)
+			(at 261.62 237.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7512,7 +7772,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 307.34 236.22 0)
+		(at 322.58 236.22 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -7522,7 +7782,7 @@
 		(dnp no)
 		(uuid "28a1c99a-5fc3-51fa-8bff-6e8f0f5ffd20")
 		(property "Reference" "TP407"
-			(at 308.94 232 0)
+			(at 324.18 232 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7533,7 +7793,7 @@
 			)
 		)
 		(property "Value" "TestPoint"
-			(at 308.94 233.6 0)
+			(at 324.18 233.6 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7544,7 +7804,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 307.34 236.22 0)
+			(at 322.58 236.22 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7555,7 +7815,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 307.34 236.22 0)
+			(at 322.58 236.22 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7566,7 +7826,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 307.34 236.22 0)
+			(at 322.58 236.22 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7771,7 +8031,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 246.38 245.11 0)
+		(at 375.92 256.54 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -7781,7 +8041,7 @@
 		(dnp no)
 		(uuid "302b4ed2-117c-58a4-bfca-bf0dab861841")
 		(property "Reference" "#PWR4068"
-			(at 246.38 248.11 0)
+			(at 375.92 259.54 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7792,7 +8052,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 246.38 250.11 0)
+			(at 375.92 261.54 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7803,7 +8063,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 246.38 245.11 0)
+			(at 375.92 256.54 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7814,7 +8074,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 246.38 245.11 0)
+			(at 375.92 256.54 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7825,7 +8085,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 246.38 245.11 0)
+			(at 375.92 256.54 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7849,7 +8109,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 335.28 266.7 0)
+		(at 307.34 245.11 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -7859,7 +8119,7 @@
 		(dnp no)
 		(uuid "34a2d262-067f-5b4e-bb94-6eadfc78926d")
 		(property "Reference" "#PWR4072"
-			(at 335.28 269.7 0)
+			(at 307.34 248.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7870,7 +8130,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 335.28 271.7 0)
+			(at 307.34 250.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7881,7 +8141,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 335.28 266.7 0)
+			(at 307.34 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7892,7 +8152,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 335.28 266.7 0)
+			(at 307.34 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7903,7 +8163,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 335.28 266.7 0)
+			(at 307.34 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8316,7 +8576,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 292.1 245.11 0)
+		(at 276.86 245.11 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -8326,7 +8586,7 @@
 		(dnp no)
 		(uuid "3e1fae12-7db7-5ca6-9220-c66c4a32bc34")
 		(property "Reference" "#PWR4071"
-			(at 292.1 248.11 0)
+			(at 276.86 248.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8337,7 +8597,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 292.1 250.11 0)
+			(at 276.86 250.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8348,7 +8608,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 292.1 245.11 0)
+			(at 276.86 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8359,7 +8619,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 292.1 245.11 0)
+			(at 276.86 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8370,7 +8630,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 292.1 245.11 0)
+			(at 276.86 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10134,6 +10394,98 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 292.1 241.3 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "6f3fe0f4-59e0-5245-ba1d-967cc4bf5f62")
+		(property "Reference" "R431"
+			(at 293.9 240 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1k"
+			(at 293.9 242.6 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 292.1 241.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 292.1 241.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 292.1 241.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Spec" "0603 1%; Q402 gate resistor: GP24 edge current <= 3.6 mA"
+			(at 292.1 241.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1259ae24-4762-523d-b83e-9d668d5bd4e1")
+		)
+		(pin "2"
+			(uuid "8a01795b-72e1-5f1d-90d6-614d7cc70c56")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "R431")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 127 49.53 0)
 		(unit 1)
@@ -10213,98 +10565,6 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 121.92 241.3 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "707c9adc-e656-53e4-8648-bfd55a9d382e")
-		(property "Reference" "R424"
-			(at 123.72 240 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10k"
-			(at 123.72 242.6 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 121.92 241.3 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 121.92 241.3 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 121.92 241.3 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Spec" "0603 1%; RP2040-side default while U402 is isolated (S4-6)"
-			(at 121.92 241.3 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "43800a4c-5395-5eea-bc29-a46186b704b9")
-		)
-		(pin "2"
-			(uuid "7d7a02a9-a718-594f-a4be-c32702d25aee")
-		)
-		(instances
-			(project "a2000-bridgeboard"
-				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
-					(reference "R424")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
 		(at 231.14 241.3 0)
 		(unit 1)
 		(body_style 1)
@@ -10325,7 +10585,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "7.5k"
+		(property "Value" "6.34k"
 			(at 232.94 242.6 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10369,7 +10629,7 @@
 				)
 			)
 		)
-		(property "Spec" "0603 1%; reference divider top: IN+ = 0.930 x X4_3V3_REF"
+		(property "Spec" "0603 1%; reference divider top: IN- = 0.940 x X4_3V3_REF"
 			(at 231.14 241.3 0)
 			(hide yes)
 			(show_name no)
@@ -10552,7 +10812,7 @@
 		)
 	)
 	(symbol
-		(lib_id "a2000-bridgeboard:TLV7021DBV")
+		(lib_id "a2000-bridgeboard:TLV3201DBV")
 		(at 180.34 236.22 0)
 		(unit 1)
 		(body_style 1)
@@ -10572,7 +10832,7 @@
 				)
 			)
 		)
-		(property "Value" "TLV7021DBVR"
+		(property "Value" "TLV3201AIDBVR"
 			(at 172.72 245.42 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10593,7 +10853,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv7011.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv3201.pdf"
 			(at 180.34 236.22 0)
 			(hide yes)
 			(show_name no)
@@ -10604,7 +10864,7 @@
 				)
 			)
 		)
-		(property "Description" "Nanopower comparator, open-drain output (TI SLVSDM5F). DBV: 1 OUT, 2 VEE, 3 IN+, 4 IN-, 5 VCC. Inputs clamped to VEE only (6 V regardless of VCC); output off during power-on reset"
+		(property "Description" "40 ns comparator, push-pull output, rail-to-rail inputs (TI SBOS561C). DBV: 1 OUT, 2 GND, 3 IN+, 4 IN-, 5 VCC. tPD <= 55 ns (VOD 20 mV, -40..125 C); inputs diode-clamped to both rails"
 			(at 180.34 236.22 0)
 			(hide yes)
 			(show_name no)
@@ -10626,7 +10886,7 @@
 				)
 			)
 		)
-		(property "MPN" "TLV7021DBVR"
+		(property "MPN" "TLV3201AIDBVR"
 			(at 180.34 236.22 0)
 			(hide yes)
 			(show_name no)
@@ -11895,6 +12155,123 @@
 		)
 	)
 	(symbol
+		(lib_id "a2000-bridgeboard:BSS138")
+		(at 375.92 248.92 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "9bcc3c49-cb24-56ad-99a3-79075adbcead")
+		(property "Reference" "Q402"
+			(at 381 246.38 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "BSS138"
+			(at 381 251.46 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 375.92 248.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.diodes.com/assets/Datasheets/ds30144.pdf"
+			(at 375.92 248.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "N-channel MOSFET 50 V 200 mA, VGS(th) 0.5-1.5 V; Ciss <= 50 pF, Coss <= 25 pF, Crss <= 8 pF (Diodes DS30144). SOT-23: 1 G, 2 S, 3 D"
+			(at 375.92 248.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Diodes Incorporated"
+			(at 375.92 248.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BSS138-7-F"
+			(at 375.92 248.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Spec" "BSS138-7-F (Diodes); U402 enable, switched by GP24 (default off)"
+			(at 375.92 248.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "adf61fe9-74f0-5cd0-9516-30bd15f167ca")
+		)
+		(pin "3"
+			(uuid "9084d84f-d3ed-5ed9-b786-72feaadcab48")
+		)
+		(pin "2"
+			(uuid "44e4f4e0-6eee-575b-8506-f9b1ebf3209a")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "Q402")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 134.62 176.53 90)
 		(unit 1)
@@ -12838,7 +13215,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 292.1 241.3 0)
+		(at 307.34 241.3 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -12848,7 +13225,7 @@
 		(dnp no)
 		(uuid "c02e1b3b-9d31-5335-9661-98c465de6586")
 		(property "Reference" "C409"
-			(at 294.6 240 0)
+			(at 309.84 240 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -12859,7 +13236,7 @@
 			)
 		)
 		(property "Value" "100n"
-			(at 294.6 242.6 0)
+			(at 309.84 242.6 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -12870,7 +13247,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 292.1 241.3 0)
+			(at 307.34 241.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -12881,7 +13258,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 292.1 241.3 0)
+			(at 307.34 241.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -12892,7 +13269,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 292.1 241.3 0)
+			(at 307.34 241.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -12903,7 +13280,7 @@
 			)
 		)
 		(property "Spec" "0603 X7R 25 V"
-			(at 292.1 241.3 0)
+			(at 307.34 241.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -12914,7 +13291,7 @@
 			)
 		)
 		(property "Note" "U405 VCC"
-			(at 292.1 241.3 0)
+			(at 307.34 241.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13928,6 +14305,123 @@
 		)
 	)
 	(symbol
+		(lib_id "a2000-bridgeboard:BSS138")
+		(at 375.92 223.52 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "d5ab8454-b68b-5a91-9360-01314d91896a")
+		(property "Reference" "Q401"
+			(at 381 220.98 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "BSS138"
+			(at 381 226.06 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 375.92 223.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.diodes.com/assets/Datasheets/ds30144.pdf"
+			(at 375.92 223.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "N-channel MOSFET 50 V 200 mA, VGS(th) 0.5-1.5 V; Ciss <= 50 pF, Coss <= 25 pF, Crss <= 8 pF (Diodes DS30144). SOT-23: 1 G, 2 S, 3 D"
+			(at 375.92 223.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Diodes Incorporated"
+			(at 375.92 223.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BSS138-7-F"
+			(at 375.92 223.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Spec" "BSS138-7-F (Diodes); U402 enable, switched by U405 (fast path)"
+			(at 375.92 223.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "8d2ccbf5-ea81-5cbb-ae49-0a2a87fd0c5c")
+		)
+		(pin "3"
+			(uuid "413c9df5-ac03-5ff9-a3df-6a770b0ed738")
+		)
+		(pin "2"
+			(uuid "22bbb67b-5cbf-5795-b75b-8a0ef95f4344")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "Q401")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 182.88 270.51 0)
 		(unit 1)
@@ -14260,7 +14754,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "1k"
 			(at 263.42 242.6 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -14304,7 +14798,7 @@
 				)
 			)
 		)
-		(property "Spec" "0603 1%; /OE pull-up to VCCA: U402 disabled unless U405 enables it"
+		(property "Spec" "0603 1%; /OE pull-up to VCCA: U402 disabled unless Q401 and Q402 conduct"
 			(at 261.62 241.3 0)
 			(hide yes)
 			(show_name no)
@@ -14403,6 +14897,84 @@
 			(project "a2000-bridgeboard"
 				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
 					(reference "TP402")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 337.82 236.22 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "e12920ce-3764-5fd3-9246-eaad5fb67acb")
+		(property "Reference" "TP408"
+			(at 339.42 232 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 339.42 233.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 337.82 236.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 337.82 236.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 337.82 236.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "bca4919b-24b2-59b2-8c0e-4b02b5873c9b")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "TP408")
 					(unit 1)
 				)
 			)
@@ -15203,6 +15775,84 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 335.28 266.7 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "ebde62ac-9200-5028-b1a3-65fa105fc8ca")
+		(property "Reference" "#PWR4073"
+			(at 335.28 269.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 335.28 271.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 335.28 266.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 335.28 266.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 335.28 266.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e4f8b8d1-fb22-5040-858f-697758af5fc0")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "#PWR4073")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3V3")
 		(at 96.52 165.1 0)
 		(unit 1)
@@ -15527,8 +16177,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3V3")
-		(at 261.62 237.49 0)
+		(lib_id "power:GND")
+		(at 246.38 245.11 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -15538,7 +16188,7 @@
 		(dnp no)
 		(uuid "fbf0c674-1be4-57b8-8655-8b8db28cf9de")
 		(property "Reference" "#PWR4069"
-			(at 261.62 240.49 0)
+			(at 246.38 248.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -15548,8 +16198,9 @@
 				)
 			)
 		)
-		(property "Value" "+3V3"
-			(at 261.62 233.89 0)
+		(property "Value" "GND"
+			(at 246.38 250.11 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -15559,7 +16210,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 261.62 237.49 0)
+			(at 246.38 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -15570,7 +16221,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 261.62 237.49 0)
+			(at 246.38 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -15581,7 +16232,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 261.62 237.49 0)
+			(at 246.38 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

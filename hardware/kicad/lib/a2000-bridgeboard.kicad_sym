@@ -141,6 +141,167 @@
 		)
 		(embedded_fonts no)
 	)
+	(symbol "BSS138"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "Q"
+			(at 5.08 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "BSS138"
+			(at 5.08 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.diodes.com/assets/Datasheets/ds30144.pdf"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "N-channel MOSFET 50 V 200 mA, VGS(th) 0.5-1.5 V; Ciss <= 50 pF, Coss <= 25 pF, Crss <= 8 pF (Diodes DS30144). SOT-23: 1 G, 2 S, 3 D"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Diodes Incorporated"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BSS138-7-F"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "mosfet n-channel logic level"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "BSS138_1_1"
+			(rectangle
+				(start -3.81 5.08)
+				(end 3.81 -5.08)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+			(pin input line
+				(at -7.62 0 0)
+				(length 3.81)
+				(name "G"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -7.62 90)
+				(length 2.54)
+				(name "S"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 7.62 270)
+				(length 2.54)
+				(name "D"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
 	(symbol "ECS-2520MV"
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7761,7 +7922,7 @@
 		)
 		(embedded_fonts no)
 	)
-	(symbol "TLV7021DBV"
+	(symbol "TLV3201DBV"
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -7777,7 +7938,7 @@
 				)
 			)
 		)
-		(property "Value" "TLV7021DBVR"
+		(property "Value" "TLV3201AIDBVR"
 			(at -7.62 -9.2 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7798,7 +7959,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv7011.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv3201.pdf"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7809,7 +7970,7 @@
 				)
 			)
 		)
-		(property "Description" "Nanopower comparator, open-drain output (TI SLVSDM5F). DBV: 1 OUT, 2 VEE, 3 IN+, 4 IN-, 5 VCC. Inputs clamped to VEE only (6 V regardless of VCC); output off during power-on reset"
+		(property "Description" "40 ns comparator, push-pull output, rail-to-rail inputs (TI SBOS561C). DBV: 1 OUT, 2 GND, 3 IN+, 4 IN-, 5 VCC. tPD <= 55 ns (VOD 20 mV, -40..125 C); inputs diode-clamped to both rails"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7831,7 +7992,7 @@
 				)
 			)
 		)
-		(property "MPN" "TLV7021DBVR"
+		(property "MPN" "TLV3201AIDBVR"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7842,7 +8003,7 @@
 				)
 			)
 		)
-		(property "ki_keywords" "comparator open-drain nanopower"
+		(property "ki_keywords" "comparator push-pull"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7853,7 +8014,7 @@
 				)
 			)
 		)
-		(symbol "TLV7021DBV_1_1"
+		(symbol "TLV3201DBV_1_1"
 			(rectangle
 				(start -7.62 5.08)
 				(end 7.62 -5.08)
@@ -7865,7 +8026,7 @@
 					(type background)
 				)
 			)
-			(pin open_collector line
+			(pin output line
 				(at 10.16 0 180)
 				(length 2.54)
 				(name "OUT"
@@ -7886,7 +8047,7 @@
 			(pin power_in line
 				(at 0 -7.62 90)
 				(length 2.54)
-				(name "VEE"
+				(name "GND"
 					(effects
 						(font
 							(size 1.27 1.27)
