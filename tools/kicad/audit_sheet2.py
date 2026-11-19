@@ -135,9 +135,11 @@ def main(path):
             classes[p] = "spare"
             check(unconnected("U201", p), f"U201.{p} (spare {fn}) unconnected, got {net_of('U201', p)}")
     count = {k: sum(1 for v in classes.values() if v == k) for k in ("power", "gnd", "nc", "config", "signal", "spare")}
-    check(count == {"power": 16, "gnd": 12, "nc": 4, "config": 8, "signal": 102, "spare": 2},
-          f"pin classes {count} (want 16 supply, 12 GND, 4 NC, 8 configuration/JTAG, 102 signals, 2 spare)")
-    check(sorted(p for p, c in classes.items() if c == "spare") == [23, 24], "spare pins are 23 and 24")
+    check(count == {"power": 16, "gnd": 12, "nc": 4, "config": 8, "signal": 101, "spare": 3},
+          f"pin classes {count} (want 16 supply, 12 GND, 4 NC, 8 configuration/JTAG, 101 signals, 3 spare)")
+    check(sorted(p for p, c in classes.items() if c == "spare") == [23, 24, 67], "spare pins are 23, 24 and 67 (C-26)")
+    check(by_pin.get(65) == "LED_READY" and net_of("U201", 65) == "LED_READY", "LED_READY on pin 65 (C-26: the one FPGA LED)")
+    check("LED_FAULT" not in nets, "no LED_FAULT net (C-26: FAULT LED on the RP2040)")
     # documented pin numbers of the configuration functions (sheet notes, LPF PROHIBIT)
     cfg_pins = {k: [p for p, v in tab.items() if k in re.split(r"[/ ]", v[2])] for k in CONFIG}
     check(cfg_pins == {"PROGRAMN": [119], "INITN": [110], "DONE": [109], "JTAGENB": [120], "TMS": [130], "TCK": [131],
@@ -190,7 +192,7 @@ def main(path):
             check(any(t in ("input", "bidirectional") for _, _, t in ext), f"{net}: FPGA output has no load: {ext}")
         elif d == "inout":
             check(all(t in ("bidirectional", "passive") for _, _, t in ext), f"{net}: bidirectional bus members {ext}")
-    check(len(open_nets) == 21, f"open sheet 4-6 signal nets: {len(open_nets)} (want 21, see the ERC report)")
+    check(len(open_nets) == 20, f"open sheet 4-6 signal nets: {len(open_nets)} (want 20, see the ERC report)")
     for net in ("ZF_OVR_N", "ZF_DTACK_N"):         # owner decision C-17: not FPGA pins
         check(not [x for x in members(net) if x[0] == "U201"], f"{net} has no FPGA pin (C-17)")
 
@@ -212,7 +214,9 @@ def main(path):
     for net, m in want.items():
         check(members(net) == sorted(m), f"{net} members {members(net)}")
     j = comps.get("J201")
-    check(j is not None and j["footprint"] == "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical", "J201 1x6 header")
+    check(j is not None and j["footprint"] == "Connector_Molex:Molex_KK-254_AE-6410-06A_1x06_P2.54mm_Vertical",
+          "J201 polarized 1x6 KK 254 header (owner refinement 3)")
+    check(j is not None and "pin-1 marker" in j["fields"].get("Silkscreen", ""), "J201 silkscreen requirement recorded")
     for pin, net in (("1", "+3V3"), ("2", "GND"), ("3", "FPGA_TCK"), ("4", "FPGA_TDO"), ("5", "FPGA_TDI"), ("6", "FPGA_TMS")):
         check(net_of("J201", pin) == net, f"J201.{pin} on {net}, got {net_of('J201', pin)}")
 
