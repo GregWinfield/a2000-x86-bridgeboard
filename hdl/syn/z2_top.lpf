@@ -17,6 +17,18 @@ PROHIBIT SITE "120" ;
 BLOCK RESETPATHS ;
 BLOCK ASYNCPATHS ;
 FREQUENCY PORT "clk_core" 50.000000 MHz ;
+# ---------------- host-link SPI (sheet 4; docs/stage2/sheet4-timing-budget.md). RP_SCK is on PCLKT5_0 (S4-3).
+# 20 MHz = performance target (S4-1); 10 MHz is the initial operating target.
+FREQUENCY PORT "RP_SCK" 20.000000 MHz ;
+# SCK <-> clk_core: every crossing is designed (Gray-coded FIFO pointers through two-flop synchronisers,
+# the two-flop CS_N synchroniser, and response data the protocol holds static while a frame runs), so
+# timing between the two clock domains is not analysed (proof: hdl/formal/fv_afifo).
+BLOCK INTERCLOCKDOMAIN PATHS ;
+# MOSI changes on SCK falling and is sampled on SCK rising: half a period minus translator skew is
+# >= 21.8 ns at 20 MHz, allowed as 20 ns of setup and 20 ns of hold.
+INPUT_SETUP PORT "RP_MOSI" 20.000000 ns HOLD 20.000000 ns CLKPORT "RP_SCK" ;
+# SCK pin to MISO pin allocation: the budget is 26.3 ns at both targets (sheet-4 timing budget); 20 ns allocated.
+CLOCK_TO_OUT PORT "RP_MISO" 20.000000 ns CLKPORT "RP_SCK" ;
 
 # ---------------- /SLAVEn: assertion (from /AS and from the late-address case) and release.
 # MIN 0 ns makes TRACE's hold analysis report each path's MINIMUM delay (slack = delay), which the
@@ -225,5 +237,10 @@ LOCATE COMP "LD[12]" SITE "19" ;
 LOCATE COMP "LD[13]" SITE "20" ;
 LOCATE COMP "LD[14]" SITE "21" ;
 LOCATE COMP "LD[15]" SITE "22" ;
+LOCATE COMP "RP_SCK" SITE "5" ;
+LOCATE COMP "RP_CS_N" SITE "2" ;
+LOCATE COMP "RP_MOSI" SITE "3" ;
+LOCATE COMP "RP_MISO" SITE "4" ;
 LOCATE COMP "RP_IRQ_N" SITE "1" ;
+LOCATE COMP "RP_ATTN" SITE "6" ;
 # ---------------- END PIN LOCATES

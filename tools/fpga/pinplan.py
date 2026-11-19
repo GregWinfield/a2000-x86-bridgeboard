@@ -68,7 +68,7 @@ add("5", ["RP_SCK", "RP_CS_N", "RP_MOSI", "RP_MISO", "RP_IRQ_N", "RP_ATTN"], "mi
 add("5", [f"DBG[{i}]" for i in range(4)], "bidir", "debug header (sheet 6)")
 
 Z2_TOP_PORTS_ABSENT = {"I2C_SDA", "I2C_SCL", "INA_ALERT_N", "X4_PWR_EN", "X4_PWR_FLT_N", "X4_S0_SENSE",
-                       "RP_SCK", "RP_CS_N", "RP_MOSI", "RP_MISO", "RP_ATTN", "DBG[0]", "DBG[1]", "DBG[2]", "DBG[3]"}
+                       "DBG[0]", "DBG[1]", "DBG[2]", "DBG[3]"}          # sheet 4: the RP_* SPI ports are in z2_top
 Z2_TOP_UNUSED = {"ZB_E7M"}       # in z2_top but removed by synthesis (no load): LOCATE only in the fit test
 
 

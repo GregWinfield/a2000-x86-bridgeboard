@@ -47,10 +47,13 @@ module z2_afifo #(
     wire [AW:0] wgray_n = (wbin_n >> 1) ^ wbin_n;
     assign wfull = (wgray == {~rq2[AW:AW-1], rq2[AW-2:0]});
     assign wdrop = we & wfull;
+    // storage without reset, so it maps to distributed RAM (a write during reset lands in a slot no
+    // pointer has released, so it is never read)
+    always @(posedge wclk)
+        if (we & ~wfull & ~wrst) mem[wbin[AW-1:0]] <= wdata;
     always @(posedge wclk or posedge wrst)
         if (wrst) begin wbin <= 0; wgray <= 0; rq1 <= 0; rq2 <= 0; end
         else begin
-            if (we & ~wfull) mem[wbin[AW-1:0]] <= wdata;
             wbin <= wbin_n; wgray <= wgray_n;
             rq1 <= rgray; rq2 <= rq1;
         end
