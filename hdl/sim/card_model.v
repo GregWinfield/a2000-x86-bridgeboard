@@ -115,7 +115,13 @@ module card_model #(
     // pulled low and RP_IRQ_N high, so the RP2040 sees "not ready" and no interrupt.
     wire spi_sck, spi_cs_n, spi_mosi, spi_miso, spi_attn, spi_irq_n;
     spi_master_bfm spi (.sck(spi_sck), .cs_n(spi_cs_n), .mosi(spi_mosi), .miso(spi_miso), .attn(spi_attn), .irq_n(spi_irq_n));
-    wire x_sck = x4_on ? spi_sck : 1'b0, x_cs_n = x4_on ? spi_cs_n : 1'b1, x_mosi = x4_on ? spi_mosi : 1'b0;
+    // RP2040 in reset (or booting) with the X4 powered: its pads are inputs with pull-down [V S65], and
+    // the powered translators pass those lows to the A side, so the FPGA sees CS_N asserted with SCK and
+    // MOSI low; the A-side resistors cannot override a driven translator output. Set from the testbench.
+    reg  rp_rst = 1'b0;
+    wire x_sck  = (x4_on & ~rp_rst) ? spi_sck  : 1'b0;
+    wire x_cs_n = x4_on ? (rp_rst ? 1'b0 : spi_cs_n) : 1'b1;
+    wire x_mosi = (x4_on & ~rp_rst) ? spi_mosi : 1'b0;
     assign #(SPI_TIN) RP_SCK_f  = x_sck;
     assign #(SPI_TIN) RP_CS_N_f = x_cs_n;
     assign #(SPI_TIN) RP_MOSI_f = x_mosi;
@@ -124,6 +130,22 @@ module card_model #(
     assign #(SPI_TMISO + SPI_TOUT) spi_miso = x4_on ? f_miso : 1'b0;
     assign #(SPI_TOUT) spi_attn  = x4_on ? f_attn : 1'b0;
     assign #(SPI_TOUT) spi_irq_n = x4_on ? RP_IRQ_N : 1'b1;
+    // z2_hostif's registered QCTL flag must equal the decode of the request it accompanies (z2_mbx M7;
+    // formal fv_shm models the host port as that decode). Counted as an SPI-side error.
+    always @(posedge clk_core)
+        if (dut.u_mbx.hw && (dut.u_mbx.hr_magic !== ((dut.u_mbx.hr_idx == 4'd10) & (dut.u_mbx.hr_be == 2'b11) &
+                                                     (dut.u_mbx.hr_wdata == 16'hA55A)))) begin
+            $display("ASSERT-FAIL %0t hr_magic disagrees with the host request decode", $realtime);
+            spi.errors = spi.errors + 1;
+        end
+`ifndef HOST_BFM
+    // z2_hostif keeps (pb < p_end7) as the register p_lt7 (timing); it must equal the compare at every clock
+    always @(posedge clk_core)
+        if (dut.u_host.p_lt7 !== (dut.u_host.pb < dut.u_host.p_end7)) begin
+            $display("ASSERT-FAIL %0t z2_hostif p_lt7 disagrees with pb < p_end7", $realtime);
+            spi.errors = spi.errors + 1;
+        end
+`endif
     m_sram_is61wv25616 u301 (.a(SA), .io(LD), .ce_n(SRAM_CE_N), .oe_n(SRAM_OE_N), .we_n(SRAM_WE_N),
                              .ub_n(SRAM_UB_N), .lb_n(SRAM_LB_N), .pwr(pwr3), .drv(sram_drv));
 

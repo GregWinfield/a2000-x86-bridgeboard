@@ -9,6 +9,8 @@
 //   P3 CRC error: nothing written     P8 V6 error responses          P13 X4 power loss mid-frame
 //   P4 truncated frame                P9 GET_RESPONSE idempotent     P14 FPGA reload mid-command
 //   P5 SCK stops in mid-byte          P10 busy frame during a burst  P15 random rate/skew/phase sweep
+//   P16 RP2040 reset with the X4 powered: CS_N reads asserted with no clock (between frames and
+//       in mid-frame); nothing executes, no interrupt, ATTN low, the link recovers
 `timescale 1ns/1ps
 module tb_spi;
     parameter integer SEED = 1;
@@ -225,6 +227,31 @@ module tb_spi;
         expect16("P14 after reload: power-on IDENTIFY response", {c.spi.rxb[2], c.spi.rxb[3]}, 16'hFF00);
         c.spi.xfer(1'b0, 1'b0, 18'h03001, 2'b11, 16'h0, d);
         expect16("P14 SRAM kept over the reload", d, 16'h600D);
+        // ---------------- P16 RP2040 reset with the X4 powered (independent reset, owner requirement 7);
+        // run before the random sweep P15, at the nominal timing.
+        // The RP2040 pads reset to inputs with pull-down [V S65]: the FPGA sees CS_N asserted with no clock
+        // until firmware drives CS_N high. Nothing may execute or commit, no interrupt, ATTN low meanwhile.
+        status(e_crc, e_frame, e_busy);
+        c.rp_rst = 1'b1; #(20000.0);                       // reset between frames: a zero-byte frame
+        expect1("P16 FPGA ATTN low while the RP2040 reset holds CS_N low", c.f_attn, 1'b0);
+        expect1("P16 no host interrupt during the RP2040 reset", c.RP_IRQ_N, 1'b1);
+        c.rp_rst = 1'b0; #(2000.0);
+        c.spi.txb[5] = 8'h00; c.spi.txb[6] = 8'h30; c.spi.txb[7] = 8'h02; c.spi.txb[8] = 8'hDE; c.spi.txb[9] = 8'hAD;
+        c.spi.build(8'h10, 5, n); ready;
+        fork : p16
+            c.spi.frame(n, n);
+            begin #(3000.0); c.rp_rst = 1'b1; end         // reset in mid-frame: SCK stops, CS_N stays low
+        join
+        #(20000.0);
+        expect1("P16 FPGA ATTN low while CS_N is held low", c.f_attn, 1'b0);
+        expect1("P16 no host interrupt after the mid-frame reset", c.RP_IRQ_N, 1'b1);
+        c.spi.abort; c.rp_rst = 1'b0; #(5000.0);           // firmware: CS_N high first, then the SPI pins
+        expect1("P16 nothing written by the interrupted frame", c.u301.mem[18'h03002] === 16'hxxxx, 1'b1);
+        status(g_crc, g_frame, g_busy);
+        expect16("P16 FRAME_ERRORS + 2 (zero-byte and interrupted frames)", g_frame, e_frame + 16'd2);
+        expect16("P16 no CRC or busy counts", (g_crc - e_crc) | (g_busy - e_busy), 16'd0);
+        c.spi.xfer(1'b0, 1'b1, 18'h03002, 2'b11, 16'h0B07, d); c.spi.xfer(1'b0, 1'b0, 18'h03002, 2'b11, 16'h0, d);
+        expect16("P16 link works after the RP2040 reset", d, 16'h0B07);
         // ---------------- P15 random sweep: SCK rate, input skew, CS timing, clock phase (HL-2 ratios)
         for (n = 0; n < 1024; n = n + 128) begin            // define the region first: a read of a never-
             for (i = 0; i < 128; i = i + 1) begin             // written word is X in the SRAM model, and X

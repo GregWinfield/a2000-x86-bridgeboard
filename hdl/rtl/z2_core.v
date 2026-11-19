@@ -65,6 +65,7 @@ module z2_core #(
     output reg  [3:0]  zr_widx,
     output reg  [1:0]  zr_be,
     output reg  [15:0] zr_wdata,
+    output reg         zr_magic,       // with zr_we: QCTL ($005A), both lanes, data $A55A (z2_mbx M7)
     output wire [3:0]  zr_ridx,
     input  wire [15:0] zr_rdata,
     input  wire        z_irq,        // queue/event interrupt request from z2_mbx
@@ -125,7 +126,7 @@ module z2_core #(
         zf_int2_n = 1'b1; zf_int6_n = 1'b1;
         bank = 4'd0; rd_cnt = 2'd0; res_cnt = 3'd0;
         zq_addr = 18'd0; zq_ce = 1'b0; zq_oe = 1'b0; zq_we = 1'b0; zq_ub = 1'b0; zq_lb = 1'b0;
-        zr_we = 1'b0; zr_widx = 4'd0; zr_be = 2'b00; zr_wdata = 16'h0000;
+        zr_we = 1'b0; zr_widx = 4'd0; zr_be = 2'b00; zr_wdata = 16'h0000; zr_magic = 1'b0;
     end
 
     // ------------------------------------------------------------------ synchronisers
@@ -284,6 +285,7 @@ module z2_core #(
         else if (oe_idle_cnt != 3'd7)  oe_idle_cnt <= oe_idle_cnt + 3'd1;
         if (dir_cnt != 3'd7)           dir_cnt     <= dir_cnt + 3'd1;
         zr_we <= 1'b0;                                  // one-clock register write strobe to z2_mbx
+        zr_magic <= 1'b0;
 
         // direction controller: DIR changes only while every enable has been off for GUARD clocks
         if ((dir_q != dir_req) && !oe_rd_q && !oe_wr_q && !ld_oe && oe_quiet) begin
@@ -523,6 +525,9 @@ module z2_core #(
                                     zr_widx  <= ridx[3:0];
                                     zr_be    <= {lane_hi, lane_lo};
                                     zr_wdata <= ld_in;
+                                    // QCTL link-reset magic, decoded here so z2_mbx needs one gate
+                                    // (LD has been stable for GUARD clocks, as for zr_wdata)
+                                    zr_magic <= (ridx[3:0] == 4'd10) & lane_hi & lane_lo & (ld_in == 16'hA55A);
                                 end
                             end
                         end

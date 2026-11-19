@@ -71,7 +71,7 @@ module z2_top (
     // ---------------- interconnect
     wire [17:0] zq_addr;
     wire        zq_ce, zq_oe, zq_we, zq_ub, zq_lb, z_res, z_quiet, zs_drv, h_quiet, h_busy;
-    wire        zr_we, z_irq;
+    wire        zr_we, zr_magic, z_irq;
     wire [3:0]  zr_widx, zr_ridx;
     wire [1:0]  zr_be;
     wire [15:0] zr_wdata, zr_rdata;
@@ -95,12 +95,12 @@ module z2_top (
         .led(led_w),
         .zq_addr(zq_addr), .zq_ce(zq_ce), .zq_oe(zq_oe), .zq_we(zq_we), .zq_ub(zq_ub), .zq_lb(zq_lb),
         .z_res(z_res), .z_quiet(z_quiet), .zs_drv(zs_drv), .h_quiet(h_quiet),
-        .zr_we(zr_we), .zr_widx(zr_widx), .zr_be(zr_be), .zr_wdata(zr_wdata), .zr_ridx(zr_ridx),
-        .zr_rdata(zr_rdata), .z_irq(z_irq),
+        .zr_we(zr_we), .zr_widx(zr_widx), .zr_be(zr_be), .zr_wdata(zr_wdata), .zr_magic(zr_magic),
+        .zr_ridx(zr_ridx), .zr_rdata(zr_rdata), .z_irq(z_irq),
         .zrst_o(zrst), .busrst_o(busrst), .configured_o(configured), .mode_b_o(mode_b), .en_ok_o(en_ok_s));
 
     // ---------------- host port (sheet 4 SPI slave; stub or BFM until then)
-    wire        h_req, h_we, h_reg, h_ack;
+    wire        h_req, h_we, h_reg, h_ack, h_magic;
     wire [17:0] h_addr;
     wire [1:0]  h_be;
     wire [15:0] h_wdata, h_rdata;
@@ -109,6 +109,8 @@ module z2_top (
     assign RP_ATTN = 1'b0;
     z2_hostif_bfm u_host (.clk(clk_core), .por(por), .h_req(h_req), .h_we(h_we), .h_reg(h_reg), .h_addr(h_addr),
                       .h_be(h_be), .h_wdata(h_wdata), .h_ack(h_ack), .h_rdata(h_rdata));
+    // the clock-level model has no QCTL flag: derive it (the request is held until h_ack, H-2)
+    assign h_magic = (h_addr[3:0] == 4'd10) & (h_be == 2'b11) & (h_wdata == 16'hA55A);
 `else
 `ifndef Z2_LAUNCH_RISE
 `define Z2_LAUNCH_RISE 0
@@ -117,7 +119,7 @@ module z2_top (
         .rp_sck(RP_SCK), .rp_cs_n(RP_CS_N), .rp_mosi(RP_MOSI), .rp_miso(RP_MISO), .rp_attn(RP_ATTN),
         .fault_ind(fault_ind), .irq_n(RP_IRQ_N),
         .h_req(h_req), .h_we(h_we), .h_reg(h_reg), .h_addr(h_addr), .h_be(h_be), .h_wdata(h_wdata),
-        .h_ack(h_ack), .h_rdata(h_rdata));
+        .h_magic(h_magic), .h_ack(h_ack), .h_rdata(h_rdata));
 `endif
 
     // demultiplex by space: SRAM -> z2_lbus, registers -> z2_mbx
@@ -139,9 +141,9 @@ module z2_top (
     z2_mbx u_mbx (
         .clk(clk_core), .por(por), .zrst(zrst), .busrst(busrst), .armed(ZF_ARM), .configured(configured),
         .mode_b(mode_b), .en_ok(en_ok_s),
-        .zr_we(zr_we), .zr_widx(zr_widx), .zr_be(zr_be), .zr_wdata(zr_wdata), .zr_ridx(zr_ridx),
-        .zr_rdata(zr_rdata), .z_irq(z_irq),
+        .zr_we(zr_we), .zr_widx(zr_widx), .zr_be(zr_be), .zr_wdata(zr_wdata), .zr_magic(zr_magic),
+        .zr_ridx(zr_ridx), .zr_rdata(zr_rdata), .z_irq(z_irq),
         .hr_req(h_req & h_reg), .hr_we(h_we), .hr_idx(h_addr[3:0]), .hr_be(h_be), .hr_wdata(h_wdata),
-        .hr_ack(mb_ack), .hr_rdata(mb_rdata), .h_irq_n(RP_IRQ_N));
+        .hr_magic(h_magic), .hr_ack(mb_ack), .hr_rdata(mb_rdata), .h_irq_n(RP_IRQ_N));
 endmodule
 `default_nettype wire
