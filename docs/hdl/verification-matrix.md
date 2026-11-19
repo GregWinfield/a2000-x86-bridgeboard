@@ -9,7 +9,7 @@
 
 | Requirement | Evidence | Pass criterion | Status |
 |---|---|---|---|
-| Entire combinational decode, /SLAVEn assertion and release | Diamond TRACE with [../../hdl/syn/z2_top.lpf](../../hdl/syn/z2_top.lpf), [../../hdl/syn/run_diamond.sh](../../hdl/syn/run_diamond.sh) | Every path ≤ 18 ns at the slow corner, both edges, 15 pF | **Pass, exploratory** (worst 15.31 ns after the I/O-standard correction; Diamond-placed pins, both grades): [../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md). Final at the sheet-2 pinout |
+| Entire combinational decode, /SLAVEn assertion and release | Diamond TRACE with [../../hdl/syn/z2_top.lpf](../../hdl/syn/z2_top.lpf), [../../hdl/syn/run_diamond.sh](../../hdl/syn/run_diamond.sh) | Every path ≤ 18 ns at the slow corner, both edges, 15 pF | **Pass at the sheet-2 pinout** (2026-11-19: worst 15.094 ns, both grades, z2_top and fit test; 4000HC fallback 15.85 ns): [../stage2/sheet2-sta-results.md](../stage2/sheet2-sta-results.md). Exploratory run: [../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md) |
 | Budget closes with real buffer delays | [../stage2/sheet1-timing-budget.md](../stage2/sheet1-timing-budget.md) §2 | ≤ 35 ns | **20.7 ns with STA** |
 | Simulation with the delay allocation | tb_z2 at FPGA_TMAX 18 and 7.24 ns, all-max/all-min corners (C5b, C5c) | No ASSERT-FAIL | **Pass** (2026-11-18) |
 | Shorter predecode if needed | Hazard analysis §6 (O1–O5) | Applied only if G-STA margin < 3 ns | Documented |
@@ -69,7 +69,7 @@
 | Gate | Condition | Status |
 |---|---|---|
 | **G-SIM** (new) | `bash hdl/run_checks.sh` prints `ALL HDL CHECKS PASSED`: lint, tb_z2 (4 seeds + 4 corner runs), tb_chain (4 seeds), structure check, tb_hazard E1 = 0, formal prove/bmc/cover | **Passed 2026-11-18** |
-| **G-STA** | Diamond, as in the timing budget §9 | **Exploratory run passed 2026-11-19**; final run at the sheet-2 pinout |
+| **G-STA** | Diamond, as in the timing budget §9 | **Passed at the sheet-2 pinout 2026-11-19** for every Zorro path and the 50 MHz clock; open for the host SPI capture path (sheet 4) and the hardware comparison (M-1, M-2, M-7) |
 | G-SHEET1 | Owner review of sheet 1 revision B | **Approved 2026-11-19** for design progression |
 
 ## Sheet 3 (Stage 3): shared SRAM, arbitration, queues and interrupts
@@ -85,7 +85,7 @@ Evidence executed on 2026-11-19 ([verification-results.md](verification-results.
 | No RP2040 response to Zorro cycles | Design (host-port contract H-6); tb_z2 passes with the host idle and with continuous host traffic | – | **Pass** (by construction; checked) |
 | SRAM AC limits (ISSI −10) | SRAM model checks on every access; timing budget §2 with Diamond tCO | 0 violations; every margin positive | **Pass** (model and budget); hardware M-11 open |
 | Safe state while the FPGA is blank or reloading | tb_shm S8 (deselected, /WE high, contents kept); card model pin-float timing | /CE, /WE high; no LD drive; data kept | **Pass** (model); hardware M-9/M-11 open |
-| FPGA pin availability | Diamond fit tests `fit_top`, `fit_top_rc`; pad check | Places with JTAG enabled, all banks 3.3 V, 0 timing errors | **Pass** (count); bank-level assignment and C-18 open (sheet 2) |
+| FPGA pin availability | Diamond fit tests `fit_top`, `fit_top_rc`; pad check | Places with JTAG enabled, all banks 3.3 V, 0 timing errors | **Pass**: physical assignment on sheet 2 (`pinplan.py`; `audit_sheet2.py` 1047 checks; C-18 rules applied) |
 | Schematic connectivity | `audit_sheet3.py` (120 checks), ERC | 0 failures; only documented ERC entries | **Pass** |
 
 ### Sheet 3 revision A1 additions (owner review, 2026-11-19)
@@ -93,5 +93,6 @@ Evidence executed on 2026-11-19 ([verification-results.md](verification-results.
 | Requirement | Evidence | Pass criterion | Status |
 |---|---|---|---|
 | C-17 plan: 102 signals with JTAG and PROGRAMN/INITN/DONE kept | Diamond `fit_top` with SYSCONFIG SDM_PORT and JTAGENB/SN prohibited | Places; 0 timing errors; pad check | **Pass** (102 + 4 JTAG of 112) |
+| C-17 fallback: LCMXO2-4000HC at the same pins | `pinplan.py` migration check; Diamond z2_top and `fit_top` on the 4000HC −4 C | Same banks and dedicated pins; 0 timing errors | **Pass** (sheet 2) |
 | Canonical byte order (hardware lanes) | tb_shm S12, vectors V1–V4, V6 | Every view as in the byte-order spec | **Pass** |
 | Two-LED interface, READY blink code | tb_z2 T3 (CONTROL b5..b4, LED test) | Register and pins as specified | **Pass** |
