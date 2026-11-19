@@ -156,3 +156,37 @@ Earlier finding (Stage 2, same day): the exploratory STA had analysed most ports
 | Pin 67 freed; assignment frozen against `tools/fpga/pins_gsheet2.csv` | `pinplan.py` freeze check, plus two mutants | 0 unexplained differences; both mutants detected |
 | STA at the rev A1 placement | Diamond: 2000HC z2_top and fit test at −4 C and −4 I; 4000HC both at −4 C | 0 / 0 errors in all six runs; worst Zorro path 14.910 ns; 50 MHz slack ≥ 3.11 ns; warning classes unchanged from rev A ([../stage2/sheet2-sta-results.md](../stage2/sheet2-sta-results.md)) |
 | Schematic (J201 polarized and labelled, LED_FAULT removed) | `audit_sheet2.py`; mutation test | 1046 checks, 0 failures; 8 of 8 faults detected |
+
+### 5.8 Sheet 4 revision A (host link), 2026-11-19
+
+`run_checks.sh` on the final sheet-4 RTL: **ALL HDL CHECKS PASSED**: 39 testbench runs and 9 formal tasks, 0 assertion failures.
+
+**New testbench runs (16):**
+- tb_spi in the standard launch on 4 seeds (≤ 10 MHz) and the early launch on 4 seeds (≤ 20 MHz): 86–97 checks each;
+- tb_shm through the real SPI link (HL-5), 4 seeds × 127 checks;
+- tb_z2 with continuous SPI background traffic (HL-6), 4 seeds × 5 554 checks.
+
+The earlier runs (lint, tb_z2 random and delay corners, tb_z2 and tb_shm with the clock-level host model `-DHOST_BFM`, tb_chain, synthesis decode check, netlist structure, tb_hazard) all pass unchanged.
+
+| Change | Check | Result |
+|---|---|---|
+| New RTL: `z2_afifo`, `z2_spi_slave`, `z2_hostif` (stub removed), HDL_VER 0x03 | tb_spi P0–P16 (normative vectors byte-exact at the pins; every rejection path; bursts; X4 power loss; FPGA reload; RP2040 reset with the X4 powered; random rate, skew and CS timing) | PASS, 8 runs |
+| Async FIFO (owner requirement 5) | fv_afifo, multiclock (independent free clocks, arbitrary async reset): prove (k = 24), BMC 60, cover 80 | PASS; mutants (wrong full condition, binary pointers) detected |
+| z2_mbx timing changes (exact equivalences) | Exhaustive comparison of the producer check and the queue flags over every input for queue depths 2¹–2⁷; fv_shm with new properties **M6** (flags) and **M7** (QCTL flags equal the decode) | 0 differences under M1; fv_shm prove/BMC/cover PASS; mutants (magic constant, lane check, full flag) detected |
+| z2_hostif timing changes | card_model checks at every clock (`h_magic`, `p_lt7`); tb_spi, tb_shm via SPI | 0 violations; mutants (`h_magic` stuck at 0, `p_lt7` off by one) detected |
+| Model fidelity | card_model FPGA SCK→MISO delay raised from 15.0 to 15.4 ns (≥ the Diamond worst, 15.371 ns); full rerun | ALL PASS |
+| Static timing (requirement 8) | Diamond, 6 runs on the LCMXO2-4000HC (z2_top and fit test at −4 C/I; early-launch build at −4 C/I) | 0 / 0 errors; pad check PASS; worst Zorro path 14.773 ns; 50 MHz slack ≥ 2.21 ns ([../stage2/sheet4-sta-results.md](../stage2/sheet4-sta-results.md)) |
+| LCMXO2-2000HC | Diamond map | **Does not fit** (1090 of 1056 slices): C-30 |
+| Schematic | `audit_sheet4.py` (189 checks), `audit_sheet2.py` (1098), sheets 1/3 unchanged; ERC 51 expected entries | 0 failures; 14 of 14 injected faults detected |
+
+**Defects found and fixed in this sheet:**
+- the first 4000HC timing failure;
+- 0.731 ns of 50 MHz slack (host-side mailbox logic, never synthesised behind the stub);
+- two errors in the protocol drafts (CS_N during an RP2040 reset; bytes past the response end);
+- the default pull-down on RP_CS_N;
+- the X4 K4 back-power path;
+- the TDO back-power path;
+- floating IRQ_N at the RP2040 with the carrier off;
+- an optimistic simulated MISO delay.
+
+Details: [../stage2/sheet4-design-notes.md](../stage2/sheet4-design-notes.md) §10.

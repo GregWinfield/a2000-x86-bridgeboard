@@ -156,15 +156,15 @@ Header mapping: [V S1 sh.21], matches [V S5]. RP2040 alternate functions: [K S41
 | 13 | GP6 | Reserved | – | – |
 | 14 | GND | GND | GND | – |
 | 15 | GP3 | Reserved | – | – |
-| 16 | GP22 | **IRQ to PC** | `X4_GP22_IRQ_N` ← `RP_IRQ_N` | FPGA → RP2040 |
+| 16 | GP22 | **IRQ to PC** | `X4_GP22_IRQ_N` ← R412 ← U402 ← `RP_IRQ_N`; R424 10k to `RP_VIO` | FPGA → RP2040 |
 | 17 | 3.3 V (`P3V3_S`) | Reference (parallel with pin 1) | `X4_3V3_REF` | – |
-| 18 | GP27 | **ATTN / flow control** | `X4_GP27_ATTN` ← `RP_ATTN` | FPGA → RP2040 |
-| 19 | GP11 (SPI1 TX) | **MOSI** | `X4_GP11_MOSI` → `RP_MOSI` | RP2040 → FPGA |
+| 18 | GP27 | **ATTN / flow control** | `X4_GP27_ATTN` ← R413 ← U402 ← `RP_ATTN`; R425 100k to GND | FPGA → RP2040 |
+| 19 | GP11 (SPI1 TX) | **MOSI** | `X4_GP11_MOSI` → U401 → `RP_MOSI`; R420 100k to GND | RP2040 → FPGA |
 | 20 | GND | GND | GND | – |
-| 21 | GP8 (SPI1 RX) | **MISO** | `X4_GP8_MISO` ← `RP_MISO` | FPGA → RP2040 |
-| 22 | GP24 | Reserved | – | – |
-| 23 | GP10 (SPI1 SCK) | **SCK** | `X4_GP10_SCK` → `RP_SCK` | RP2040 → FPGA |
-| 24 | GP9 (SPI1 CSn) | **CS_N** | `X4_GP9_CS_N` → `RP_CS_N` | RP2040 → FPGA |
+| 21 | GP8 (SPI1 RX) | **MISO** | `X4_GP8_MISO` ← R411 ← U402 ← `RP_MISO` | FPGA → RP2040 |
+| 22 | GP24 | **RP_VIO: U402's B-side supply** (S4-6, proposed); firmware drives it high | `X4_GP24_VIO` → R416 47R → `RP_VIO` | RP2040 → carrier |
+| 23 | GP10 (SPI1 SCK) | **SCK** | `X4_GP10_SCK` → U401 → `RP_SCK` (FPGA pin 5, S4-3); R418 100k to GND | RP2040 → FPGA |
+| 24 | GP9 (SPI1 CSn) | **CS_N** (GPIO, S4-2) | `X4_GP9_CS_N` → U401 → `RP_CS_N`; R419 100k to GND | RP2040 → FPGA |
 | 25 | GND | GND | GND | – |
 | 26 | GP18 | **Diagnostic LED** (C-26, option C-17b) | `X4_GP18_LED` → carrier LED via SN74AVC4T774 (B→A) | RP2040 → carrier |
 | 27 | GP16 | **Diagnostic LED** (C-26, option C-17b) | `X4_GP16_LED` → carrier LED via SN74AVC4T774 (B→A) | RP2040 → carrier |
@@ -175,10 +175,10 @@ Header mapping: [V S1 sh.21], matches [V S5]. RP2040 alternate functions: [K S41
 | 32 | GP19 | **Diagnostic LED** (C-26, option C-17b) | `X4_GP19_LED` → carrier LED via SN74AVC4T774 (B→A) | RP2040 → carrier |
 | 33 | GP13 | Reserved | – | – |
 | 34 | GND | GND | GND | – |
-| 35 | GP15 | **JTAG TMS** (option, D-12) | `X4_GP15_TMS` → FPGA TMS | RP2040 → FPGA |
-| 36 | GP26 | **JTAG TDI** (option) | `X4_GP26_TDI` → FPGA TDI | RP2040 → FPGA |
-| 37 | GP14 | **JTAG TCK** (option) | `X4_GP14_TCK` → FPGA TCK | RP2040 → FPGA |
-| 38 | GP2 | **JTAG TDO** (option) | `X4_GP2_TDO` ← FPGA TDO | FPGA → RP2040 |
+| 35 | GP15 | **JTAG TMS** (option, D-12) | `X4_GP15_TMS` → U403 → FPGA TMS; R422 100k to GND | RP2040 → FPGA |
+| 36 | GP26 | **JTAG TDI** (option) | `X4_GP26_TDI` → U403 → FPGA TDI; R423 100k to GND | RP2040 → FPGA |
+| 37 | GP14 | **JTAG TCK** (option) | `X4_GP14_TCK` → U403 → FPGA TCK; R421 100k to GND | RP2040 → FPGA |
+| 38 | GP2 | **JTAG TDO** (option) | `X4_GP2_TDO` ← R414 ← U402 ← FPGA TDO | FPGA → RP2040 |
 | 39 | GND | GND | GND | – |
 | 40 | GP25 | Reserved | – | – |
 
@@ -186,10 +186,12 @@ Not on the header: GP0/GP1 go to the N100's UART1 (R314/R315 0 Ω); GP23 also ha
 
 **Option C-17b: approved 2026-11-19 (C-26).** LEDs on **GP16–GP19** (header pins 27, 28, 26, 32) through a fourth SN74AVC4T774 (U_d), all channels B→A, with 100 kΩ B-side pull-downs. The net names `X4_GPnn_LED` are provisional until sheet 4. GPIO availability, LED drive current, reset state and power-off behaviour are verified on sheets 4/6. READY stays on the FPGA, so standalone indication does not depend on the X4. See [stage2/sheet3-design-notes.md](stage2/sheet3-design-notes.md) §8.2.
 
-**Translator allocation** (3× SN74AVC4T774: A side = `+3V3`, B side = `X4_3V3_REF`):
-- **U_a:** SCK, CS_N, MOSI (B→A) and MISO (A→B).
-- **U_b:** IRQ_N and ATTN (A→B), plus 2 spare.
-- **U_c (JTAG):** TCK, TMS, TDI (B→A) and TDO (A→B). /OE comes from a DIP switch, so the external JTAG header has priority when the switch is off.
+**Translator allocation, sheet 4 revision A** (4× SN74AVC4T774, A side = `+3V3`; [stage2/sheet4-design-notes.md](stage2/sheet4-design-notes.md) §6):
+- **U401:** SCK, CS_N, MOSI (B→A); B side `X4_3V3_REF`.
+- **U402:** IRQ_N, ATTN, MISO, TDO, every FPGA → RP2040 signal (A→B). **B side `RP_VIO` = RP2040 GP24 (proposed S4-6)**, so no output can exceed the RP2040's own supply, which the X4 can switch off while its header 3.3 V stays up [V S1 sh.21].
+- **U403 (JTAG option):** TCK, TMS, TDI (B→A); B side `X4_3V3_REF`. /OE comes from a DIP switch (sheet 6), so the external JTAG header has priority when the switch is off.
+- **U404:** the four RP2040 LEDs (B→A); B side `X4_3V3_REF` (C-26).
+- Every RP2040 → carrier input has a 100 kΩ B-side pull-down. *Superseded allocation (proposal): U_a carried MISO and U_c carried TDO, all B sides on `X4_3V3_REF`.*
 
 ## 4. FPGA I/O budget (LCMXO2-2000HC-4TG144C)
 

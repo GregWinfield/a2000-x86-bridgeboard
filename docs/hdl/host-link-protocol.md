@@ -26,13 +26,14 @@
 | Item | Requirement | Source / note |
 |---|---|---|
 | Signals | RP_SCK, RP_CS_N, RP_MOSI (RP2040 → FPGA); RP_MISO, RP_ATTN (FPGA → RP2040); RP_IRQ_N (FPGA → RP2040, the z2_mbx host interrupt, unchanged) | Sheet 4 translators |
+| Output reference (proposed S4-6) | Every FPGA → RP2040 signal passes U402, whose B-side supply is **RP2040 GP24**, driven high by firmware. Until GP24 is high, ATTN, IRQ_N and MISO are not driven toward the RP2040: ATTN reads not ready and IRQ_N reads no interrupt (sheet-4 resistors). Firmware drives GP24 high (12 mA drive) and waits ≥ 100 µs before it uses the link | [sheet4-design-notes.md](../stage2/sheet4-design-notes.md) §6.3, §9 |
 | Mode | SPI mode 0 (CPOL 0, CPHA 0), 8-bit words, MSB first | S4-2 |
 | Chip select | **RP2040 GPIO** (GP9 as SIO), held low for the whole frame. The PL022's own SSPFSSOUT is not used: with SPH = 0 it pulses between words [V S65] | S4-2 |
 | SCK | ≤ **10 MHz** initial operating target; **20 MHz** performance target. Both subject to STA (sheet-4 STA results) and hardware measurement M-15 | S4-1 |
 | tCSS | CS_N↓ to the first SCK↑: ≥ 100 ns | Lets the FPGA release the SCK-domain reset (CS_N is its asynchronous reset) |
 | tCSH | Last SCK↓ to CS_N↑: ≥ 100 ns | The last byte reaches the FIFO before the frame ends |
 | tCSW | CS_N high between frames: ≥ 1 µs | The core detects the frame end and drains the FIFO |
-| Idle levels | SCK low, MOSI low, CS_N high. Default resistors on the FPGA side hold these when the X4 is unpowered or in reset (sheet 4, R-51) | §11 |
+| Idle levels | SCK low, MOSI low, CS_N high. Default resistors on the FPGA side hold these when the X4 is **unpowered** (the translators isolate; sheet 4, R-51). They do **not** hold CS_N high while the RP2040 is in reset or booting with the X4 powered: its pads are then inputs with pull-down [V S65], and the powered translator passes that low, so the FPGA sees CS_N asserted with no clock (§11). Firmware drives CS_N high (GPIO output) before it enables the SPI pins | §11 |
 | ATTN | **Active high = READY.** Low while a frame is in progress, while a command executes, after reset until ready, and whenever the FPGA is unconfigured (weak pull-down plus the sheet-4 pull-down) | S4-5; fail-safe |
 
 ## 3. Transaction model (split transactions)
@@ -74,7 +75,7 @@
 | 4–5 | LEN of the response payload, big-endian, 0 to 256 |
 | 6 … 5+LEN | Payload |
 | 6+LEN, 7+LEN | CRC-16, high byte first |
-| further bytes | 0x00 |
+| further bytes | Undefined (earlier buffer contents); the master ignores them. *Corrected 2026-11-19: earlier drafts said 0x00, which the RTL does not do* |
 
 ### 4.3 CRC (owner decision S4-4)
 
@@ -186,8 +187,11 @@
 |---|---|---|
 | FPGA unconfigured or erased | ATTN low: no frames start. RP_IRQ_N high: no interrupt. MISO undefined, but ignored | FPGA weak pull-down plus sheet-4 default resistors: ATTN pull-down, RP_IRQ_N pull-up stronger than the weak pull-down (R-51) |
 | FPGA reset or reconfiguration during a frame or command | The frame is lost; the master times out (§8) and re-IDENTIFYs. A write in flight may leave one word undefined (H-5); the RP2040 quiesces before a JTAG reload | POR; H-5 |
-| X4 unpowered or RP2040 in reset | No frames; FPGA inputs held at idle levels; nothing back-feeds the X4 | SN74AVC4T774 VCC isolation and Ioff [V S66]; A-side defaults CS_N high, SCK and MOSI low |
-| RP2040 reset in mid-frame | CS_N goes high (default resistor): the partial frame is discarded (V4 or V5) and nothing commits | §6 |
+| X4 unpowered | No frames; FPGA inputs held at idle levels; nothing back-feeds the X4 | SN74AVC4T774 VCC isolation and Ioff [V S66]; A-side defaults CS_N high, SCK and MOSI low |
+| Carrier unpowered, X4 running (Amiga off) | No frames. At the RP2040: ATTN low (not ready), IRQ_N high (no interrupt). The master reports LINK_DOWN after the §8 retries | U402 isolated (its VCCA is off); RP2040-side resistors R424 (IRQ_N to GP24's supply) and R425 (ATTN to GND) |
+| RP2040 unpowered while the X4's header 3.3 V stays up (the X4's K4 key switches the RP2040's I/O and core supply P3V_RP, [V S1 sh.21]) | As for "RP2040 in reset" below. No output can drive the unpowered RP2040, because U402's B supply is the RP2040's own GP24 | Proposed S4-6; B-side pull-downs on every RP2040 → FPGA input |
+| RP2040 in reset or booting, X4 powered | The FPGA sees CS_N **asserted** with SCK and MOSI low: a frame opens but no byte arrives. When firmware first drives CS_N high, the frame ends and counts in FRAME_ERRORS (V3: no SYNC byte), or in BUSY_REJECTS (V2) if a command was executing, which then completes normally; nothing new executes and the response buffer is unchanged. ATTN stays low while CS_N is low (it is gated by CS_N high). No interrupt is produced (RP_IRQ_N is an FPGA output) | RP2040 pads reset to input with pull-down [V S65]; the powered translator drives the A side, so the A-side resistors cannot hold CS_N high. Test tb_spi P16. *Corrected 2026-11-19: earlier drafts said the default resistors hold CS_N high here* |
+| RP2040 reset in mid-frame | SCK stops and CS_N stays asserted until firmware drives it high; then the partial frame is discarded (V4 or V5) and nothing commits | §6; tb_spi P16 |
 | SCK stops in mid-byte | Incomplete bytes are never stored; CS_N↑ resets the SCK-domain counters | RTL |
 | Amiga reset (/BUSRST) | The link and response buffer are unaffected; host-side mailbox state survives (Q-7) | Sheet 3 |
 | After FPGA power-on | The response buffer holds an IDENTIFY response (SEQ 0xFF); then ATTN rises | RTL |
@@ -215,4 +219,6 @@ Generated by `python -I tools/hostlink/hostlink.py vectors`. The CRC residue of 
 |---|---|
 | SCK-to-MISO timing at 10 and 20 MHz, including FPGA clock insertion, translators, PCB and RP2040 input sampling (owner requirement 4) | Sheet-4 timing budget, STA, then M-15 on hardware |
 | MISO launch edge: standard (SCK↓) or early (SCK↑, more setup time if the RP2040's input sampling allows it) | FEATURES b2 reports it. Decided by STA and M-15 |
-| RP2040 firmware and Windows implementations | Stage 4; they must pass the vectors above |
+| RP2040 firmware and Windows implementations | Stage 4; they must pass the vectors above and follow the firmware obligations FW-1 to FW-8 ([sheet4-design-notes.md](../stage2/sheet4-design-notes.md) §9) |
+| Budget result (sheet 4 rev A) | 10 MHz closes with the standard launch (margin ≥ 10.92 ns); 20 MHz needs the early launch (≥ 12.18 ns), whose hold side depends on when the RP2040 samples MISO ([sheet4-timing-budget.md](../stage2/sheet4-timing-budget.md) §3.3). Until M-15: 10 MHz, standard launch |
+| RP_VIO level and the K4 back-power check | M-16 |
