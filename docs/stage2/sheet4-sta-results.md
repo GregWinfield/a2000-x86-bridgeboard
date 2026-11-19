@@ -148,6 +148,6 @@ Price and availability: TBV before BOM freeze ([../bom/bom-preliminary.csv](../b
 - RTL, LPF and pins (`pinplan.py` on the 4000HC data produces byte-identical LOCATEs);
 - the device.
 
-The S4-6 circuit (rev A1, and its rev A2 revision: TLV3201, Q401/Q402, R424 removed) and the sheet-2 symbol change (C-30) are board-side and do not enter the FPGA timing. Their board-level effect is covered by the timing budget: U402 is in the 3.3 V column. No RTL, LPF or pin changed in rev A2, so the Diamond figures here stand.
+The S4-6 circuit (rev A1, its rev A2 revision: TLV3201, Q401/Q402, R424 removed, and rev A3's U406 buffer) and the sheet-2 symbol change (C-30) are board-side and do not enter the FPGA timing. Their board-level effect is covered by the timing budget: U402 is in the 3.3 V column. No RTL, LPF or pin changed in rev A2 or A3, so the Diamond figures here stand.
 
 **Confirming run:** `run_diamond.sh` with no device argument now targets the LCMXO2-4000HC. On this tree it reproduces the z2_top commercial figures exactly: 0/0 errors, pad check PASS, 50 MHz slack 2.911 ns, RP_MISO 13.771 / 3.542 ns.

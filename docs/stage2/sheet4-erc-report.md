@@ -1,10 +1,10 @@
-# ERC report: project with sheet 4 revision A2 and sheet 2 revision A2
+# ERC report: project with sheet 4 revision A3 and sheet 2 revision A2
 
 **Run:** 2026-11-19, KiCad 10.0.8, `kicad-cli sch erc --severity-all` on the root schematic (all sheets). Raw report: [sheet4-erc-report.txt](sheet4-erc-report.txt). Schematic PDF of the whole project: [sheet4-schematic.pdf](sheet4-schematic.pdf) (sheet 4 is page 5).
 
 **An ERC result is not a validation.** It shows only that the remaining entries are the intended, documented ones. Connectivity is checked separately by the netlist audits, all with **0 failures**:
-- `tools/kicad/audit_sheet4.py`: **213 checks**. It detects 25 of 25 injected wiring and value faults (mutation test: [sheet4-design-notes.md](sheet4-design-notes.md) §6.5);
-- `tools/kicad/audit_sheet2.py`: **1103 checks** (FPGA_TDO reaches U402; since C-30, U201 is the LCMXO2-4000HC, checked against the 4000 pinout; the 3 added in sheet 4 rev A2 are the new net names RP_EN_CMP, RP_EN_GATE and RP_EN_MID, passing its "not reused on another sheet" check);
+- `tools/kicad/audit_sheet4.py`: **220 checks**. It detects 29 of 29 injected wiring and value faults (mutation test: [sheet4-design-notes.md](sheet4-design-notes.md) §6.5);
+- `tools/kicad/audit_sheet2.py`: **1105 checks** (FPGA_TDO reaches U402; since C-30, U201 is the LCMXO2-4000HC, checked against the 4000 pinout; the 5 added in sheet 4 rev A2/A3 are the new net names RP_EN_CMP, RP_EN_GATE, RP_EN_MID, RP_EN_OD and U406's unconnected NC pin, passing its "not reused on another sheet" check);
 - `tools/kicad/audit_sheet1.py`: **418 checks** (sheet 1 unchanged);
 - `tools/kicad/audit_sheet3.py`: **159 checks** (sheet 3 unchanged).
 
@@ -38,3 +38,7 @@ No other categories appear. In particular:
 - **The same 51 entries, identical apart from coordinates.** The raw report differs from revision A1's only in its header line.
 - U405's output pin is typed `output` and drives only Q401's gate and TP408. The MOSFET drains and sources are `passive`. None of them raises an entry.
 - The netlist outside sheet 4 is identical to revision A1. The committed sheet-2 file is kept: regenerating it only reorders pins and renews UUIDs.
+
+**Revision A3 (2026-11-19, your review of rev A2, residual 1):**
+- Re-run after adding U406 (SN74AUP1G17: A = RP_EN_OD, Y = RP_EN_N, pin 1 no-connect type) and C410, with R429 and Q401's drain moved to RP_EN_OD.
+- **The same 51 entries, identical to revision A2 apart from coordinates.** U406's NC pin is typed `no_connect` and raises no entry.

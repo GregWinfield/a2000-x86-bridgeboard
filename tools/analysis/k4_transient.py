@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""S4-6 isolation analysis (sheet 4, revision A2).
+"""S4-6 isolation analysis (sheet 4, revision A3).
 
 The X4's K4 key switches the RP2040's I/O supply P3V_RP (IOVDD) off while the header 3.3 V (P3V3_S, on the carrier
 X4_3V3_REF) stays up. U402 drives every carrier -> RP2040 signal (IRQ_N, ATTN, MISO, TDO) from X4_3V3_REF, so its
@@ -11,6 +11,9 @@ usage: python -I tools/analysis/k4_transient.py
 Report: docs/stage2/sheet4-s46-isolation.md. Tags: [V Sxx] datasheet value, [E] estimate, [A] assumption.
 Owner rounding rule: maxima and requirements round up; margins, slacks and minima round down.
 
+Every slope limit printed here is a MODEL-DERIVED BOUND: datasheet maxima where they exist, combined with the
+stated estimates [E] and assumptions [A]. None of it is a manufacturer guarantee (owner review of rev A2).
+
 Sections:
   1  IOVDD discharge-rate bound after K4 (capacitance derating, maximum load)
   2  revision A (history): RP_VIO held above IOVDD by C404
@@ -20,6 +23,8 @@ Sections:
   6  options for more margin: threshold, comparator, lower U402 B supply
   7  RP2040 reset and brownout: GP24 transitions
   8  GP24 current
+  9  U402 /OE edge rate: options (owner review of rev A2, residual 1) and the rev A3 buffer U406
+ 10  GP24 HIGH-level margin against the 0.940 threshold under supply and operating conditions (residual 3)
 """
 import math
 
@@ -31,6 +36,7 @@ R_TOL = 0.01 + 100e-6 * 65           # 1 % resistors, 100 ppm/K, 25 -> -40 / +85
 Q32_DROP = 0.035                     # X4 P3V3_S -> P3V_RP switch Q32 at 176 mA x 0.2 ohm [E]
 PAD_R = 85.0                         # RP2040 pad: VOH >= 2.62 V at 8 mA (IOVDD 3.3 V) implies <= 85 ohm [V S65 -> E]
 VF = 0.6                             # ESD-diode forward drop into an unpowered rail [E]
+X4_TRACE = 0.010                     # X4 copper between P3V3_S and the RP2040 IOVDD pins at 176 mA [E]
 
 
 def up(x, q):
@@ -101,11 +107,11 @@ def option_a(trace):
 # ---------------------------------------------------------------- comparator stages
 class Stage:
     """A comparator-gated /OE: trip at k x VS minus offsets; output switches after the input passes the trip point
-    by OD, plus a fixed latency t_fixed. guaranteed: every term of t_fixed is a datasheet maximum or a stated
-    estimate on one; otherwise the figure is typical-based."""
+    by OD, plus a fixed latency t_fixed. max_based: every term of t_fixed is a datasheet maximum or a stated
+    estimate on one (still a model-derived bound, not a manufacturer guarantee); otherwise the figure is typical-based."""
 
-    def __init__(self, name, r_top, r_bot, offs, od, t_fixed, guaranteed, v_out=None):
-        self.name, self.offs, self.od, self.t_fixed, self.guaranteed = name, offs, od, t_fixed, guaranteed
+    def __init__(self, name, r_top, r_bot, offs, od, t_fixed, max_based, v_out=None):
+        self.name, self.offs, self.od, self.t_fixed, self.max_based = name, offs, od, t_fixed, max_based
         self.k, self.kmin, self.kmax = k_range(r_top, r_bot)
         self.r_top, self.r_bot = r_top, r_bot
         self.v_out = v_out           # None: U402 outputs at X4_3V3_REF; else a fixed B supply maximum (V)
@@ -126,7 +132,8 @@ class Stage:
 
     def margin_fall(self, offs_no_hys):
         """Normal operation: lowest GP24 above the highest falling trip point (no hysteresis credit)."""
-        return min(vs - Q32_DROP - gp24_pad_drop() - (self.kmax * vs + offs_no_hys) for vs in (VS_MIN, VS_MAX))
+        return min(vs - Q32_DROP - X4_TRACE - gp24_pad_drop() - (self.kmax * vs + offs_no_hys)
+                   for vs in (VS_MIN, VS_MAX))
 
 
 def gp24_pad_drop():
@@ -169,18 +176,39 @@ A2_TERMS = {
 A2_T = up(sum(A2_TERMS.values()), 10e-9)
 A2_OFFS = TLV3201_VIO + TLV3201_CMRR + TLV3201_HYS
 
+# ---- revision A3 (owner review of rev A2, residual 1): Schmitt-trigger buffer U406 (TI SN74AUP1G17, +3V3) between
+# the open-drain node RP_EN_OD (Q401 drain, R429) and U402 /OE, so /OE gets a push-pull edge.
+AUP_VTP_RATIO = 2.29 / 3.0     # VT+ <= 2.29 V at VCC 3 V, -40..85 C [V S73]; scaled with VCC to 3.465 V [E]
+AUP_TPD = 6.2e-9               # A -> Y max, CL 15 pF, VCC 3.3 V +-0.3 V, -40..85 C [V S73]
+AUP_CI = 3e-12                 # 1.5 pF typical [V S73]; 3 pF used [E]
+AUP_CO = 2.5e-12               # typical [V S73]
+AUP_ROUT = (3.0 - 2.55) / 4e-3  # VOH >= 2.55 V at -4 mA, VCC 3 V [V S73] -> <= 112.5 ohm [E]
+C_OD = 2 * BSS_COSS + AUP_CI + 5e-12                   # Q401 Coss doubled [E], U406 input, trace [E]
+C_OE_A3 = 4.5e-12 + 5e-12 + AUP_CO                     # U402 Ci [V S66], TP407 and trace [E], U406 output
+A3_TERMS = {
+    "GP24 pad follows IOVDD (85 ohm x 50 pF)": PAD_R * C_PAD,
+    "R426 x comparator input": R426 * (1 + R_TOL) * C_IN,
+    "TLV3201 tPD (max, VOD 20 mV, CL 15 pF)": TLV3201_TPD,
+    "Q401 gate charge at the minimum sink current": C_GATE * VS_MAX / TLV3201_ISINK,
+    "R429 x open-drain node to U406 VT+ (0.764 x VCC)": R429 * (1 + R_TOL) * C_OD * math.log(1 / (1 - AUP_VTP_RATIO)),
+    "U406 SN74AUP1G17 tPD (max, CL 15 pF)": AUP_TPD,
+    "U402 /OE -> B disable (tPHZ, tPLZ)": 6.2e-9,                       # [V S66]
+}
+A3_T = up(sum(A3_TERMS.values()), 10e-9)
+
 
 def stages():
     return {
         "A1": Stage("rev A1: TLV7021, 0.930 (typical delay)", 7.5, 100.0, A1_OFFS, 0.020, A1_T_TYP, False),
         "A2": Stage("rev A2: TLV3201 + BSS138, 0.940", 6.34, 100.0, A2_OFFS, TLV3201_OD, A2_T, True),
+        "A3": Stage("rev A3: rev A2 + U406 buffer at /OE", 6.34, 100.0, A2_OFFS, TLV3201_OD, A3_T, True),
     }
 
 
 def option_rows():
     """Section 6: the same worst-case arithmetic for each lever."""
     rows = []
-    for name, rt, guaranteed, offs, t, vout in (
+    for name, rt, max_based, offs, t, vout in (
             ("TLV7021, 0.930 (rev A1)", 7.5, False, A1_OFFS, A1_T_TYP, None),
             ("TLV7021, 0.950", 5.23, False, A1_OFFS, A1_T_TYP, None),
             ("TLV3201 + BSS138, 0.930", 7.5, True, A2_OFFS, A2_T, None),
@@ -189,7 +217,7 @@ def option_rows():
             ("TLV3201 + BSS138, 0.960", 4.12, True, A2_OFFS, A2_T, None),
             ("TLV3201 + BSS138, 0.930, U402 B at 2.5 V +-2 %", 7.5, True, A2_OFFS, A2_T, 2.55),
             ("TLV7021, 0.930, U402 B at 2.5 V +-2 %", 7.5, False, A1_OFFS, A1_T_TYP, 2.55)):
-        s = Stage(name, rt, 100.0, offs, 0.020, t, guaranteed, v_out=vout)
+        s = Stage(name, rt, 100.0, offs, 0.020, t, max_based, v_out=vout)
         offs_nh = offs - (TLV3201_HYS if offs == A2_OFFS else 0.014)
         rows.append((s, s.margin_fall(offs_nh)))
     return rows
@@ -307,8 +335,8 @@ def main():
     print(f"   static excursion {a2.worst_static():.4f} V (VS max); normal-operation margin "
           f"{down(a2.margin_fall(TLV3201_VIO + TLV3201_CMRR), 0.001):.3f} V (VS min, Q32 {Q32_DROP*1e3:.0f} mV)")
     for lim, nm in ((LIM_VIH, "VIH max"), (LIM_ABS, "abs max")):
-        print(f"   safe slope for {nm}: <= {down(a2.s_max(lim)/1e3, 1):.0f} V/ms "
-              f"({down(a2.s_max(lim)/up(s, 1e3), 0.1):.1f} x the {up(s/1e3, 1):.0f} V/ms bound)")
+        print(f"   model bound on the slope, {nm}: <= {down(a2.s_max(lim)/1e3, 1):.0f} V/ms "
+              f"({down(a2.s_max(lim)/up(s, 1e3), 0.1):.1f} x the {up(s/1e3, 1):.0f} V/ms estimate)")
     print("   excursion vs slope (closed form | time-stepped check):")
     for sl in (1e3, 10e3, 50e3, 100e3, 200e3, 300e3, 500e3, 1000e3, 1500e3, 2000e3):
         print(f"     {sl/1e3:5.0f} V/ms: {a2.excursion(sl):.3f} V | {ramp_check(a2, sl):.3f} V"
@@ -318,16 +346,28 @@ def main():
     print(f"   /OE rising edge through R429: tau <= {tau_oe*1e9:.0f} ns, {tau_oe/(VCCA_MIN-1.5)*1e9:.0f} ns/V at 1.5 V "
           f"(SCES693I recommends <= 5 ns/V on inputs [V S66]; the budget runs to VIH 2.0 V, so any enable chatter "
           f"below it is inside the {A2_T*1e9:.0f} ns)")
-    print("   sensitivity: safe slope (VIH max) if the fixed latency were larger:")
+    print("   sensitivity: model bound (VIH max) if the fixed latency were larger:")
     for mult in (1, 2, 5):
         print(f"     x{mult}: {down((LIM_VIH - a2.worst_static()) / (a2.t_fixed * mult) / 1e3, 1):.0f} V/ms")
 
-    print("\n6. Options (worst case: VS 3.135-3.465 V, 1.65 % resistors; 'typ' = typical delay, no guaranteed bound)")
+    a3 = st["A3"]
+    print("\n5b. Revision A3 (drawn): rev A2 plus the Schmitt-trigger buffer U406 at U402 /OE")
+    for k, v in A3_TERMS.items():
+        print(f"     {k:50s} {v*1e9:6.1f} ns")
+    print(f"     {'total, rounded up':50s} {A3_T*1e9:6.0f} ns")
+    for lim, nm in ((LIM_VIH, "VIH max"), (LIM_ABS, "abs max")):
+        print(f"   model bound on the slope, {nm}: <= {down(a3.s_max(lim)/1e3, 1):.0f} V/ms "
+              f"({down(a3.s_max(lim)/up(s, 1e3), 0.1):.1f} x the {up(s/1e3, 1):.0f} V/ms estimate)")
+    for sl in (100e3, 264e3, 300e3):
+        print(f"     {sl/1e3:5.0f} V/ms: {a3.excursion(sl):.3f} V | {ramp_check(a3, sl):.3f} V")
+
+    print("\n6. Options as reviewed in rev A2 (160 ns latency; worst case: VS 3.135-3.465 V, 1.65 % resistors;")
+    print("   'max-based' = datasheet-maximum delays plus estimates, 'typ' = typical delay only)")
     print(f"   {'option':46s} {'static':>7s} {'VIH slope':>10s} {'abs slope':>10s} {'margin':>7s} basis")
     for s6, mg in option_rows():
         print(f"   {s6.name:46s} {s6.worst_static():6.3f}V {down(s6.s_max(LIM_VIH)/1e3, 1):7.0f}V/ms "
               f"{down(s6.s_max(LIM_ABS)/1e3, 1):7.0f}V/ms {down(mg, 0.001):6.3f}V "
-              + ("guaranteed" if s6.guaranteed else "typ"))
+              + ("max-based" if s6.max_based else "typ"))
 
     print("\n7. RP2040 reset / brownout")
     taus, t_trip, t_q402 = reset_release()
@@ -341,6 +381,71 @@ def main():
     st_i, pk, t1, t2 = gp24_current()
     print(f"   static <= {up(st_i*1e6, 1):.0f} uA; on each GP24 edge <= {up(pk*1e3, 0.1):.1f} mA peak, decaying with "
           f"{t1*1e9:.0f} ns (R426) and {t2*1e9:.0f} ns (R431); against IIOVDD_MAX 50 mA and the 8 mA drive setting")
+
+    print("\n9. U402 /OE rising edge (disable) against SCES693I's <= 5 ns/V input transition rate [V S66]")
+    print(f"   {'option':42s} {'edge at 1.5 V':>13s} {'latency':>8s} {'VIH bound':>10s} {'stack I':>8s}")
+    for name, rate, lat, cur in oe_options():
+        b = (LIM_VIH - st["A2"].worst_static()) / lat if lat else None
+        print(f"   {name:42s} {rate:>13s} " + (f"{lat*1e9:6.0f}ns " if lat else "     -   ")
+              + (f"{down(b/1e3, 1):6.0f}V/ms" if b else "      -   ") + f" {cur:>8s}")
+
+    print("\n10. GP24 HIGH-level margin above the comparator's falling (and rising) trip point, no hysteresis credit")
+    for row in gp24_margin_rows():
+        print("   " + row)
+
+
+def oe_options():
+    """Section 9: estimated /OE edge (time per volt at 1.5 V) and the resulting disable latency."""
+    rv = VCCA_MIN - 1.5
+    tau_a2 = R429 * (1 + R_TOL) * C_OE
+    r330 = 330 * (1 + R_TOL)
+    lat330 = A2_T - A2_TERMS["R429 x /OE node to VIH 2.0 V"] + r330 * C_OE * math.log(VCCA_MIN / (VCCA_MIN - 2.0))
+    tau_a3 = AUP_ROUT * C_OE_A3
+    r680 = 680 * (1 + R_TOL)
+    lat680 = (A3_T - A3_TERMS["R429 x open-drain node to U406 VT+ (0.764 x VCC)"]
+              + r680 * C_OD * math.log(1 / (1 - AUP_VTP_RATIO)))
+    return [
+        ("retain rev A2 (R429 1k RC edge)", f"{tau_a2/rv*1e9:.0f} ns/V", A2_T, f"{VS_MAX/(R429*(1-R_TOL))*1e3:.1f} mA"),
+        ("R429 330 R (BSS138 Coss dominates)", f"{r330*C_OE/rv*1e9:.0f} ns/V", up(lat330, 10e-9),
+         f"{VS_MAX/(330*(1-R_TOL))*1e3:.1f} mA"),
+        ("PMOS pull-up gated by U405 (not modelled)", "~1-7 ns/V", None, "3.6 mA"),
+        ("U406 AUP1G17, R429 1k (rev A3, drawn)", f"{tau_a3/rv*1e9:.1f} ns/V", A3_T, f"{VS_MAX/(R429*(1-R_TOL))*1e3:.1f} mA"),
+        ("U406 AUP1G17, R429 680 R", f"{tau_a3/rv*1e9:.1f} ns/V", up(lat680, 10e-9), f"{VS_MAX/(680*(1-R_TOL))*1e3:.1f} mA"),
+    ]
+
+
+def gp24_margin_rows():
+    """Section 10: GP24 HIGH level minus the comparator trip point, for supply, load, drive and temperature corners."""
+    a2 = stages()["A2"]
+    rows = []
+    vio_cmrr = TLV3201_VIO + TLV3201_CMRR
+    # representative: typical offsets and nominal divider, 30 mA X4 load, 0.1 ohm Q32, 8 mA drive
+    vs, i_load = 3.3, 0.030
+    gp = vs - i_load * 0.1 - X4_TRACE * i_load / 0.176 - 36e-6 * PAD_R
+    thr = a2.k * vs + 0.002
+    rows.append(f"representative (VS 3.300 V, 30 mA, 8 mA drive, typical offsets): GP24 {gp:.3f} V, trip {thr:.3f} V, "
+                f"margin {down(gp - thr, 0.001):.3f} V")
+    for vs in (VS_MIN, VS_MAX):
+        for drive in (2e-3, 4e-3, 8e-3, 12e-3):
+            pad = 0.68 / drive                       # VOH >= IOVDD - 0.68 V at the rated drive current [V S65 -> E]
+            gp = vs - Q32_DROP - X4_TRACE - (VS_MAX / (R430 * (1 - R_TOL)) + 100e-9) * pad
+            fall = a2.kmax * vs + vio_cmrr
+            rows.append(f"worst (VS {vs:.3f} V, 176 mA, {drive*1e3:4.0f} mA drive, 1.65 % R, max offsets): "
+                        f"GP24 >= {gp:.3f} V, falling trip <= {fall:.3f} V: margin {down(gp - fall, 0.001):.3f} V; "
+                        f"rising (+{TLV3201_HYS*1e3:.0f} mV hysteresis [E]) {down(gp - fall - TLV3201_HYS, 0.001):.3f} V")
+    rows.append(f"ground offset X4 to carrier dG: the error is (1 - k) x dG = {1 - a2.k:.3f} x dG "
+                f"(<= {up((1 - a2.k) * 0.05 * 1e3, 1):.0f} mV for dG 50 mV [E])")
+    tau_rp = 0.2 * C_RP_NOM
+    rows.append(f"dynamic, P3V3_S step faster than Q32 x C_RP ({tau_rp*1e6:.0f} us [E]): the threshold follows at once and "
+                f"IOVDD lags, so a fast overshoot dV costs up to {a2.k:.2f} x dV of margin transiently [E]")
+    tau_in = R426 * (1 - R_TOL) * 6e-12
+    rows.append(f"dynamic, ribbon crosstalk on GP24 (pin 22 lies between MISO 21 and SCK 23): R426 x C_in >= "
+                f"{tau_in*1e9:.1f} ns [E] passes {1 - math.exp(-2e-9 / tau_in):.2f} of a 2 ns spike to the comparator "
+                f"input, whose response is ~40 ns [V S70 typ]. Not bounded here: M-16 (f)")
+    return rows
+
+
+C_RP_NOM = 10.5e-6
 
 
 if __name__ == "__main__":
