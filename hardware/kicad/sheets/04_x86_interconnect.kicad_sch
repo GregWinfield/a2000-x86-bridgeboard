@@ -7,9 +7,9 @@
 	(title_block
 		(title "x86 SBC interconnect (RP2040 host link)")
 		(date "2026-11-19")
-		(rev "A2 (draft)")
+		(rev "A3 (draft)")
 		(company "A2000 x86 Bridgeboard project")
-		(comment 1 "Sheet 4 of 6 (Stage 4, rev A2). G-SHEET4 conditional; S4-6 circuit for review. NOT VALIDATED.")
+		(comment 1 "Sheet 4 of 6 (Stage 4, rev A3). G-SHEET4 schematic baseline; electrical qualification open. NOT VALIDATED.")
 		(comment 2 "X4 ribbon J401; 4 x SN74AVC4T774 (SPI, IRQ/ATTN, JTAG option, RP2040 LEDs)")
 		(comment 3 "Protocol: docs/hdl/host-link-protocol.md; notes: sheet4-design-notes.md")
 		(comment 4 "Licence: CERN-OHL-S-2.0")
@@ -1854,6 +1854,203 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "a2000-bridgeboard:SN74AUP1G17DBV"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "U"
+				(at -5.08 8.9 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "SN74AUP1G17DBVR"
+				(at -5.08 -9.2 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/sn74aup1g17.pdf"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Single Schmitt-trigger buffer, 0.8-3.6 V, Ioff (TI SCES579J). DBV: 1 NC, 2 A, 3 GND, 4 Y, 5 VCC. tpd <= 6.2 ns (3.3 V, 15 pF, -40..85 C)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Manufacturer" "Texas Instruments"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "MPN" "SN74AUP1G17DBVR"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "schmitt buffer logic aup"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "SN74AUP1G17DBV_1_1"
+				(rectangle
+					(start -5.08 5.08)
+					(end 5.08 -5.08)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin no_connect line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 0 0)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -7.62 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "Y"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 7.62 270)
+					(length 2.54)
+					(name "VCC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "a2000-bridgeboard:SN74AVC4T774PW"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -2816,7 +3013,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "DESIGN NOTES (summary; full analysis in docs/stage2/sheet4-design-notes.md)\n1. Every X4 signal passes an SN74AVC4T774 (A = carrier +3V3). VCC isolation + Ioff: no back-feed when a side is off (C-29).\n   U401/U403/U404 carry RP2040 -> carrier inputs only; B = X4_3V3_REF (header 3.3 V, reference only: uA; ER-3).\n2. U402 carries EVERY carrier -> RP2040 output (IRQ_N, ATTN, MISO, TDO). Its /OE (RP_EN_N) is low only while Q401\n   (U405: GP24 > 0.940 x X4_3V3_REF) and Q402 (GP24 driven) both conduct; disabled <= 160 ns after GP24 falls below the\n   threshold. The X4's K4 key can cut IOVDD while the header 3.3 V stays up (Q32, [V S1 sh.21]) (S4-6 rev A2).\n3. U401 SPI (mode 0, GPIO chip select); U403 JTAG option (D-12: OE from a DIP switch, default isolated, so J201\n   on sheet 2 has priority); U404 four RP2040 LEDs (C-26). B-side 100k pull-downs on every RP2040 -> carrier input.\n4. Default resistors (R-51): CS_N high, SCK/MOSI low, MISO/ATTN low (not ready), IRQ_N 2.2k pull-up, strong\n   enough against the blank FPGA's weak pull-down (305 uA max: 2.6 V). Host-link pins use PULLMODE=NONE in the LPF.\n5. R411-R414 33R source terminations on the ribbon drivers (values TBV at layout). With U402 isolated and the RP2040\n   running, IRQ_N reads high through the RP2040's own GP22 pull-up (firmware FW-6) and ATTN low through R425.\n   Nothing on the carrier sources current into GP24 (R424 removed). Analysis: sheet4-s46-isolation.md.\n6. Not yet validated: an ERC-clean result does not imply electrical or timing correctness."
+	(text "DESIGN NOTES (summary; full analysis in docs/stage2/sheet4-design-notes.md)\n1. Every X4 signal passes an SN74AVC4T774 (A = carrier +3V3). VCC isolation + Ioff: no back-feed when a side is off (C-29).\n   U401/U403/U404 carry RP2040 -> carrier inputs only; B = X4_3V3_REF (header 3.3 V, reference only: uA; ER-3).\n2. U402 carries EVERY carrier -> RP2040 output (IRQ_N, ATTN, MISO, TDO). Its /OE (RP_EN_N, from buffer U406) is low only\n   while Q401 (U405: GP24 > 0.940 x X4_3V3_REF) and Q402 (GP24 driven) both conduct. Model-derived disable latency <= 190 ns.\n   The X4's K4 key can cut IOVDD while the header 3.3 V stays up (Q32, [V S1 sh.21]) (S4-6 rev A3).\n3. U401 SPI (mode 0, GPIO chip select); U403 JTAG option (D-12: OE from a DIP switch, default isolated, so J201\n   on sheet 2 has priority); U404 four RP2040 LEDs (C-26). B-side 100k pull-downs on every RP2040 -> carrier input.\n4. Default resistors (R-51): CS_N high, SCK/MOSI low, MISO/ATTN low (not ready), IRQ_N 2.2k pull-up, strong\n   enough against the blank FPGA's weak pull-down (305 uA max: 2.6 V). Host-link pins use PULLMODE=NONE in the LPF.\n5. R411-R414 33R source terminations on the ribbon drivers (values TBV at layout). With U402 isolated and the RP2040\n   running, IRQ_N reads high through the RP2040's own GP22 pull-up (firmware FW-6) and ATTN low through R425.\n   Nothing on the carrier sources current into GP24 (R424 removed). Analysis: sheet4-s46-isolation.md.\n6. Not yet validated: an ERC-clean result does not imply electrical or timing correctness."
 		(exclude_from_sim no)
 		(at 25.4 300 0)
 		(effects
@@ -2825,7 +3022,7 @@
 			)
 			(justify left top)
 		)
-		(uuid "0e395352-d242-539c-b58c-4a9f8f01e902")
+		(uuid "1cd057aa-559e-5ec2-9da3-d2da651f69b1")
 	)
 	(no_connect
 		(at 350.52 116.84)
@@ -2947,7 +3144,7 @@
 	)
 	(wire
 		(pts
-			(xy 246.38 237.49) (xy 246.38 232.41)
+			(xy 215.9 245.11) (xy 215.9 250.19)
 		)
 		(stroke
 			(width 0)
@@ -2967,7 +3164,7 @@
 	)
 	(wire
 		(pts
-			(xy 292.1 245.11) (xy 292.1 250.19)
+			(xy 261.62 245.11) (xy 261.62 250.19)
 		)
 		(stroke
 			(width 0)
@@ -3007,7 +3204,7 @@
 	)
 	(wire
 		(pts
-			(xy 322.58 236.22) (xy 322.58 240.03)
+			(xy 292.1 237.49) (xy 292.1 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3117,7 +3314,7 @@
 	)
 	(wire
 		(pts
-			(xy 215.9 237.49) (xy 215.9 232.41)
+			(xy 388.62 203.2) (xy 383.54 203.2)
 		)
 		(stroke
 			(width 0)
@@ -3137,7 +3334,7 @@
 	)
 	(wire
 		(pts
-			(xy 276.86 237.49) (xy 276.86 232.41)
+			(xy 231.14 245.11) (xy 231.14 250.19)
 		)
 		(stroke
 			(width 0)
@@ -3237,6 +3434,16 @@
 	)
 	(wire
 		(pts
+			(xy 320.04 266.7) (xy 320.04 270.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3503da9d-df52-5250-a172-a8a915d60b70")
+	)
+	(wire
+		(pts
 			(xy 124.46 191.77) (xy 130.81 191.77)
 		)
 		(stroke
@@ -3297,7 +3504,7 @@
 	)
 	(wire
 		(pts
-			(xy 292.1 237.49) (xy 292.1 232.41)
+			(xy 246.38 237.49) (xy 246.38 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3397,6 +3604,16 @@
 	)
 	(wire
 		(pts
+			(xy 289.56 266.7) (xy 289.56 270.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5052f1a3-26ca-5082-95a7-57a074d8e0e5")
+	)
+	(wire
+		(pts
 			(xy 243.84 66.04) (xy 254 66.04)
 		)
 		(stroke
@@ -3417,7 +3634,7 @@
 	)
 	(wire
 		(pts
-			(xy 231.14 245.11) (xy 231.14 250.19)
+			(xy 215.9 237.49) (xy 215.9 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3547,7 +3764,7 @@
 	)
 	(wire
 		(pts
-			(xy 215.9 245.11) (xy 215.9 250.19)
+			(xy 403.86 203.2) (xy 408.94 203.2)
 		)
 		(stroke
 			(width 0)
@@ -3607,7 +3824,7 @@
 	)
 	(wire
 		(pts
-			(xy 274.32 266.7) (xy 274.32 270.51)
+			(xy 307.34 237.49) (xy 307.34 233.68)
 		)
 		(stroke
 			(width 0)
@@ -3657,7 +3874,7 @@
 	)
 	(wire
 		(pts
-			(xy 337.82 236.22) (xy 337.82 240.03)
+			(xy 292.1 245.11) (xy 292.1 250.19)
 		)
 		(stroke
 			(width 0)
@@ -3687,7 +3904,7 @@
 	)
 	(wire
 		(pts
-			(xy 320.04 266.7) (xy 320.04 270.51)
+			(xy 274.32 266.7) (xy 274.32 270.51)
 		)
 		(stroke
 			(width 0)
@@ -3887,7 +4104,7 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 266.7) (xy 304.8 270.51)
+			(xy 337.82 236.22) (xy 337.82 240.03)
 		)
 		(stroke
 			(width 0)
@@ -3947,6 +4164,16 @@
 	)
 	(wire
 		(pts
+			(xy 396.24 210.82) (xy 396.24 213.36)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ad814caf-7422-514e-be23-17029cf5a0e9")
+	)
+	(wire
+		(pts
 			(xy 76.2 262.89) (xy 76.2 257.81)
 		)
 		(stroke
@@ -3957,13 +4184,23 @@
 	)
 	(wire
 		(pts
-			(xy 307.34 237.49) (xy 307.34 233.68)
+			(xy 276.86 237.49) (xy 276.86 232.41)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "b369d754-097c-529c-b5a2-8af89d3f2853")
+	)
+	(wire
+		(pts
+			(xy 304.8 266.7) (xy 304.8 270.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b6d7ebc8-36c5-5a60-99c1-ebe39bb74f54")
 	)
 	(wire
 		(pts
@@ -4017,7 +4254,7 @@
 	)
 	(wire
 		(pts
-			(xy 261.62 245.11) (xy 261.62 250.19)
+			(xy 231.14 237.49) (xy 231.14 232.41)
 		)
 		(stroke
 			(width 0)
@@ -4027,7 +4264,7 @@
 	)
 	(wire
 		(pts
-			(xy 231.14 237.49) (xy 231.14 232.41)
+			(xy 396.24 195.58) (xy 396.24 193.04)
 		)
 		(stroke
 			(width 0)
@@ -4247,7 +4484,7 @@
 	)
 	(wire
 		(pts
-			(xy 289.56 266.7) (xy 289.56 270.51)
+			(xy 322.58 236.22) (xy 322.58 240.03)
 		)
 		(stroke
 			(width 0)
@@ -4405,8 +4642,8 @@
 		)
 		(uuid "0a662f6f-6d5e-5be9-a377-222a687f04a3")
 	)
-	(label "X4_GP24_EN"
-		(at 292.1 232.41 0)
+	(label "RP_EN_REF"
+		(at 246.38 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4414,6 +4651,16 @@
 			(justify left bottom)
 		)
 		(uuid "0b24b0a4-34dc-580c-8875-51675c1613c3")
+	)
+	(label "X4_3V3_REF"
+		(at 307.34 233.68 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0eed93c5-a9e5-5876-ab2c-a266477db241")
 	)
 	(label "X4_GP18_LED"
 		(at 370.84 134.62 0)
@@ -4485,8 +4732,8 @@
 		)
 		(uuid "1ef51a95-b33d-573a-b9d0-a56fcfba4168")
 	)
-	(label "RP_EN_REF"
-		(at 231.14 250.19 0)
+	(label "X4_GP24_EN"
+		(at 215.9 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4555,8 +4802,8 @@
 		)
 		(uuid "49f2644f-c9e7-55e6-a4dc-518adf6aaaf1")
 	)
-	(label "X4_3V3_REF"
-		(at 307.34 233.68 0)
+	(label "X4_GP24_EN"
+		(at 276.86 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4585,18 +4832,18 @@
 		)
 		(uuid "5b57db73-e5ca-5de6-ac57-9217da720e7b")
 	)
-	(label "X4_GP24_EN"
-		(at 215.9 232.41 0)
+	(label "RP_EN_OD"
+		(at 383.54 203.2 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "610eb7a4-30bc-5026-93e5-c2b6b6291227")
 	)
-	(label "RP_EN_CMP"
-		(at 337.82 240.03 0)
+	(label "RP_EN_GATE"
+		(at 292.1 250.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4624,6 +4871,16 @@
 			(justify left bottom)
 		)
 		(uuid "6825dba3-a998-5a47-a64f-f6e35ab9a1f0")
+	)
+	(label "RP_EN_N"
+		(at 322.58 240.03 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "6c4edd9c-1a95-53bd-afa7-6b62c68186b1")
 	)
 	(label "X4_3V3_REF"
 		(at 137.16 38.1 0)
@@ -4685,8 +4942,8 @@
 		)
 		(uuid "7e421c23-b440-5050-ad70-1fbe998727f3")
 	)
-	(label "RP_EN_N"
-		(at 322.58 240.03 0)
+	(label "X4_GP24_EN"
+		(at 292.1 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4725,8 +4982,8 @@
 		)
 		(uuid "89ac0ca2-63d8-5968-9f53-964c8bc2b7e1")
 	)
-	(label "RP_EN_REF"
-		(at 246.38 232.41 0)
+	(label "RP_EN_SENSE"
+		(at 215.9 250.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4744,16 +5001,6 @@
 			(justify left bottom)
 		)
 		(uuid "8fc5caae-d6f9-5c95-af5d-be94a663d516")
-	)
-	(label "X4_3V3_REF"
-		(at 231.14 232.41 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "9277d1d6-3381-5782-9c1d-40285b8cd306")
 	)
 	(label "X4_GP14_TCK"
 		(at 76.2 232.41 0)
@@ -4815,6 +5062,16 @@
 		)
 		(uuid "a40481ef-b66b-55e4-a0ad-d6d2befd3df3")
 	)
+	(label "RP_EN_CMP"
+		(at 337.82 240.03 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a82e9824-a0fb-5c9f-a1b4-a26de50ed239")
+	)
 	(label "X4_GP27_ATTN"
 		(at 143.51 181.61 0)
 		(effects
@@ -4845,8 +5102,8 @@
 		)
 		(uuid "b1ddc597-2b7e-5078-a536-273c556e9688")
 	)
-	(label "RP_EN_SENSE"
-		(at 215.9 250.19 0)
+	(label "RP_EN_N"
+		(at 408.94 203.2 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4925,8 +5182,8 @@
 		)
 		(uuid "ca02284d-34db-54c5-b6d6-8d7861e7bc01")
 	)
-	(label "RP_EN_GATE"
-		(at 292.1 250.19 0)
+	(label "RP_EN_OD"
+		(at 261.62 250.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4945,7 +5202,7 @@
 		)
 		(uuid "cc677d42-f0af-5713-9cd0-462f068679e4")
 	)
-	(label "RP_EN_N"
+	(label "RP_EN_OD"
 		(at 375.92 210.82 0)
 		(effects
 			(font
@@ -5025,8 +5282,8 @@
 		)
 		(uuid "e1f42d91-c0f6-5b17-85c6-a937c42514d0")
 	)
-	(label "X4_GP24_EN"
-		(at 276.86 232.41 0)
+	(label "RP_EN_REF"
+		(at 231.14 250.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5035,8 +5292,8 @@
 		)
 		(uuid "e340288e-116b-5326-af6f-36c75dc6fab0")
 	)
-	(label "RP_EN_N"
-		(at 261.62 250.19 0)
+	(label "X4_3V3_REF"
+		(at 231.14 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5064,6 +5321,28 @@
 			(justify left bottom)
 		)
 		(uuid "f8272f56-6cf9-5020-b83d-06dd79f99b2d")
+	)
+	(hierarchical_label "RP_ATTN"
+		(shape bidirectional)
+		(at 320.04 270.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "034d8a03-9f69-5ec9-a0bf-19fc66bed04f")
+	)
+	(hierarchical_label "RP_CS_N"
+		(shape bidirectional)
+		(at 304.8 270.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "17a8c1dc-1d2c-5e2e-b91c-77a07756c61e")
 	)
 	(hierarchical_label "RP_ATTN"
 		(shape bidirectional)
@@ -5120,17 +5399,6 @@
 		)
 		(uuid "5285aed4-3ad2-5c9e-a22b-ca46ae4678f7")
 	)
-	(hierarchical_label "RP_CS_N"
-		(shape bidirectional)
-		(at 304.8 270.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "5595ecc3-e750-502a-bf28-80d6a6945f18")
-	)
 	(hierarchical_label "FPGA_TDO"
 		(shape bidirectional)
 		(at 76.2 187.96 180)
@@ -5153,17 +5421,6 @@
 		)
 		(uuid "65caf618-2ef4-58b5-b941-ccf7a3cf5a96")
 	)
-	(hierarchical_label "RP_SCK"
-		(shape bidirectional)
-		(at 274.32 270.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "6f68229b-684d-5176-8d2f-e1004784566a")
-	)
 	(hierarchical_label "RP_CS_N"
 		(shape bidirectional)
 		(at 30.48 275.59 0)
@@ -5174,6 +5431,17 @@
 			(justify left)
 		)
 		(uuid "90c8b754-9dd1-57cc-b67f-4d7c502b5f60")
+	)
+	(hierarchical_label "RP_MISO"
+		(shape bidirectional)
+		(at 289.56 270.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9fa25af4-c6a7-5c02-84b8-8096800197e5")
 	)
 	(hierarchical_label "RP_ATTN"
 		(shape bidirectional)
@@ -5296,9 +5564,9 @@
 		)
 		(uuid "f759ec0d-ad1c-54f8-af10-29442696c062")
 	)
-	(hierarchical_label "RP_ATTN"
+	(hierarchical_label "RP_SCK"
 		(shape bidirectional)
-		(at 320.04 270.51 0)
+		(at 274.32 270.51 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5306,17 +5574,6 @@
 			(justify left)
 		)
 		(uuid "f96190d4-0b23-5356-93f0-f19d431fdc0c")
-	)
-	(hierarchical_label "RP_MISO"
-		(shape bidirectional)
-		(at 289.56 270.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "f9eaa079-4ab3-59ad-b64b-80299e6a09cb")
 	)
 	(hierarchical_label "RP_JTAG_EN_N"
 		(shape input)
@@ -5781,6 +6038,109 @@
 	)
 	(symbol
 		(lib_id "Device:C")
+		(at 431.8 205.74 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "069f362c-1a70-5260-b398-2223abecd3a3")
+		(property "Reference" "C410"
+			(at 434.3 204.44 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100n"
+			(at 434.3 207.04 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 431.8 205.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 431.8 205.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 431.8 205.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Spec" "0603 X7R 25 V"
+			(at 431.8 205.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Note" "U406 VCC"
+			(at 431.8 205.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f0fa7c80-6748-5a2d-bc73-5ef4100744df")
+		)
+		(pin "2"
+			(uuid "171b48d7-8e8f-54fd-9189-86d0e53db303")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "C410")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
 		(at 254 45.72 0)
 		(unit 1)
 		(body_style 1)
@@ -6189,6 +6549,84 @@
 			(project "a2000-bridgeboard"
 				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
 					(reference "#PWR4014")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 335.28 266.7 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "0f32ce06-34c3-51de-9b72-1120f5f60b2d")
+		(property "Reference" "#PWR4077"
+			(at 335.28 269.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 335.28 271.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 335.28 266.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 335.28 266.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 335.28 266.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "dc06ccdd-032c-58c3-9bb6-e7a473f87e0a")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "#PWR4077")
 					(unit 1)
 				)
 			)
@@ -7694,8 +8132,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3V3")
-		(at 261.62 237.49 0)
+		(lib_id "power:GND")
+		(at 396.24 213.36 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -7705,7 +8143,7 @@
 		(dnp no)
 		(uuid "27e1f496-ff49-52f4-87aa-467db6d3b19c")
 		(property "Reference" "#PWR4070"
-			(at 261.62 240.49 0)
+			(at 396.24 216.36 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7715,8 +8153,9 @@
 				)
 			)
 		)
-		(property "Value" "+3V3"
-			(at 261.62 233.89 0)
+		(property "Value" "GND"
+			(at 396.24 218.36 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7726,7 +8165,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 261.62 237.49 0)
+			(at 396.24 213.36 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7737,7 +8176,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 261.62 237.49 0)
+			(at 396.24 213.36 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7748,7 +8187,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 261.62 237.49 0)
+			(at 396.24 213.36 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8109,7 +8548,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 307.34 245.11 0)
+		(at 431.8 209.55 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -8119,7 +8558,7 @@
 		(dnp no)
 		(uuid "34a2d262-067f-5b4e-bb94-6eadfc78926d")
 		(property "Reference" "#PWR4072"
-			(at 307.34 248.11 0)
+			(at 431.8 212.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8130,7 +8569,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 307.34 250.11 0)
+			(at 431.8 214.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8141,7 +8580,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 307.34 245.11 0)
+			(at 431.8 209.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8152,7 +8591,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 307.34 245.11 0)
+			(at 431.8 209.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8163,7 +8602,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 307.34 245.11 0)
+			(at 431.8 209.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8575,8 +9014,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 276.86 245.11 0)
+		(lib_id "power:+3V3")
+		(at 431.8 201.93 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -8586,7 +9025,7 @@
 		(dnp no)
 		(uuid "3e1fae12-7db7-5ca6-9220-c66c4a32bc34")
 		(property "Reference" "#PWR4071"
-			(at 276.86 248.11 0)
+			(at 431.8 204.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8596,9 +9035,8 @@
 				)
 			)
 		)
-		(property "Value" "GND"
-			(at 276.86 250.11 0)
-			(hide yes)
+		(property "Value" "+3V3"
+			(at 431.8 198.33 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -8608,7 +9046,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 276.86 245.11 0)
+			(at 431.8 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8619,7 +9057,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 276.86 245.11 0)
+			(at 431.8 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8630,7 +9068,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 276.86 245.11 0)
+			(at 431.8 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -12272,6 +12710,162 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 307.34 245.11 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "9d13cc13-8bfe-5299-9cff-252e987eeab4")
+		(property "Reference" "#PWR4076"
+			(at 307.34 248.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 307.34 250.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 307.34 245.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 307.34 245.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 307.34 245.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "98ef8943-92d1-56f4-9ee2-697b9a6b816f")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "#PWR4076")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 276.86 245.11 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "a113035d-1555-5f2c-8a49-d0dd411ee972")
+		(property "Reference" "#PWR4075"
+			(at 276.86 248.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 276.86 250.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 276.86 245.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 276.86 245.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 276.86 245.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c6a93d0b-bc12-5386-bec3-e1263f53a283")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "#PWR4075")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 134.62 176.53 90)
 		(unit 1)
@@ -12566,6 +13160,83 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+3V3")
+		(at 261.62 237.49 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "a438e1c3-22ae-5c55-853d-91149075e9e8")
+		(property "Reference" "#PWR4074"
+			(at 261.62 240.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 261.62 233.89 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 261.62 237.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 261.62 237.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 261.62 237.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "de23cd65-480e-554f-9b10-02f9734959ad")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "#PWR4074")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 127 45.72 0)
 		(unit 1)
@@ -12819,6 +13490,128 @@
 			(project "a2000-bridgeboard"
 				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
 					(reference "TP401")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "a2000-bridgeboard:SN74AUP1G17DBV")
+		(at 396.24 203.2 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "ab818126-7d21-5237-a04c-266f42edab52")
+		(property "Reference" "U406"
+			(at 391.16 194.3 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SN74AUP1G17DBVR"
+			(at 402.59 210.82 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
+			(at 396.24 203.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/sn74aup1g17.pdf"
+			(at 396.24 203.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Single Schmitt-trigger buffer, 0.8-3.6 V, Ioff (TI SCES579J). DBV: 1 NC, 2 A, 3 GND, 4 Y, 5 VCC. tpd <= 6.2 ns (3.3 V, 15 pF, -40..85 C)"
+			(at 396.24 203.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 396.24 203.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "SN74AUP1G17DBVR"
+			(at 396.24 203.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Spec" "S4-6 rev A3: /OE edge (SCES693I 5 ns/V); Ioff; 0.8-3.6 V"
+			(at 396.24 203.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "ba93b5c6-31cb-54d9-98dd-7c3304b71861")
+		)
+		(pin "4"
+			(uuid "624b69c8-f356-59cc-b55a-d6b03441b03e")
+		)
+		(pin "1"
+			(uuid "413f7731-e180-55db-b932-d67462526df9")
+		)
+		(pin "5"
+			(uuid "812a9314-f861-5d52-b935-0cbe65d5a28b")
+		)
+		(pin "3"
+			(uuid "61b9b69f-5983-5f40-83f4-019ab0600643")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "U406")
 					(unit 1)
 				)
 			)
@@ -14798,7 +15591,7 @@
 				)
 			)
 		)
-		(property "Spec" "0603 1%; /OE pull-up to VCCA: U402 disabled unless Q401 and Q402 conduct"
+		(property "Spec" "0603 1%; pull-up to +3V3 (U406 input): U402 disabled unless Q401 and Q402 conduct"
 			(at 261.62 241.3 0)
 			(hide yes)
 			(show_name no)
@@ -15776,7 +16569,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 335.28 266.7 0)
+		(at 246.38 245.11 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -15786,7 +16579,7 @@
 		(dnp no)
 		(uuid "ebde62ac-9200-5028-b1a3-65fa105fc8ca")
 		(property "Reference" "#PWR4073"
-			(at 335.28 269.7 0)
+			(at 246.38 248.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -15797,7 +16590,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 335.28 271.7 0)
+			(at 246.38 250.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -15808,7 +16601,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 335.28 266.7 0)
+			(at 246.38 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -15819,7 +16612,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 335.28 266.7 0)
+			(at 246.38 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -15830,7 +16623,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 335.28 266.7 0)
+			(at 246.38 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -16177,8 +16970,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 246.38 245.11 0)
+		(lib_id "power:+3V3")
+		(at 396.24 193.04 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -16188,7 +16981,7 @@
 		(dnp no)
 		(uuid "fbf0c674-1be4-57b8-8655-8b8db28cf9de")
 		(property "Reference" "#PWR4069"
-			(at 246.38 248.11 0)
+			(at 396.24 196.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -16198,9 +16991,8 @@
 				)
 			)
 		)
-		(property "Value" "GND"
-			(at 246.38 250.11 0)
-			(hide yes)
+		(property "Value" "+3V3"
+			(at 396.24 189.44 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -16210,7 +17002,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 246.38 245.11 0)
+			(at 396.24 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -16221,7 +17013,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 246.38 245.11 0)
+			(at 396.24 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -16232,7 +17024,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 246.38 245.11 0)
+			(at 396.24 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

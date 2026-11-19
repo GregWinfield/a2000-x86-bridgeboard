@@ -4,12 +4,14 @@
 J401 is the X4 GPIO ribbon header (pin map: docs/pin-assignment-matrix.md section 3, [V S1 sh.21]).
 Every X4 header signal passes an SN74AVC4T774 (A port = carrier +3V3), so the X4 is never loaded or
 back-fed (ER-3, R-27, C-29): VCC isolation and Ioff [V S66]. Every B port is on X4_3V3_REF. U402 carries
-every FPGA -> RP2040 output. Its /OE (RP_EN_N, R429 pull-up to VCCA) is pulled low only through Q401 and Q402
-(BSS138) in series: Q401 is switched by comparator U405 (TI TLV3201, X4 domain, guaranteed tPD <= 55 ns), which
+every FPGA -> RP2040 output. Its /OE (RP_EN_N) is driven by Schmitt-trigger buffer U406 (TI SN74AUP1G17, +3V3)
+from the open-drain node RP_EN_OD (R429 pull-up to +3V3), which is pulled low only through Q401 and Q402 (BSS138)
+in series: Q401 is switched by comparator U405 (TI TLV3201, X4 domain, tPD <= 55 ns datasheet maximum), which
 compares GP24 with 0.940 x X4_3V3_REF; Q402 is switched by GP24 itself, so U402 stays disabled whenever GP24 is
-not driven, whatever U405 does below its 2.7 V minimum supply. The outputs are therefore Hi-Z within 160 ns of
-the RP2040's IOVDD (which the X4's K4 key can switch off while the header 3.3 V stays up: Q32, [V S1 sh.21])
-falling below the threshold (decision S4-6, rev A2; docs/stage2/sheet4-s46-isolation.md). Translator pinout
+not driven, whatever U405 does below its 2.7 V minimum supply. U406 gives /OE a push-pull edge (SCES693I's
+5 ns/V input transition rate). Model-derived disable latency <= 190 ns after the RP2040's IOVDD (which the X4's
+K4 key can switch off while the header 3.3 V stays up: Q32, [V S1 sh.21]) falls below the threshold (decision
+S4-6, rev A3; docs/stage2/sheet4-s46-isolation.md). Translator pinout
 from the SCES693I application figure (PW package): 1 DIR1, 2 DIR2, 3-6 A1-A4, 7 DIR3, 8 DIR4, 9 OE,
 10 GND, 11 B4, 12 B3, 13 B2, 14 B1, 15 VCCB, 16 VCCA. DIR high = A->B, low = B->A; OE high = isolated.
 """
@@ -37,6 +39,7 @@ VCCB = {"U401": "X4_3V3_REF", "U402": "X4_3V3_REF", "U403": "X4_3V3_REF", "U404"
 OE = {"U401": "GND", "U402": "RP_EN_N", "U403": "RP_JTAG_EN_N", "U404": "GND"}
 # U405 TLV3201AIDBVR (TI SBOS561C, DBV): 1 OUT (push-pull), 2 GND, 3 IN+, 4 IN-, 5 VCC
 # Q401, Q402 BSS138 (SOT-23): 1 G, 2 S, 3 D (Diodes DS30144 top view; onsemi BSS138/D marking diagram)
+# U406 SN74AUP1G17DBVR (TI SCES579J, DBV): 1 NC, 2 A, 3 GND, 4 Y, 5 VCC
 EN_REF_RATIO = (6.34, 100.0)                              # R427 / R428 (kOhm): IN- = 100 / 106.34 = 0.9404 x X4_3V3_REF
 # B outputs driving the ribbon: series source terminations
 SERIES = {("U402", 1): "R412", ("U402", 2): "R413", ("U402", 3): "R411", ("U402", 4): "R414"}
@@ -92,10 +95,24 @@ def sym_bss138():
                      keywords="mosfet n-channel logic level", ref_at=(5.08, 2.54), value_at=(5.08, -2.54))
 
 
+def sym_aup1g17():
+    """TI SN74AUP1G17DBVR single Schmitt-trigger buffer (SCES579J): DBV 1 NC, 2 A, 3 GND, 4 Y, 5 VCC."""
+    p = [Pin("2", "A", "input", -7.62, 0, 0, 2.54), Pin("4", "Y", "output", 7.62, 0, 180, 2.54),
+         Pin("1", "NC", "no_connect", -7.62, 2.54, 0, 2.54),
+         Pin("5", "VCC", "power_in", 0, 7.62, 270, 2.54), Pin("3", "GND", "power_in", 0, -7.62, 90, 2.54)]
+    return SymbolDef("SN74AUP1G17DBV", "U", "SN74AUP1G17DBVR", "Package_TO_SOT_SMD:SOT-23-5",
+                     "https://www.ti.com/lit/ds/symlink/sn74aup1g17.pdf",
+                     "Single Schmitt-trigger buffer, 0.8-3.6 V, Ioff (TI SCES579J). DBV: 1 NC, 2 A, 3 GND, 4 Y, 5 VCC. "
+                     "tpd <= 6.2 ns (3.3 V, 15 pF, -40..85 C)", p,
+                     rects={1: [(-5.08, 5.08, 5.08, -5.08)]},
+                     extra_props={"Manufacturer": "Texas Instruments", "MPN": "SN74AUP1G17DBVR"},
+                     keywords="schmitt buffer logic aup", ref_at=(-5.08, 8.9), value_at=(-5.08, -9.2))
+
+
 def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
     REV, DATE, COMPANY, LICENCE = consts
     sch = Schematic("sheet4", "A2", "x86 SBC interconnect (RP2040 host link)", REV, DATE,
-                    ["Sheet 4 of 6 (Stage 4, rev A2). G-SHEET4 conditional; S4-6 circuit for review. NOT VALIDATED.",
+                    ["Sheet 4 of 6 (Stage 4, rev A3). G-SHEET4 schematic baseline; electrical qualification open. NOT VALIDATED.",
                      "X4 ribbon J401; 4 x SN74AVC4T774 (SPI, IRQ/ATTN, JTAG option, RP2040 LEDs)",
                      "Protocol: docs/hdl/host-link-protocol.md; notes: sheet4-design-notes.md",
                      f"Licence: {LICENCE}"],
@@ -241,14 +258,15 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
                   ref_at=(x + 1.8, y - 1.3), val_at=(x + 1.8, y + 1.3), ref_just="left", val_just="left")
     sch.label("X4_GP27_ATTN", stub(r.p("1"), 0, -5.08), "right")
     pwr(GNDS, *r.p("2"))
-    # ---------------- S4-6 (rev A2): fail-safe output enable for U402. Comparator U405 (TLV3201, supplied by the
-    # X4's header 3.3 V like the translators' B sides) compares GP24 (IN+) with 0.940 x X4_3V3_REF (IN-). /OE is
-    # pulled to VCCA by R429 and low only through Q401 (gate: U405 OUT) and Q402 (gate: GP24 through R431) in series.
-    # GP24 above the reference: OUT high, both on, U402 drives. GP24 below it (K4, brownout, reset, BOOTSEL, firmware
-    # not started): OUT low, Q401 off within the 160 ns budget, U402 Hi-Z. GP24 not driven (X4 ramping, reset):
-    # Q402 off whatever U405's output (U405 is unspecified below 2.7 V). The two MOSFET gates are the only links from
-    # the X4 domain into the carrier's /OE node, so neither domain can back-feed the other.
-    U5, QN = syms["TLV3201"], syms["BSS138"]
+    # ---------------- S4-6 (rev A3): fail-safe output enable for U402. Comparator U405 (TLV3201, supplied by the
+    # X4's header 3.3 V like the translators' B sides) compares GP24 (IN+) with 0.940 x X4_3V3_REF (IN-). The
+    # open-drain node RP_EN_OD is pulled to +3V3 by R429 and low only through Q401 (gate: U405 OUT) and Q402 (gate:
+    # GP24 through R431) in series; Schmitt-trigger buffer U406 (carrier +3V3, specified from 0.8 V) copies it onto
+    # /OE with a push-pull edge. GP24 above the reference: OUT high, both on, /OE low, U402 drives. GP24 below it (K4,
+    # brownout, reset, BOOTSEL, firmware not started): OUT low, Q401 off, /OE high within the 190 ns model budget, U402
+    # Hi-Z. GP24 not driven (X4 ramping, reset): Q402 off whatever U405's output (U405 is unspecified below 2.7 V).
+    # The two MOSFET gates are the only links from the X4 domain into the carrier's enable nodes.
+    U5, QN, BUF = syms["TLV3201"], syms["BSS138"], syms["AUP1G17"]
     cx, cy = 180.34, 236.22
     cmp_ = sch.place(U5, "U405", "TLV3201AIDBVR", cx, cy, 0, footprint="Package_TO_SOT_SMD:SOT-23-5",
                      ref_at=(cx - 7.62, cy - 8.9), val_at=(cx - 7.62, cy + 9.2))
@@ -266,16 +284,31 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
     q2 = sch.place(QN, "Q402", "BSS138", qx, qy2, 0, footprint="Package_TO_SOT_SMD:SOT-23",
                    props={"Spec": "BSS138-7-F (Diodes); U402 enable, switched by GP24 (default off)"},
                    ref_at=(qx + 5.08, qy2 - 2.54), val_at=(qx + 5.08, qy2 + 2.54), ref_just="left", val_just="left")
-    sch.label("RP_EN_N", stub(q1.p("3"), 0, -5.08), "right")
+    sch.label("RP_EN_OD", stub(q1.p("3"), 0, -5.08), "right")
     sch.label("RP_EN_CMP", stub(q1.p("1"), -7.62), "left")
     sch.wire(q1.p("2"), q2.p("3"))
     sch.label("RP_EN_MID", (qx, round((q1.p("2")[1] + q2.p("3")[1]) / 2, 4)), "right")
     sch.label("RP_EN_GATE", stub(q2.p("1"), -7.62), "left")
     pwr(GNDS, *q2.p("2"))
+    # U406: RP_EN_OD (slow RC rise through R429) -> Schmitt input; push-pull output -> U402 /OE (RP_EN_N)
+    bx, by = 396.24, 203.2
+    u6 = sch.place(BUF, "U406", "SN74AUP1G17DBVR", bx, by, 0, footprint="Package_TO_SOT_SMD:SOT-23-5",
+                   props={"Spec": "S4-6 rev A3: /OE edge (SCES693I 5 ns/V); Ioff; 0.8-3.6 V"},
+                   ref_at=(bx - 5.08, by - 8.9), val_at=(bx + 6.35, by + 7.62), val_just="left")
+    sch.label("RP_EN_OD", stub(u6.p("2"), -5.08), "left")
+    sch.label("RP_EN_N", stub(u6.p("4"), 5.08), "right")
+    pwr(P3, *stub(u6.p("5"), 0, -2.54))
+    pwr(GNDS, *stub(u6.p("3"), 0, 2.54))
+    c10x, c10y = 431.8, 205.74
+    c10 = sch.place(C, "C410", "100n", c10x, c10y, 0, footprint="Capacitor_SMD:C_0603_1608Metric",
+                    props={"Spec": "0603 X7R 25 V", "Note": "U406 VCC"},
+                    ref_at=(c10x + 2.5, c10y - 1.3), val_at=(c10x + 2.5, c10y + 1.3), ref_just="left", val_just="left")
+    pwr(P3, *c10.p("1"))
+    pwr(GNDS, *c10.p("2"))
     parts = (("R426", "1k", "X4_GP24_EN", "RP_EN_SENSE", "series input resistor (GP24 -> comparator IN+)"),
              ("R427", "6.34k", "X4_3V3_REF", "RP_EN_REF", "reference divider top: IN- = 0.940 x X4_3V3_REF"),
              ("R428", "100k", "RP_EN_REF", None, "reference divider bottom"),
-             ("R429", "1k", "+3V3", "RP_EN_N", "/OE pull-up to VCCA: U402 disabled unless Q401 and Q402 conduct"),
+             ("R429", "1k", "+3V3", "RP_EN_OD", "pull-up to +3V3 (U406 input): U402 disabled unless Q401 and Q402 conduct"),
              ("R430", "100k", "X4_GP24_EN", None, "GP24 pull-down: disabled while GP24 is not driven"),
              ("R431", "1k", "X4_GP24_EN", "RP_EN_GATE", "Q402 gate resistor: GP24 edge current <= 3.6 mA"))
     for i, (ref, val, top, bottom, why) in enumerate(parts):
@@ -316,9 +349,9 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
         "DESIGN NOTES (summary; full analysis in docs/stage2/sheet4-design-notes.md)\n"
         "1. Every X4 signal passes an SN74AVC4T774 (A = carrier +3V3). VCC isolation + Ioff: no back-feed when a side is off (C-29).\n"
         "   U401/U403/U404 carry RP2040 -> carrier inputs only; B = X4_3V3_REF (header 3.3 V, reference only: uA; ER-3).\n"
-        "2. U402 carries EVERY carrier -> RP2040 output (IRQ_N, ATTN, MISO, TDO). Its /OE (RP_EN_N) is low only while Q401\n"
-        "   (U405: GP24 > 0.940 x X4_3V3_REF) and Q402 (GP24 driven) both conduct; disabled <= 160 ns after GP24 falls below the\n"
-        "   threshold. The X4's K4 key can cut IOVDD while the header 3.3 V stays up (Q32, [V S1 sh.21]) (S4-6 rev A2).\n"
+        "2. U402 carries EVERY carrier -> RP2040 output (IRQ_N, ATTN, MISO, TDO). Its /OE (RP_EN_N, from buffer U406) is low only\n"
+        "   while Q401 (U405: GP24 > 0.940 x X4_3V3_REF) and Q402 (GP24 driven) both conduct. Model-derived disable latency <= 190 ns.\n"
+        "   The X4's K4 key can cut IOVDD while the header 3.3 V stays up (Q32, [V S1 sh.21]) (S4-6 rev A3).\n"
         "3. U401 SPI (mode 0, GPIO chip select); U403 JTAG option (D-12: OE from a DIP switch, default isolated, so J201\n"
         "   on sheet 2 has priority); U404 four RP2040 LEDs (C-26). B-side 100k pull-downs on every RP2040 -> carrier input.\n"
         "4. Default resistors (R-51): CS_N high, SCK/MOSI low, MISO/ATTN low (not ready), IRQ_N 2.2k pull-up, strong\n"

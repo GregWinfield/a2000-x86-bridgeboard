@@ -6,11 +6,12 @@ usage: python -I tools/kicad/audit_sheet4.py <netlist.net>
 Expected connections come from: the X4 header map (docs/pin-assignment-matrix.md section 3, [V S1 sh.21]),
 the SN74AVC4T774 pinout and function table (TI SCES693I [V S66]: DIR high = A->B, low = B->A; OE high =
 isolated), the TLV3201 pinout (TI SBOS561C: DBV 1 OUT, 2 GND, 3 IN+, 4 IN-, 5 VCC), the BSS138 pinout (SOT-23:
-1 G, 2 S, 3 D), the host-link protocol idle levels and R-51 (docs/hdl/host-link-protocol.md sections 2, 11),
-ER-3 (the X4's header 3.3 V is a reference: only microamp loads on it) and decision S4-6 rev A2
-(docs/stage2/sheet4-s46-isolation.md): every carrier -> RP2040 output on U402, whose /OE is pulled low only
-through Q401 (gate: comparator U405, GP24 above 0.940 x X4_3V3_REF) and Q402 (gate: GP24) in series; only
-MOSFET gates link the X4-side enable nets to the carrier's /OE node; nothing on the carrier sources current into
+1 G, 2 S, 3 D), the SN74AUP1G17 pinout (TI SCES579J: DBV 1 NC, 2 A, 3 GND, 4 Y, 5 VCC), the host-link
+protocol idle levels and R-51 (docs/hdl/host-link-protocol.md sections 2, 11), ER-3 (the X4's header 3.3 V is a
+reference: only microamp loads on it) and decision S4-6 rev A3 (docs/stage2/sheet4-s46-isolation.md): every
+carrier -> RP2040 output on U402, whose /OE is driven by buffer U406 from the open-drain node RP_EN_OD, which is
+pulled low only through Q401 (gate: comparator U405, GP24 above 0.940 x X4_3V3_REF) and Q402 (gate: GP24) in
+series; only MOSFET gates link the X4-side enable nets to the carrier's enable nodes; nothing on the carrier sources current into
 GP24 (R424 removed); a B-side pull-down on every RP2040 -> carrier input; ATTN defined at the RP2040 while U402
 is isolated (IRQ_N by the RP2040's own pull-up, firmware FW-6). Every check prints FAIL on failure; exit code 1 on any failure.
 """
@@ -117,25 +118,34 @@ def main(path):
                                                  (u, PINS["B"][ch]), (ref, "1")]),
               f"{x4net[(u, ch)]} members {members(x4net[(u, ch)])}")
 
-    # ---------------- S4-6 rev A2: U402's /OE pulled low only through Q401 (U405) and Q402 (GP24) in series
+    # ---------------- S4-6 rev A3: U402's /OE from buffer U406, whose input is pulled low only through Q401 (U405)
+    # and Q402 (GP24) in series
     c5 = comps.get("U405")
     check(c5 is not None and c5["value"] == "TLV3201AIDBVR" and c5["footprint"] == "Package_TO_SOT_SMD:SOT-23-5",
           "U405 TLV3201AIDBVR, SOT-23-5")
     for pin, net in (("5", "X4_3V3_REF"), ("2", "GND"), ("3", "RP_EN_SENSE"), ("4", "RP_EN_REF"), ("1", "RP_EN_CMP")):
         check(net_of("U405", pin) == net, f"U405.{pin} on {net}, got {net_of('U405', pin)}")
-    for q, g, d, s_ in (("Q401", "RP_EN_CMP", "RP_EN_N", "RP_EN_MID"), ("Q402", "RP_EN_GATE", "RP_EN_MID", "GND")):
+    for q, g, d, s_ in (("Q401", "RP_EN_CMP", "RP_EN_OD", "RP_EN_MID"), ("Q402", "RP_EN_GATE", "RP_EN_MID", "GND")):
         c = comps.get(q)
         check(c is not None and c["value"] == "BSS138" and c["footprint"] == "Package_TO_SOT_SMD:SOT-23",
               f"{q} BSS138, SOT-23")
         check((net_of(q, "1"), net_of(q, "3"), net_of(q, "2")) == (g, d, s_),
               f"{q} G/D/S on {g}/{d}/{s_}: {net_of(q, '1')}/{net_of(q, '3')}/{net_of(q, '2')}")
-    check(members("RP_EN_N") == sorted([("U402", "9"), ("Q401", "3"), ("R429", "2"), ("TP407", "1")]),
-          f"RP_EN_N (U402 /OE) only Q401 drain, R429 and TP407: {members('RP_EN_N')}")
+    c6 = comps.get("U406")
+    check(c6 is not None and c6["value"] == "SN74AUP1G17DBVR" and c6["footprint"] == "Package_TO_SOT_SMD:SOT-23-5",
+          "U406 SN74AUP1G17DBVR, SOT-23-5")
+    for pin, net in (("5", "+3V3"), ("3", "GND"), ("2", "RP_EN_OD"), ("4", "RP_EN_N")):
+        check(net_of("U406", pin) == net, f"U406.{pin} on {net}, got {net_of('U406', pin)}")
+    check(unconnected("U406", "1"), f"U406.1 (NC) unconnected, got {net_of('U406', '1')}")
+    check(members("RP_EN_N") == sorted([("U402", "9"), ("U406", "4"), ("TP407", "1")]),
+          f"RP_EN_N (U402 /OE) only U406's output and TP407: {members('RP_EN_N')}")
+    check(members("RP_EN_OD") == sorted([("Q401", "3"), ("R429", "2"), ("U406", "2")]),
+          f"RP_EN_OD only Q401 drain, R429 and U406's input: {members('RP_EN_OD')}")
     check(members("RP_EN_MID") == sorted([("Q401", "2"), ("Q402", "3")]), f"RP_EN_MID members {members('RP_EN_MID')}")
     check(members("RP_EN_CMP") == sorted([("U405", "1"), ("Q401", "1"), ("TP408", "1")]),
           f"RP_EN_CMP members {members('RP_EN_CMP')}")
     check(members("RP_EN_GATE") == sorted([("Q402", "1"), ("R431", "2")]), f"RP_EN_GATE members {members('RP_EN_GATE')}")
-    two_pin("R429", "1k", "+3V3", "RP_EN_N")
+    two_pin("R429", "1k", "+3V3", "RP_EN_OD")
     two_pin("R426", "1k", "X4_GP24_EN", "RP_EN_SENSE")
     check(members("RP_EN_SENSE") == sorted([("U405", "3"), ("R426", "2")]), f"RP_EN_SENSE members {members('RP_EN_SENSE')}")
     two_pin("R427", "6.34k", "X4_3V3_REF", "RP_EN_REF")
@@ -149,7 +159,7 @@ def main(path):
     check(sorted(refs("X4_GP24_EN")) == ["J401", "R426", "R430", "R431"], f"X4_GP24_EN members {members('X4_GP24_EN')}")
     # domain crossing: the X4-side enable nets reach the carrier's /OE node only through MOSFET gates
     x4_side = {"X4_3V3_REF", "X4_GP24_EN", "RP_EN_SENSE", "RP_EN_REF", "RP_EN_CMP", "RP_EN_GATE"}
-    oe_side = {"RP_EN_N", "RP_EN_MID"}
+    oe_side = {"RP_EN_N", "RP_EN_OD", "RP_EN_MID"}
     pins_of = {}
     for (r, p) in pin_net:
         pins_of.setdefault(r, set()).add(p)
@@ -187,20 +197,20 @@ def main(path):
     check([r for r, _ in members("X4_3V3_REF") if r.startswith("R")] == ["R427"],
           "the only resistor on X4_3V3_REF is the reference divider R427 (3.3 V / 106.34 k = 31 uA; ER-3)")
 
-    # ---------------- decoupling: one 100 nF per supply pin (translators: VCCA and VCCB; U405: VCC)
+    # ---------------- decoupling: one 100 nF per supply pin (translators: VCCA and VCCB; U405, U406: VCC)
     caps = sorted(r for r in comps if re.match(r"C4\d\d$", r))
-    check(caps == [f"C{401 + i}" for i in range(9)], f"sheet-4 capacitors {caps}")
+    check(caps == [f"C{401 + i}" for i in range(10)], f"sheet-4 capacitors {caps}")
     n_a = sum(1 for r in caps if {net_of(r, "1"), net_of(r, "2")} == {"+3V3", "GND"})
     n_b = sum(1 for r in caps if {net_of(r, "1"), net_of(r, "2")} == {"X4_3V3_REF", "GND"})
-    check(n_a == 4 and n_b == 5, f"decoupling: {n_a} on +3V3, {n_b} on X4_3V3_REF (want 4, 5)")
+    check(n_a == 5 and n_b == 5, f"decoupling: {n_a} on +3V3, {n_b} on X4_3V3_REF (want 5, 5)")
 
     # ---------------- test points and parts list
     for ref, net in (("TP401", "RP_SCK"), ("TP402", "RP_MISO"), ("TP403", "RP_CS_N"), ("TP404", "RP_ATTN"),
                      ("TP405", "X4_3V3_REF"), ("TP406", "GND"), ("TP407", "RP_EN_N"), ("TP408", "RP_EN_CMP")):
         check(net_of(ref, "1") == net, f"{ref} on {net}, got {net_of(ref, '1')}")
-    known = ({"J401", "U401", "U402", "U403", "U404", "U405", "Q401", "Q402"} |
+    known = ({"J401", "U401", "U402", "U403", "U404", "U405", "U406", "Q401", "Q402"} |
              {f"R{n}" for n in range(401, 432) if n not in (416, 417, 424)} |
-             {f"C{n}" for n in range(401, 410)} | {f"TP{n}" for n in range(401, 409)})
+             {f"C{n}" for n in range(401, 411)} | {f"TP{n}" for n in range(401, 409)})
     present = {r for r in comps if re.match(r"[A-Z]+4\d\d$", r)}
     check(present == known, f"sheet-4 parts: missing {sorted(known - present)}, unexpected {sorted(present - known)}")
     print(f"{checks} checks, {fails} failures")
