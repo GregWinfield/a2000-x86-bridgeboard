@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from kisch import (FP_VERSION, GEN_VERSION, LIB, PROJECT, Pin, Schematic, StdSymbol, SymbolDef, U, f, q,
                    write_symbol_lib)
 from sheet2 import build_sheet2, sym_ecs2520mv, sym_lcmxo2
+from sheet4 import build_sheet4, sym_avc4t774
 
 KICAD_SYM = Path(r"C:\Program Files\KiCad\10.0\share\kicad\symbols")
 DATE = "2026-11-18"
@@ -27,6 +28,7 @@ DATE3 = "2026-11-19"
 REV3 = "A (draft)"
 DATE2 = "2026-11-19"
 REV2 = "A1"
+REV4 = "A (draft)"
 COMPANY = "A2000 x86 Bridgeboard project"
 LICENCE = "CERN-OHL-S-2.0"
 
@@ -927,7 +929,7 @@ def build_placeholder(n, root_uuid, sheet_uuid, title):
     return sch
 
 
-def build_root(root_uuid, sheet_uuids, sheet1_pins, std, syms, sheet3_pins, sheet2_pins):
+def build_root(root_uuid, sheet_uuids, sheet1_pins, std, syms, sheet3_pins, sheet2_pins, sheet4_pins=()):
     sch = Schematic("root", "A2", "A2000 x86 Bridgeboard: top level", REV, DATE2,
                     ["Zorro II bridgeboard carrying a removable x86 SBC (Rev 1: Radxa X4).",
                      "Hierarchy follows the brief: sheets 1-6. Sheets 1, 2 and 3 are drawn (Stages 2-3).",
@@ -981,9 +983,13 @@ def build_root(root_uuid, sheet_uuids, sheet1_pins, std, syms, sheet3_pins, shee
         p2.append(pin_txt("root/pin2/", name, shape, x2, py, "left"))
         sch.wire((x2, py), (x2 - 7.62, py))
         sch.label(name, (x2 - 7.62, py), "left")
+    s4names = {n for n, _ in sheet4_pins}
     for i, (name, shape) in enumerate(right):
         py = y2 + 2.54 * (i + 1)
         p2.append(pin_txt("root/pin2/", name, shape, x2 + w2, py, "right"))
+        if name in s4names:                               # host link and JTAG: joined to sheet 4
+            sch.wire((x2 + w2, py), (x2 + w2 + 7.62, py))
+            sch.label(name, (x2 + w2 + 7.62, py), "right")
     sch.raw(sheet_block(2, SHEETS[1][1], SHEETS[1][2], x2, y2, w2, h2, "\n".join(p2) + "\n"))
     # sheet 3 (right), pins on its left edge
     x3, y3, w3 = 304.8, 30.48, 45.72
@@ -995,8 +1001,24 @@ def build_root(root_uuid, sheet_uuids, sheet1_pins, std, syms, sheet3_pins, shee
         sch.wire((x3, py), (x3 - 7.62, py))
         sch.label(name, (x3 - 7.62, py), "left")
     sch.raw(sheet_block(3, SHEETS[2][1], SHEETS[2][2], x3, y3, w3, h3, "\n".join(p3) + "\n"))
-    for k, (n, fname, title) in enumerate([t for t in SHEETS if t[0] >= 4]):
-        sch.raw(sheet_block(n, fname, title, 381.0, 30.48 + 30.48 * k, 106.68, 20.32))
+    # sheet 4: pins shared with sheet 2 on the left (labels), sheet-6 pins on the right (open until drawn)
+    s2names = {n for n, _ in sheet2_pins}
+    l4 = sorted([t for t in sheet4_pins if t[0] in s2names])
+    r4 = sorted([t for t in sheet4_pins if t[0] not in s2names])
+    x4, y4, w4 = 381.0, 30.48, 60.96
+    h4 = 2.54 * (max(len(l4), len(r4), 1) + 2)
+    p4 = []
+    for i, (name, shape) in enumerate(l4):
+        py = y4 + 2.54 * (i + 1)
+        p4.append(pin_txt("root/pin4/", name, shape, x4, py, "left"))
+        sch.wire((x4, py), (x4 - 7.62, py))
+        sch.label(name, (x4 - 7.62, py), "left")
+    for i, (name, shape) in enumerate(r4):
+        py = y4 + 2.54 * (i + 1)
+        p4.append(pin_txt("root/pin4/", name, shape, x4 + w4, py, "right"))
+    sch.raw(sheet_block(4, SHEETS[3][1], SHEETS[3][2], x4, y4, w4, h4, "\n".join(p4) + "\n" if p4 else ""))
+    for k, (n, fname, title) in enumerate([t for t in SHEETS if t[0] >= 5]):
+        sch.raw(sheet_block(n, fname, title, 381.0, y4 + h4 + 20.32 + 30.48 * k, 106.68, 20.32))
     sch.text("Sheets 1, 2 and 3 are joined by net labels at every sheet pin. ZF_OVR_N and ZF_DTACK_N are not\n"
              "FPGA pins (owner decision C-17): no-connect here, held inactive by R106/R107 on sheet 1.\n"
              "Sheet-2 pins on its right edge belong to sheets 4-6 (not yet drawn) and are open until then;\n"
@@ -1013,7 +1035,7 @@ def main(repo: Path):
     syms = {"LVC16244": sym_lvc16244(), "LVCH16T245": sym_lvch16t245(), "LVC8T245": sym_lvc8t245(),
             "LVC07A": sym_lvc07a(), "LVC1G00": sym_lvc1g00(), "LVC32A": sym_lvc32a(), "TPS3808": sym_tps3808(),
             "ZORRO": sym_zorro(), "+5V_BUS": sym_power("+5V_BUS"), "IS61WV25616": sym_is61wv25616(),
-            "LCMXO2": sym_lcmxo2(), "ECS2520": sym_ecs2520mv()}
+            "LCMXO2": sym_lcmxo2(), "ECS2520": sym_ecs2520mv(), "AVC4T774": sym_avc4t774()}
     write_symbol_lib(kdir / "lib" / f"{LIB}.kicad_sym", list(syms.values()))
     write_zorro_footprint(kdir / "lib" / f"{LIB}.pretty" / "Zorro2_Edge_2x50_P2.54mm.kicad_mod")
     std = {"R": StdSymbol(KICAD_SYM / "Device.kicad_sym", "Device", "R"),
@@ -1025,7 +1047,8 @@ def main(repo: Path):
            "FLAG": StdSymbol(KICAD_SYM / "power.kicad_sym", "power", "PWR_FLAG"),
            "JP": StdSymbol(KICAD_SYM / "Jumper.kicad_sym", "Jumper", "Jumper_2_Open"),
            "CONN6": StdSymbol(KICAD_SYM / "Connector_Generic.kicad_sym", "Connector_Generic", "Conn_01x06"),
-           "FB": StdSymbol(KICAD_SYM / "Device.kicad_sym", "Device", "FerriteBead")}
+           "FB": StdSymbol(KICAD_SYM / "Device.kicad_sym", "Device", "FerriteBead"),
+           "CONN2x20": StdSymbol(KICAD_SYM / "Connector_Generic.kicad_sym", "Connector_Generic", "Conn_02x20_Odd_Even")}
     root_uuid = U("root")
     sheet_uuids = {n: U(f"sheetblock{n}") for n, _, _ in SHEETS}
     s1 = build_sheet1(repo, root_uuid, sheet_uuids[1], syms, std)
@@ -1056,10 +1079,17 @@ def main(repo: Path):
         if m.group(1) not in seen2:
             seen2.add(m.group(1))
             s2pins.append((m.group(1), m.group(2)))
+    s4 = build_sheet4(root_uuid, sheet_uuids[4], syms, std, (REV4, DATE2, COMPANY, LICENCE))
+    s4.write(kdir / "sheets" / SHEETS[3][1])
+    seen4, s4pins = set(), []
+    for m in re.finditer(r'\(hierarchical_label "([^"]+)"\n\t\t\(shape (\w+)\)', "\n".join(s4.items)):
+        if m.group(1) not in seen4:
+            seen4.add(m.group(1))
+            s4pins.append((m.group(1), m.group(2)))
     for n, fname, title in SHEETS[1:]:
-        if n not in (2, 3):
+        if n not in (2, 3, 4):
             build_placeholder(n, root_uuid, sheet_uuids[n], title).write(kdir / "sheets" / fname)
-    root = build_root(root_uuid, sheet_uuids, s1pins, std, syms, s3pins, s2pins)
+    root = build_root(root_uuid, sheet_uuids, s1pins, std, syms, s3pins, s2pins, s4pins)
     root.write(kdir / f"{PROJECT}.kicad_sch", "\t(sheet_instances\n\t\t(path \"/\"\n\t\t\t(page \"1\")\n\t\t)\n\t)")
     (kdir / "sym-lib-table").write_text(
         f"(sym_lib_table\n\t(version 7)\n\t(lib (name \"{LIB}\") (type \"KiCad\") (uri \"${{KIPRJMOD}}/lib/{LIB}.kicad_sym\") "
@@ -1076,6 +1106,7 @@ def main(repo: Path):
     print("placed symbols on sheet 1:", len(s1.placed))
     print("sheet-3 interface pins:", len(s3pins), "placed symbols on sheet 3:", len(s3.placed))
     print("sheet-2 interface pins:", len(s2pins), "placed symbols on sheet 2:", len(s2.placed), "spare FPGA pins:", spare2)
+    print("sheet-4 interface pins:", len(s4pins), "placed symbols on sheet 4:", len(s4.placed))
 
 
 if __name__ == "__main__":
