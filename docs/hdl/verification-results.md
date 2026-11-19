@@ -209,5 +209,17 @@ Details: [../stage2/sheet4-design-notes.md](../stage2/sheet4-design-notes.md) §
 | No RTL, LPF or pin change | Full `run_checks.sh` on this tree | **ALL HDL CHECKS PASSED** (39 testbench runs, 9 formal tasks) |
 | S4-6 rev A2: TLV3201 + Q401/Q402, threshold 0.940, R424 removed | `audit_sheet4.py`; mutation test; ERC | **213 checks, 0 failures**; **25 of 25** injected faults detected (new: R424 path re-created, Q402 bypassed, Q402 gate on the comparator, Q401 swapped, a resistor across the domains, rev A1 values, TLV7021 fitted); 51 ERC entries, identical to rev A1 apart from coordinates |
 | Other sheets | `audit_sheet1/2/3.py`; netlist comparison with rev A1 | 418 / 1103 / 159 checks, 0 failures (sheet 2: +3 checks for the new net names); every pin outside sheet 4 on the same net as in rev A1 |
-| S4-6 worst-case analysis | `tools/analysis/k4_transient.py` (closed form, cross-checked by a 1 ns time-stepped simulation to 1 mV) | Rev A1: within VIH max only to ≈ 18 V/ms on typical delays, so its claim is withdrawn. Rev A2: ≤ 160 ns latency from datasheet maxima; **guaranteed within VIH max to 314 V/ms and within the absolute maximum to 1564 V/ms**. X4 worst case ≤ 94 V/ms [E]. R424 path quantified (≤ 27 µA at the trip, up to 0.29 mA, released GP24 held at 2.67–2.83 V) ([../stage2/sheet4-s46-isolation.md](../stage2/sheet4-s46-isolation.md)) |
+| S4-6 worst-case analysis | `tools/analysis/k4_transient.py` (closed form, cross-checked by a 1 ns time-stepped simulation to 1 mV) | Rev A1: within VIH max only to ≈ 18 V/ms on typical delays, so its claim is withdrawn. Rev A2: ≤ 160 ns latency from datasheet maxima; within VIH max to 314 V/ms and within the absolute maximum to 1564 V/ms (*model-derived bounds, relabelled after the owner's review of rev A2*). X4 worst case ≤ 94 V/ms [E]. R424 path quantified (≤ 27 µA at the trip, up to 0.29 mA, released GP24 held at 2.67–2.83 V) ([../stage2/sheet4-s46-isolation.md](../stage2/sheet4-s46-isolation.md)) |
 | Not verifiable here | – | Hardware M-16 (a–f): trip point, latency, K4 slope and pin levels, defaults, idle state, noise. Open |
+
+### 5.11 Sheet 4 revision A3 (owner review of rev A2), 2026-11-19
+
+| Change | Check | Result |
+|---|---|---|
+| No RTL, LPF or pin change | – | `hdl/` identical to the rev A2 tree, on which `run_checks.sh` passed (§5.10) |
+| U406 SN74AUP1G17 at U402 /OE, C410; R429 and Q401's drain on RP_EN_OD | `audit_sheet4.py`; mutation test; ERC | **220 checks, 0 failures**; **29 of 29** injected faults detected (new: U406 bypassed, U406 on the X4 rail, R429 on /OE, C410 moved); 51 ERC entries, identical to rev A2 apart from coordinates |
+| Other sheets | `audit_sheet1/2/3.py`; netlist comparison | 418 / 1105 / 159 checks, 0 failures (sheet 2: +2 for the new net names); every pin outside sheet 4 on the same net as before |
+| Model-derived bounds (residual 2) | `tools/analysis/k4_transient.py` §5b | ≤ 190 ns latency; within VIH max to 264 V/ms and within the absolute maximum to 1317 V/ms. Model-derived (datasheet maxima plus stated estimates), not manufacturer guarantees; the time-stepped check agrees to 1 mV |
+| /OE edge options (residual 1) | `k4_transient.py` §9 | Rev A2 37 ns/V; R429 330 Ω 12 ns/V; PMOS ~1–7 ns/V [E]; U406 ≈ 0.8 ns/V [E] (drawn) |
+| GP24 HIGH-level margin (residual 3) | `k4_transient.py` §10 | ≥ 0.126 V worst case at the FW-1 drive (≥ 0.117 V at 2 mA); 0.186 V representative; dynamic contributors estimated |
+| Not verifiable here | – | M-16 (a)–(g), required before manufacturing approval. Open |

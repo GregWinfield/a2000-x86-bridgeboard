@@ -162,7 +162,7 @@ Header mapping: [V S1 sh.21], matches [V S5]. RP2040 alternate functions: [K S41
 | 19 | GP11 (SPI1 TX) | **MOSI** | `X4_GP11_MOSI` → U401 → `RP_MOSI`; R420 100k to GND | RP2040 → FPGA |
 | 20 | GND | GND | GND | – |
 | 21 | GP8 (SPI1 RX) | **MISO** | `X4_GP8_MISO` ← R411 ← U402 ← `RP_MISO` | FPGA → RP2040 |
-| 22 | GP24 | **U402 output-enable sense** (S4-6 rev A2); firmware drives it high | `X4_GP24_EN` → R426 → U405 IN+; R431 → Q402 gate; R430 100k to GND. No source on the carrier | RP2040 → carrier |
+| 22 | GP24 | **U402 output-enable sense** (S4-6 rev A3); firmware drives it high | `X4_GP24_EN` → R426 → U405 IN+; R431 → Q402 gate; R430 100k to GND. No source on the carrier | RP2040 → carrier |
 | 23 | GP10 (SPI1 SCK) | **SCK** | `X4_GP10_SCK` → U401 → `RP_SCK` (FPGA pin 5, S4-3); R418 100k to GND | RP2040 → FPGA |
 | 24 | GP9 (SPI1 CSn) | **CS_N** (GPIO, S4-2) | `X4_GP9_CS_N` → U401 → `RP_CS_N`; R419 100k to GND | RP2040 → FPGA |
 | 25 | GND | GND | GND | – |
@@ -188,11 +188,11 @@ Not on the header: GP0/GP1 go to the N100's UART1 (R314/R315 0 Ω); GP23 also ha
 
 **Translator allocation, sheet 4 revision A** (4× SN74AVC4T774, A side = `+3V3`; [stage2/sheet4-design-notes.md](stage2/sheet4-design-notes.md) §6):
 - **U401:** SCK, CS_N, MOSI (B→A); B side `X4_3V3_REF`.
-- **U402:** IRQ_N, ATTN, MISO, TDO, every FPGA → RP2040 signal (A→B); B side `X4_3V3_REF`. **/OE (S4-6 rev A2)** is pulled low only through Q401 and Q402 in series:
-  - Q401 is switched by comparator U405 (TLV3201: GP24 above 0.940 × `X4_3V3_REF`, guaranteed tPD);
+- **U402:** IRQ_N, ATTN, MISO, TDO, every FPGA → RP2040 signal (A→B); B side `X4_3V3_REF`. **/OE (S4-6 rev A3)** is driven by Schmitt-trigger buffer U406 from a node pulled low only through Q401 and Q402 in series:
+  - Q401 is switched by comparator U405 (TLV3201: GP24 above 0.940 × `X4_3V3_REF`, datasheet-maximum tPD);
   - Q402 is switched by GP24 itself.
 
-  The X4 can switch the RP2040's I/O supply off while its header 3.3 V stays up [V S1 sh.21]. The outputs are then Hi-Z within 160 ns of that supply falling below the threshold. They stay within IOVDD + 0.3 V for discharge rates ≤ 314 V/ms ([stage2/sheet4-s46-isolation.md](stage2/sheet4-s46-isolation.md)).
+  The X4 can switch the RP2040's I/O supply off while its header 3.3 V stays up [V S1 sh.21]. The outputs are then Hi-Z within 190 ns of that supply falling below the threshold. By the model they stay within IOVDD + 0.3 V for discharge rates ≤ 264 V/ms (a model-derived bound, qualified by M-16) ([stage2/sheet4-s46-isolation.md](stage2/sheet4-s46-isolation.md)).
 - **U403 (JTAG option):** TCK, TMS, TDI (B→A); B side `X4_3V3_REF`. /OE comes from a DIP switch (sheet 6), so the external JTAG header has priority when the switch is off.
 - **U404:** the four RP2040 LEDs (B→A); B side `X4_3V3_REF` (C-26).
 - Every RP2040 → carrier input has a 100 kΩ B-side pull-down. *Superseded allocation (proposal): U_a carried MISO and U_c carried TDO, all B sides on `X4_3V3_REF`.*
