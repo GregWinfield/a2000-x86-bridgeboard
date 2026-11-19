@@ -13,6 +13,13 @@
 //   S9  FPGA reconfiguration during a host write (characterisation: no contention, other words kept)
 //   S10 watchdog and /BERR on SRAM cycles; S11 zero-wait mode on SRAM (characterisation, G-ZEROWAIT)
 //   S12 canonical byte order: cross-endian vectors V1-V4, V6 through both ports
+`ifdef HOST_BFM
+`define HOST c.dut.u_host
+`define HOST_ABORT begin c.dut.u_host.h_req = 1'b0; c.dut.u_host.busy = 1'b0; end
+`else
+`define HOST c.spi
+`define HOST_ABORT c.spi.abort
+`endif
 `timescale 1ns/1ps
 module tb_shm;
     parameter integer SEED = 1;
@@ -73,7 +80,7 @@ module tb_shm;
         .Z_E7M(clk7), .Z_CFGIN_N(Z_CFGIN_N), .Z_BUSRST_N(Z_BUSRST_N), .Z_BERR_N(Z_BERR_N),
         .Z_D(Z_D), .Z_SLAVE_N(Z_SLAVE_N), .Z_CFGOUT_N(Z_CFGOUT_N), .Z_XRDY(Z_XRDY),
         .Z_INT2_N(Z_INT2_N), .Z_INT6_N(Z_INT6_N),
-        .clk_core(clk), .pwr3(pwr3), .pwr5(pwr5), .jumper(jumper), .fpga_cfg(fpga_cfg),
+        .clk_core(clk), .pwr3(pwr3), .pwr5(pwr5), .jumper(jumper), .fpga_cfg(fpga_cfg), .x4_on(1'b1),
         .dip_mode_b(dip_mode_b), .dip_int6(dip_int6), .dip_disable(dip_disable),
         .d_drv(d_drv), .ld_conflict(ld_conflict), .card_en_n(card_en_n), .en_ok(en_ok),
         .rp_irq_n(rp_irq_n), .sram_drv(sram_drv));
@@ -156,11 +163,11 @@ module tb_shm;
     task wr8;  input [23:0] a; input [7:0] d;   begin bus(1, a, a[0] ? 2'b01 : 2'b10, {d, d}); end endtask
     task tas8; input [23:0] a;                  begin bus(2, a, a[0] ? 2'b01 : 2'b10, 16'h0); end endtask
 
-    task hreg_wr; input [3:0] i; input [15:0] d; reg [15:0] x; begin c.dut.u_host.xfer(1'b1, 1'b1, {14'd0, i}, 2'b11, d, x); end endtask
-    task hreg_wr8; input [3:0] i; input [15:0] d; reg [15:0] x; begin c.dut.u_host.xfer(1'b1, 1'b1, {14'd0, i}, 2'b01, d, x); end endtask
-    task hreg_rd; input [3:0] i; output [15:0] d; begin c.dut.u_host.xfer(1'b1, 1'b0, {14'd0, i}, 2'b11, 16'h0, d); end endtask
-    task hmem_wr; input [17:0] a; input [15:0] d; input [1:0] be; reg [15:0] x; begin c.dut.u_host.xfer(1'b0, 1'b1, a, be, d, x); end endtask
-    task hmem_rd; input [17:0] a; output [15:0] d; begin c.dut.u_host.xfer(1'b0, 1'b0, a, 2'b11, 16'h0, d); end endtask
+    task hreg_wr; input [3:0] i; input [15:0] d; reg [15:0] x; begin `HOST.xfer(1'b1, 1'b1, {14'd0, i}, 2'b11, d, x); end endtask
+    task hreg_wr8; input [3:0] i; input [15:0] d; reg [15:0] x; begin `HOST.xfer(1'b1, 1'b1, {14'd0, i}, 2'b01, d, x); end endtask
+    task hreg_rd; input [3:0] i; output [15:0] d; begin `HOST.xfer(1'b1, 1'b0, {14'd0, i}, 2'b11, 16'h0, d); end endtask
+    task hmem_wr; input [17:0] a; input [15:0] d; input [1:0] be; reg [15:0] x; begin `HOST.xfer(1'b0, 1'b1, a, be, d, x); end endtask
+    task hmem_rd; input [17:0] a; output [15:0] d; begin `HOST.xfer(1'b0, 1'b0, a, 2'b11, 16'h0, d); end endtask
 
     task zorro_reset;
         input real len;
@@ -189,7 +196,7 @@ module tb_shm;
     integer i, k, r1, r2;
     reg [17:0] wa;
     initial begin
-        m.seed = SEED; tseed = SEED * 17 + 3; c.dut.u_host.seed = SEED * 7 + 1;
+        m.seed = SEED; tseed = SEED * 17 + 3; `HOST.seed = SEED * 7 + 1;
         $display("tb_shm: SEED=%0d", SEED);
         // ---------------- power-up, arm, configure (mode A at $E90000)
         #(100.0); pwr5 = 1'b1; #(300.0); pwr3 = 1'b1; #(1200.0); fpga_cfg = 1'b1;
@@ -227,7 +234,7 @@ module tb_shm;
         for (r1 = 0; r1 < 2; r1 = r1 + 1) begin
             rd_lat_min = 99; rd_lat_max = -1; wr_lat_min = 99; wr_lat_max = -1; n_rd = 0; n_wr = 0;
             sl_min = 1.0e9; sl_max = 0.0;
-            c.dut.u_host.bg_base = 18'h30000; c.dut.u_host.bg_gap = 2; c.dut.u_host.bg_en = (r1 == 1);
+            `HOST.bg_base = 18'h30000; `HOST.bg_gap = 2; `HOST.bg_en = (r1 == 1);
             det_on = 1'b1;
             for (i = 0; i < 120; i = i + 1) begin
                 wa = 24'h2000 + (($random(tseed) & 24'h3FFE));
@@ -236,7 +243,7 @@ module tb_shm;
                 #($random(tseed) & 63);                                // vary the phase against clk
             end
             det_on = 1'b0;
-            c.dut.u_host.bg_en = 1'b0; wait (c.dut.u_host.busy == 1'b0);
+            `HOST.bg_en = 1'b0; wait (`HOST.busy == 1'b0);
             $display("S3 host traffic %s: SRAM read action at START+[%0d..%0d] clocks (%0d reads), write action at DS+[%0d..%0d] (%0d writes); slot /AS->XRDY %0.1f..%0.1f ns",
                      r1 ? "ON " : "OFF", rd_lat_min, rd_lat_max, n_rd, wr_lat_min, wr_lat_max, n_wr, sl_min, sl_max);
             checks = checks + 1;
@@ -245,7 +252,7 @@ module tb_shm;
             if (r1 == 0) begin r2 = rd_lat_min * 100 + wr_lat_min; end
             else if (r2 != rd_lat_min * 100 + wr_lat_min) fail("S3 host traffic changed the Zorro timing");
         end
-        $display("S3 host transfers during the ON run: %0d (max latency %0.1f ns)", c.dut.u_host.n_sram, c.dut.u_host.max_lat);
+        $display("S3 host transfers during the ON run: %0d (max latency %0.1f ns)", `HOST.n_sram, `HOST.max_lat);
 
         // ---------------- S4 RMW (TAS) on SRAM, host hammering the same word
         wr16(B + 24'h1400, 16'h2B4C);
@@ -352,7 +359,7 @@ module tb_shm;
 
         // ---------------- S8 FPGA reload: deselected while blank, contents kept
         hmem_wr(18'h01003, 16'h5AFE, 2'b11);
-        wait (c.dut.u_host.busy == 1'b0);
+        wait (`HOST.busy == 1'b0);
         fpga_cfg = 1'b0; #(500.0);
         expect1("S8 SRAM deselected while the FPGA is blank", c.SRAM_CE_N, 1'b1);
         expect1("S8 /WE held high while the FPGA is blank", c.SRAM_WE_N, 1'b1);
@@ -367,7 +374,7 @@ module tb_shm;
             begin hmem_wr(18'h01012, 16'h1212, 2'b11); end            // never acknowledged
             begin @(posedge c.dut.u_lbus.h_ld_oe); #(25.0); fpga_cfg = 1'b0; #(3000.0); disable s9; end
         join
-        c.dut.u_host.h_req = 1'b0; c.dut.u_host.busy = 1'b0;          // the transfer in flight was lost
+        `HOST_ABORT;          // the transfer in flight was lost
         fpga_cfg = 1'b1; #(2000.0);
         hmem_rd(18'h01010, d); expect16("S9 neighbour word kept (1)", d, 16'h1010);
         hmem_rd(18'h01011, d); expect16("S9 neighbour word kept (2)", d, 16'h1111);
@@ -424,9 +431,9 @@ module tb_shm;
         hmem_rd(18'h01799, d); expect16("S12 V6 low word second", d, 16'hBEEF);
 
         #(2000.0);
-        errors = errors + c.u301.errors + c.dut.u_host.errors;
+        errors = errors + c.u301.errors + `HOST.errors;
         $display("tb_shm: SRAM model writes %0d, read enables %0d, timing errors %0d; host transfers %0d SRAM, %0d registers",
-                 c.u301.writes, c.u301.reads, c.u301.errors, c.dut.u_host.n_sram, c.dut.u_host.n_reg);
+                 c.u301.writes, c.u301.reads, c.u301.errors, `HOST.n_sram, `HOST.n_reg);
         $display("TB_RESULT %s tb_shm SEED=%0d errors=%0d checks=%0d", (errors == 0) ? "PASS" : "FAIL", SEED, errors, checks);
         $finish;
     end

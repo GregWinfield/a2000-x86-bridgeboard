@@ -101,7 +101,7 @@ module tb_chain;
         .Z_E7M(clk7), .Z_CFGIN_N(CFGIN2_N), .Z_BUSRST_N(Z_BUSRST_N), .Z_BERR_N(Z_BERR_N),
         .Z_D(Z_D), .Z_SLAVE_N(SLAVE2_N), .Z_CFGOUT_N(CFGOUT2_N), .Z_XRDY(Z_XRDY),
         .Z_INT2_N(Z_INT2_N), .Z_INT6_N(Z_INT6_N),
-        .clk_core(clk), .pwr3(pwr3), .pwr5(pwr5), .jumper(jumper), .fpga_cfg(fpga_cfg),
+        .clk_core(clk), .pwr3(pwr3), .pwr5(pwr5), .jumper(jumper), .fpga_cfg(fpga_cfg), .x4_on(1'b1),
         .dip_mode_b(1'b0), .dip_int6(1'b0), .dip_disable(dip_disable),
         .d_drv(d_drv), .ld_conflict(ld_conflict), .card_en_n(card_en_n), .en_ok(en_ok));
     dummy_z2 #(.PRODUCT(8'h33)) s3 (.powered(p3b), .A(Z_A), .AS_N(Z_AS_N), .UDS_N(Z_UDS_N), .LDS_N(Z_LDS_N),

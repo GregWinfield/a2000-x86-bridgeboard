@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-// Host-port bus-functional model (testbench only). It has the same module name and ports as
-// rtl/z2_hostif_stub.v and replaces it in simulation. It stands for the sheet-4 SPI slave and
+// Host-port bus-functional model (testbench only), selected in z2_top with -DHOST_BFM in place of
+// the real sheet-4 SPI slave (rtl/z2_hostif.v). It stands for the SPI slave and
 // issues host transactions at the clk_core level, the worst case for the arbiter: requests at
 // any phase, back to back, with no SPI-rate limit.
 //   xfer(reg, we, addr, be, wdata, rdata)  one transaction (waits for any background transfer)
 //   background traffic: set bg_en = 1; random SRAM reads and writes in a private region
 //   [bg_base, bg_base + 4095] (word addresses), checked against a shadow copy.
 `timescale 1ns/1ps
-module z2_hostif (
+module z2_hostif_bfm (
     input  wire        clk,
     input  wire        por,
     output reg         h_req,

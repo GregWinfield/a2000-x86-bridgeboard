@@ -18,7 +18,7 @@ module z2_core #(
     parameter integer ZRES       = 4,           // reservation floor: no local-bus action while res_cnt < ZRES
     parameter integer SRAM_RD_WAIT = 2,         // SRAM read: clocks from the read start to the XRDY release
     parameter [7:0]   HW_REV     = 8'h0A,
-    parameter [7:0]   HDL_VER    = 8'h02,
+    parameter [7:0]   HDL_VER    = 8'h03,   // 03: sheet-4 host link (SPI slave)
     parameter [15:0]  MFR_ID     = 16'h07DB,    // prototype manufacturer ID 2011, TBV (R-18)
     parameter [7:0]   PRODUCT_ID = 8'h01,
     parameter [31:0]  SERIAL     = 32'h0000_0001
