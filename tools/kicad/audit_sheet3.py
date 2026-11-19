@@ -5,8 +5,9 @@ usage: python -I tools/kicad/audit_sheet3.py <netlist.net>
 
 Expected connections: the U301 pin table transcribed from the ISSI IS61/64WV25616EDBLL datasheet
 Rev. A2 (44-pin TSOP-II), the safe-state pull-ups, decoupling, test points, and the cross-sheet
-local bus (each LDn joins U103's A port on sheet 1 to U301's I/On). Every check prints FAIL on
-failure; exit code 1 on any failure.
+local bus (each LDn joins U103's A port on sheet 1 to U301's I/On). Since sheet 2 is drawn, every SA,
+SRAM_* and LD net also carries exactly one FPGA pin (U201; which pin is checked by audit_sheet2.py),
+and SA17 carries R208, the SN pull-up. Every check prints FAIL on failure; exit code 1 on any failure.
 """
 from __future__ import annotations
 
@@ -58,18 +59,25 @@ def main(path):
         check(u["value"] == "IS61WV25616EDBLL-10TLI", f"U301 value {u['value']}")
         check(u["footprint"] == "Package_SO:TSOP-II-44_10.16x18.41mm_P0.8mm", f"U301 footprint {u['footprint']}")
         check(u["fields"].get("MPN") == "IS61WV25616EDBLL-10TLI", "U301 MPN field")
+    def one_fpga(net):
+        f = [x for x in members(net) if x[0] == "U201"]
+        check(len(f) == 1, f"{net} has exactly one FPGA (U201) pin: {f}")
+
     for i, pin in U301_A.items():
         check(net_of("U301", pin) == f"SA{i}", f"U301.{pin} (A{i}) on SA{i}, got {net_of('U301', pin)}")
-        want = [("U301", pin)] + ([("TP304", "1")] if i == 0 else [])
-        check(members(f"SA{i}") == sorted(want), f"SA{i} members {members(f'SA{i}')}")
+        want = [("U301", pin)] + ([("TP304", "1")] if i == 0 else []) + ([("R208", "2")] if i == 17 else [])
+        check(sorted(x for x in members(f"SA{i}") if x[0] != "U201") == sorted(want), f"SA{i} members {members(f'SA{i}')}")
+        one_fpga(f"SA{i}")
     for i, pin in U301_IO.items():
         check(net_of("U301", pin) == f"LD{i}", f"U301.{pin} (I/O{i}) on LD{i}, got {net_of('U301', pin)}")
         m = members(f"LD{i}")
         check(("U103", str(U103_A[i])) in m, f"LD{i} joins U103.{U103_A[i]} (A port, sheet 1): {m}")
-        extra = [x for x in m if x not in (("U301", pin), ("U103", str(U103_A[i])), ("TP305", "1"))]
+        extra = [x for x in m if x not in (("U301", pin), ("U103", str(U103_A[i])), ("TP305", "1")) and x[0] != "U201"]
         check(not extra, f"LD{i} unexpected members {extra}")
+        one_fpga(f"LD{i}")
     for pin, net in U301_CTL.items():
         check(net_of("U301", pin) == net, f"U301.{pin} on {net}, got {net_of('U301', pin)}")
+        one_fpga(net)
     for pin in ("11", "33"):
         check(net_of("U301", pin) == "+3V3", f"U301.{pin} VDD on +3V3")
     for pin in ("12", "34"):
