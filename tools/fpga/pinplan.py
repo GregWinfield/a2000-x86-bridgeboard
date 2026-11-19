@@ -14,7 +14,9 @@ Rules checked here (sheet-3 notes section 8.1, Hardware Checklist FPGA-TN-02154,
   * clk_core on a PCLK input; I2C on the primary I2C pins (SCL/SDA);
   * every pad used at most once; every signal placed in the bank the plan names;
   * fallback (owner decision C-17): on the LCMXO2-4000HC TQFP144 every assigned pin is an I/O pad in the
-    same bank, and the reserved, SN, clock and I2C functions sit on the same package pins.
+    same bank, and the reserved, SN, clock and I2C functions sit on the same package pins;
+  * freeze: no pin may differ from the G-SHEET2-approved assignment (tools/fpga/pins_gsheet2.csv) except
+    the deliberate changes listed in CHANGES, each with its owner decision.
 """
 from __future__ import annotations
 
@@ -24,6 +26,12 @@ import sys
 from pathlib import Path
 
 RESERVED = {"DONE", "INITN", "PROGRAMN", "JTAGENB", "TMS", "TCK", "TDI", "TDO"}
+
+# Deliberate changes since the G-SHEET2 approval (old signal: (new signal or None if removed, decision))
+CHANGES = {"LED[0]": ("LED_READY", "C-26: the one FPGA LED, renamed"),
+           "LED[1]": (None, "C-26 (option C-17b): FAULT LED moved to the RP2040; pin 67 freed")}
+# Pads kept free on purpose (not given to any signal by the automatic assignment)
+KEEP_FREE = {67: "freed by C-26 (option C-17b); spare"}
 
 # (signal, direction, bank, preferred pin or None, group). Order within a bank = pad order.
 PLAN = []
@@ -45,7 +53,7 @@ add("1", [f"ZB_A[{i}]" for i in range(1, 10)], "in", "Zorro inputs")
 # bank 2 (bottom): SRAM address/control (SN gets SA17, an output), LEDs, DIP switches
 add("2", ["SA[17]"], "out", "SRAM (sheet 3)", [70])                     # SN: output only
 add("2", [f"SA[{i}]" for i in range(0, 17)] + ["SRAM_CE_N", "SRAM_OE_N", "SRAM_WE_N", "SRAM_UB_N", "SRAM_LB_N"], "out", "SRAM (sheet 3)")
-add("2", ["LED[0]", "LED[1]"], "out", "LEDs (READY, FAULT)")
+add("2", ["LED_READY"], "out", "LED (READY; C-26: the other diagnostic LEDs are on the RP2040)")
 add("2", ["DIP_MODE_B", "DIP_INT6", "DIP_DISABLE"], "in", "DIP switches (sheet 6)")
 # banks 3 and 4 (left, lower): local data bus
 add("3", [f"LD[{i}]" for i in range(0, 8)], "bidir", "local bus LD (sheets 1, 3)")
@@ -96,7 +104,7 @@ def compute(repo: Path):
     """Assign every PLAN signal to a pad. Returns (assign {signal: pin}, usable pads, spare {bank: [pins]}, errors)."""
     pads = load_pads(repo / "tools/fpga/MachXO2-2000_TQFP144_pins.csv")
     usable = {p: v for p, v in pads.items() if not (set(re.split(r"[/ ]", v[2])) & RESERVED)}
-    free = {b: sorted(p for p, v in usable.items() if v[0] == b) for b in "012345"}
+    free = {b: sorted(p for p, v in usable.items() if v[0] == b and p not in KEEP_FREE) for b in "012345"}
     errors, assign = [], {}
     for name, direction, bank, pin, group in PLAN:       # fixed pins first
         if pin is not None:
@@ -126,7 +134,33 @@ def compute(repo: Path):
             errors.append("clk_core not on a PCLK pin")
     if len(set(assign.values())) != len(assign):
         errors.append("a pad is used twice")
+    for pin in KEEP_FREE:                             # kept-free pads are spare pads
+        free[usable[pin][0]] = sorted(free[usable[pin][0]] + [pin])
+    errors += freeze_check(repo, assign)
     return assign, usable, {b: free[b] for b in free if free[b]}, errors
+
+
+def freeze_check(repo: Path, assign):
+    """Differences from the G-SHEET2-approved assignment that CHANGES does not explain."""
+    import csv
+    rows = [r for r in csv.reader(open(repo / "tools/fpga/pins_gsheet2.csv", encoding="utf-8")) if r and not r[0].startswith("#")]
+    base = {r[0]: int(r[1]) for r in rows[1:]}
+    errs = []
+    expected = {}
+    for sig, pin in base.items():
+        new, _ = CHANGES.get(sig, (sig, ""))
+        if new is None:
+            if pin in assign.values():
+                errs.append(f"freeze: {sig} was removed, but its pin {pin} is used again")
+        else:
+            expected[new] = pin
+    for sig, pin in expected.items():
+        if assign.get(sig) != pin:
+            errs.append(f"freeze: {sig} on pin {assign.get(sig)}, approved pin {pin}")
+    for sig in assign:
+        if sig not in expected:
+            errs.append(f"freeze: {sig} is new since G-SHEET2 and not in CHANGES")
+    return errs
 
 
 def main(repo: Path):
@@ -166,7 +200,8 @@ def main(repo: Path):
           "", "- Every bank runs at VCCIO 3.3 V, and every port is LVCMOS33 (`z2_top.lpf`).",
           "- **Reserved, no signal:** PROGRAMN 119, INITN 110, DONE 109 (configuration, `SDM_PORT`); TMS 130, TCK 131, TDI 136, TDO 137 (JTAG); JTAGENB 120 (C-19).",
           f"- **Signals:** {n_sig}. **Spare pads:** {sum(len(v) for v in spare.values())} " + ", ".join(f"bank {b}: {', '.join(map(str, v))}" for b, v in spare.items()) + ".",
-          "- **Option C-17b** frees LED[1] (FAULT) as a third spare.",
+          "- **C-26 (option C-17b), owner approval 2026-11-19:** the FAULT LED moved to the RP2040, so pin 67 is spare. "
+          "Every other pin is unchanged from the G-SHEET2-approved assignment (`tools/fpga/pins_gsheet2.csv`; `pinplan.py` fails on any other difference).",
           "- **Fallback LCMXO2-4000HC-4TG144C** (owner decision C-17), checked against the MachXO2-4000 pinout rev 1.5 [V S63]:",
           "  every assigned pin is an I/O pad in the same bank, and PROGRAMN, INITN, DONE, JTAGENB, TMS, TCK, TDI, TDO, SN,",
           "  PCLKT0_1, SDA and SCL are the same package pins. The pad names differ (column *4000 pad*); the LPF uses pin numbers.",
