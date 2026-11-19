@@ -30,6 +30,10 @@ RESERVED = {"DONE", "INITN", "PROGRAMN", "JTAGENB", "TMS", "TCK", "TDI", "TDO"}
 # Deliberate changes since the G-SHEET2 approval (old signal: (new signal or None if removed, decision))
 CHANGES = {"LED[0]": ("LED_READY", "C-26: the one FPGA LED, renamed"),
            "LED[1]": (None, "C-26 (option C-17b): FAULT LED moved to the RP2040; pin 67 freed")}
+# Authorised pin moves since the G-SHEET2 approval (signal: (new pin, decision)). Each is an owner-approved
+# exception to the freeze; the freeze check accepts exactly these pins and nothing else.
+MOVES = {"RP_SCK": (5, "S4-3: SCK-clocked SPI slave needs a primary-clock input: PCLKT5_0"),
+         "RP_IRQ_N": (1, "S4-3: swapped with RP_SCK")}
 # Pads kept free on purpose (not given to any signal by the automatic assignment)
 KEEP_FREE = {67: "freed by C-26 (option C-17b); spare"}
 
@@ -59,7 +63,8 @@ add("2", ["DIP_MODE_B", "DIP_INT6", "DIP_DISABLE"], "in", "DIP switches (sheet 6
 add("3", [f"LD[{i}]" for i in range(0, 8)], "bidir", "local bus LD (sheets 1, 3)")
 add("4", [f"LD[{i}]" for i in range(8, 16)], "bidir", "local bus LD (sheets 1, 3)")
 # bank 5 (left, upper): RP2040 host link and the debug header
-add("5", ["RP_SCK", "RP_CS_N", "RP_MOSI", "RP_MISO", "RP_IRQ_N", "RP_ATTN"], "mixed", "host link (sheet 4)")
+add("5", ["RP_SCK", "RP_CS_N", "RP_MOSI", "RP_MISO", "RP_IRQ_N", "RP_ATTN"], "mixed", "host link (sheet 4)",
+    [5, 2, 3, 4, 1, 6])                                                      # S4-3: SCK on PCLKT5_0
 add("5", [f"DBG[{i}]" for i in range(4)], "bidir", "debug header (sheet 6)")
 
 Z2_TOP_PORTS_ABSENT = {"I2C_SDA", "I2C_SCL", "INA_ALERT_N", "X4_PWR_EN", "X4_PWR_FLT_N", "X4_S0_SENSE",
@@ -132,6 +137,8 @@ def compute(repo: Path):
             errors.append(f"{name} on SN must be an output")
         if name == "clk_core" and "PCLK" not in usable[p][2]:
             errors.append("clk_core not on a PCLK pin")
+        if name == "RP_SCK" and not usable[p][2].startswith("PCLKT"):
+            errors.append("RP_SCK (SPI slave clock, S4-1) not on a PCLKT pin")
     if len(set(assign.values())) != len(assign):
         errors.append("a pad is used twice")
     for pin in KEEP_FREE:                             # kept-free pads are spare pads
@@ -153,7 +160,7 @@ def freeze_check(repo: Path, assign):
             if pin in assign.values():
                 errs.append(f"freeze: {sig} was removed, but its pin {pin} is used again")
         else:
-            expected[new] = pin
+            expected[new] = MOVES.get(new, (pin, ""))[0]
     for sig, pin in expected.items():
         if assign.get(sig) != pin:
             errs.append(f"freeze: {sig} on pin {assign.get(sig)}, approved pin {pin}")
@@ -200,6 +207,8 @@ def main(repo: Path):
           "", "- Every bank runs at VCCIO 3.3 V, and every port is LVCMOS33 (`z2_top.lpf`).",
           "- **Reserved, no signal:** PROGRAMN 119, INITN 110, DONE 109 (configuration, `SDM_PORT`); TMS 130, TCK 131, TDI 136, TDO 137 (JTAG); JTAGENB 120 (C-19).",
           f"- **Signals:** {n_sig}. **Spare pads:** {sum(len(v) for v in spare.values())} " + ", ".join(f"bank {b}: {', '.join(map(str, v))}" for b, v in spare.items()) + ".",
+          "- **S4-3, owner approval 2026-11-19 (authorised exception to the freeze):** RP_SCK moved from pin 1 to pin 5 "
+          "(PCLKT5_0, primary-clock input for the SCK-clocked SPI slave); RP_IRQ_N moved from pin 5 to pin 1.",
           "- **C-26 (option C-17b), owner approval 2026-11-19:** the FAULT LED moved to the RP2040, so pin 67 is spare. "
           "Every other pin is unchanged from the G-SHEET2-approved assignment (`tools/fpga/pins_gsheet2.csv`; `pinplan.py` fails on any other difference).",
           "- **Fallback LCMXO2-4000HC-4TG144C** (owner decision C-17), checked against the MachXO2-4000 pinout rev 1.5 [V S63]:",
