@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Lattice preference file for z2_top, LCMXO2-2000HC-4TG144C (Diamond). Gate G-STA (C-01).
+# Lattice preference file for z2_top, LCMXO2-4000HC-4TG144C since C-30 (Diamond). Gate G-STA (C-01).
 # The 18 ns MAXDELAY values are the sheet-1 ALLOCATION for the FPGA pin-to-pin share of the
 # 35 ns /SLAVEn budget (docs/stage2/sheet1-timing-budget.md). They are requirements to be
 # proven by post-place-and-route analysis, not proven values.

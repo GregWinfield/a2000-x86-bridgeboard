@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 """Sheet 2 (FPGA and configuration) for tools/kicad/gen_project.py.
 
-The FPGA symbol is generated from the Lattice MachXO2-2000 pinout file (tools/fpga/, S63), and every
+The FPGA symbol is generated from the Lattice MachXO2-4000 pinout file (tools/fpga/, S63; C-30), and every
 signal pin comes from the pin plan in tools/fpga/pinplan.py, so the schematic, the LPF LOCATEs and
 docs/stage2/sheet2-pin-assignment.md cannot disagree. Configuration and decoupling follow the
 MachXO2 Hardware Checklist FPGA-TN-02154-2.2 (S64); the oscillator follows the ECS-2520MV data sheet.
@@ -18,8 +18,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "fpga"))
 from kisch import Pin, Schematic, SymbolDef      # noqa: E402
 import pinplan                                    # noqa: E402
 
-CSV = Path(__file__).resolve().parents[1] / "fpga" / "MachXO2-2000_TQFP144_pins.csv"
-CSV4000 = Path(__file__).resolve().parents[1] / "fpga" / "MachXO2-4000_TQFP144_pins.csv"
+CSV = Path(__file__).resolve().parents[1] / "fpga" / "MachXO2-4000_TQFP144_pins.csv"      # C-30: the Rev 1 device
+CSV2000 = Path(__file__).resolve().parents[1] / "fpga" / "MachXO2-2000_TQFP144_pins.csv"  # G-SHEET2 basis
 CONFIG_PINS = {"DONE": "FPGA_DONE", "INITN": "FPGA_INITN", "PROGRAMN": "FPGA_PROGRAMN", "JTAGENB": "FPGA_JTAGENB",
                "TMS": "FPGA_TMS", "TCK": "FPGA_TCK", "TDI": "FPGA_TDI", "TDO": "FPGA_TDO"}
 UNITS = {1: ["0"], 2: ["1"], 3: ["2"], 4: ["3", "4", "5"]}        # unit 5 = power
@@ -84,11 +84,11 @@ def sym_lcmxo2():
     rects = {u: [(-15.24, 38.1, 15.24, -35.56)] for u in (1, 2, 3, 4)}
     rects[5] = [(-15.24, 20.32, 15.24, -20.32)]
     return SymbolDef(
-        "LCMXO2-2000HC-TG144", "U", "LCMXO2-2000HC-4TG144C", "Package_QFP:TQFP-144_20x20mm_P0.5mm",
+        "LCMXO2-4000HC-TG144", "U", "LCMXO2-4000HC-4TG144C", "Package_QFP:TQFP-144_20x20mm_P0.5mm",
         "https://www.latticesemi.com/view_document?document_id=38834",
-        "Lattice MachXO2-2000HC FPGA, TQFP-144. Units: A bank 0, B bank 1, C bank 2, D banks 3-5, E power. "
-        "Pins from the Lattice MachXO2-2000 Pinout rev 1.2 (document 42568)",
-        pins, rects=rects, units=5, extra_props={"Manufacturer": "Lattice Semiconductor", "MPN": "LCMXO2-2000HC-4TG144C"},
+        "Lattice MachXO2-4000HC FPGA, TQFP-144. Units: A bank 0, B bank 1, C bank 2, D banks 3-5, E power. "
+        "Pins from the Lattice MachXO2-4000 Pinout rev 1.5 (document 42571)",
+        pins, rects=rects, units=5, extra_props={"Manufacturer": "Lattice Semiconductor", "MPN": "LCMXO2-4000HC-4TG144C"},
         keywords="fpga lattice machxo2 tqfp144", ref_at=(-15.24, 40.0), value_at=(-15.24, -38.0))
 
 
@@ -107,9 +107,9 @@ def sym_ecs2520mv():
 def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts):
     REV2, DATE2, COMPANY, LICENCE = consts
     sch = Schematic("sheet2", "A2", "FPGA and configuration", REV2, DATE2,
-                    ["Sheet 2 of 6, rev A1. G-SHEET2 approved for design progression; NOT VALIDATED",
-                     "LCMXO2-2000HC-4TG144C: 101 signals, 3 spare (C-17, C-26); 4000HC pin-compatible",
-                     "Pins: tools/fpga/pinplan.py, Lattice pinout rev 1.2; FPGA-TN-02154-2.2",
+                    ["Sheet 2 of 6, rev A2 (C-30). G-SHEET2 approved for design progression; NOT VALIDATED",
+                     "LCMXO2-4000HC-4TG144C (C-30): 101 signals, 6 spare; G-SHEET2 pins unchanged",
+                     "Pins: tools/fpga/pinplan.py, Lattice 4000 pinout rev 1.5; FPGA-TN-02154-2.2",
                      f"Licence: {LICENCE}. See docs/stage2/sheet2-design-notes.md"],
                     COMPANY, f"/{root_uuid}/{sheet_uuid}")
     R, C, TP = std["R"], std["C"], std["TP"]
@@ -130,7 +130,7 @@ def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts)
     # ---------------- I/O units
     positions = {1: (76.2, 76.2), 2: (76.2, 190.5), 3: (76.2, 304.8), 4: (203.2, 76.2)}
     for unit, (ux, uy) in positions.items():
-        u = sch.place(fp, "U201", "LCMXO2-2000HC-4TG144C", ux, uy, 0, unit=unit,
+        u = sch.place(fp, "U201", "LCMXO2-4000HC-4TG144C", ux, uy, 0, unit=unit,
                       ref_at=(ux - 15.24, uy - 40.0), val_at=(ux - 15.24, uy + 38.5))
         for p_ in [p for p in fp.pins if p.unit == unit]:
             pn = int(p_.num)
@@ -156,7 +156,7 @@ def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts)
                 spare.append(pn)
     # ---------------- power unit
     ux, uy = 203.2, 228.6
-    u = sch.place(fp, "U201", "LCMXO2-2000HC-4TG144C", ux, uy, 0, unit=5, ref_at=(ux - 15.24, uy - 23.0),
+    u = sch.place(fp, "U201", "LCMXO2-4000HC-4TG144C", ux, uy, 0, unit=5, ref_at=(ux - 15.24, uy - 23.0),
                   val_at=(ux + 10.16, uy - 23.0), val_just="left")
     pins5 = [p for p in fp.pins if p.unit == 5]
     for p_ in pins5:
@@ -188,13 +188,13 @@ def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts)
     rail([u.p(p.num) for p in pins5 if p.name == "GND"], "x", 2.54, 5.08, GNDS)          # bottom: GND
     rail([u.p(p.num) for p in pins5 if p.name.startswith("VCCIO")], "y", -5.08, -5.08, P3)  # left: VCCIO0-5
     nc = sorted(p for p, v in pin_tab.items() if v[0] == "NC")
-    p4 = all_pins(CSV4000)
-    nc_io4 = [p for p in nc if re.match(r"P[LRTB]\d", p4[p][0])]
+    p2 = all_pins(CSV2000)
+    io4_only = sorted(p for p, v in pin_tab.items() if re.match(r"P[LRTB]\d", v[0]) and p2[p][0] == "NC")
     sch.text("POWER (data sheet Table 3.2: HC core VCC 2.375-3.6 V, VCCIO 1.14-3.6 V): VCC and every VCCIO bank on the\n"
              "same +3V3 supply (Table 3.2 note 1: like supplies tied together); all banks LVCMOS33. Sheet 5: ramp 0.01-100 V/ms\n"
              "(Table 3.3); regulator within 3% (FPGA-TN-02154 section 2.2).\n"
-             f"NC pins {', '.join(map(str, nc))} not connected (pinout file). On the LCMXO2-4000HC fallback, pins\n"
-             f"{', '.join(map(str, nc_io4))} are I/O pads (MachXO2-4000 pinout): unconnected here, so no change is needed.",
+             f"NC pin {', '.join(map(str, nc))} not connected (pinout file). Pins {', '.join(map(str, io4_only))} are I/O pads on the\n"
+             "LCMXO2-4000HC only (NC on the 2000HC): kept spare and unconnected, so the G-SHEET2 assignment is unchanged (C-30).",
              (ux - 30.48, uy + 35.56), 1.27)
 
     # ---------------- decoupling (Hardware Checklist Table 3.1)
@@ -335,19 +335,19 @@ def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts)
         "DESIGN NOTES (summary; full analysis in docs/stage2/sheet2-design-notes.md)\n"
         "1. Every signal pin comes from tools/fpga/pinplan.py (also the LPF LOCATEs and docs/stage2/sheet2-pin-assignment.md).\n"
         "   Bank 1 holds the whole /SLAVEn, XRDY and buffer-enable decode group (C-01/C-02 paths).\n"
-        "2. Owner decisions C-17 and C-26 (option C-17b): 101 signals; PROGRAMN/INITN/DONE and JTAG kept; JTAGENB unused (C-19);\n"
-        "   3 spare (pins 23, 24, 67). Only the READY LED is on the FPGA; FAULT and the other diagnostic LEDs are on the RP2040.\n"
-        "   Fallback LCMXO2-4000HC-4TG144C: every assigned pin is an I/O in the same bank, and the configuration, JTAG, SN,\n"
-        "   PCLKT0_1 and I2C pins are the same package pins (checked by tools/fpga/pinplan.py against the 4000 pinout file).\n"
-        "3. Post-place-and-route STA at these pins (rev A1, both grades, 15 pF): every constraint met; worst Zorro path\n"
-        "   14.91 ns of 18; /SLAVEn at the slot 20.40 ns of 35; M-7 slot setup criterion >= 19.3 ns (sheet2-sta-results.md).\n"
+        "2. Owner decisions C-17 and C-26 (option C-17b): 101 signals; PROGRAMN/INITN/DONE and JTAG kept; JTAGENB unused (C-19).\n"
+        "   Only the READY LED is on the FPGA; FAULT and the other diagnostic LEDs are on the RP2040.\n"
+        "   C-30 (2026-11-19): LCMXO2-4000HC-4TG144C. The G-SHEET2 pins are unchanged (tools/fpga/pinplan.py also checks them\n"
+        "   against the 2000 pinout file); 6 spare: 23, 24, 67 and the 4000-only pads 31, 63, 103.\n"
+        "3. Post-place-and-route STA with the complete design (sheet 4, LCMXO2-4000HC, both grades, 15 pF): every constraint\n"
+        "   met; worst Zorro path 14.773 ns of 18; /SLAVEn at the slot 21.92 ns of 35; M-7 >= 19.8 ns (sheet4-sta-results.md).\n"
         "4. Interfaces: sheet 1 (ZB_*, ZF_*, EN_OK, LD*), sheet 3 (SA*, SRAM_*, LD*), sheet 4 (RP_*, FPGA_TCK/TMS/TDI/TDO),\n"
-        "   sheet 5 (I2C_*, INA_ALERT_N, X4_*), sheet 6 (LED_READY, DIP_*, DBG*). Sheets 4-6 are not yet drawn.\n"
+        "   sheet 5 (I2C_*, INA_ALERT_N, X4_*), sheet 6 (LED_READY, DIP_*, DBG*). Sheets 5-6 are not yet drawn.\n"
         "5. Erased-device rules (FPGA-TN-02155 section 6): the I2C configuration port on pins 125/126 ACKs 7-bit\n"
         "   addresses 0x40-0x43, so no telemetry device on I2C_SDA/I2C_SCL may use them (sheet 5). SN is never driven low.\n"
         "   SDA/SCL are limited to -0.25..3.75 V (data sheet Table 3.1 note 5): I2C pull-ups to +3V3 only.\n"
         "6. Back-powering (FPGA-TN-02154 section 14): no FPGA input may be driven while +3V3 is off. Sheets 1 and 3 comply\n"
-        "   (Ioff / VCC-isolated buffers, pull-ups to +3V3); sheets 4-6 must keep this rule (debug header, X4 sense lines).\n"
+        "   (Ioff / VCC-isolated buffers, pull-ups to +3V3), and so does sheet 4; sheets 5-6 must keep it (debug header, X4 sense).\n"
         "7. Erased or unconfigured FPGA: every Zorro-side output is held inactive by its sheet-1 resistor and ZF_ARM is pulled\n"
         "   low, so the card is disabled and the slot looks empty; SRAM deselected (R301/R302). Hardware check M-14.\n"
         "8. Not yet validated: an ERC-clean result does not imply electrical or timing correctness.",

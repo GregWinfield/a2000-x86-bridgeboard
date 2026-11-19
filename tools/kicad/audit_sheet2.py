@@ -4,7 +4,7 @@
 usage: python -I tools/kicad/audit_sheet2.py <netlist.net>
 
 The expected connections come from sources that do not depend on the schematic generator:
-  * the Lattice MachXO2-2000 pinout file (tools/fpga/, S63): every one of the 144 package pins is
+  * the Lattice MachXO2-4000 pinout file (tools/fpga/, S63; C-30): every one of the 144 package pins is
     classified (power, ground, NC, configuration/JTAG, signal, spare) and checked;
   * the pin plan (tools/fpga/pinplan.py) AND the LOCATE constraints Diamond actually used
     (hdl/syn/z2_top.lpf + hdl/syn/fit_top_extra.lpf): plan, LPF and schematic must agree pin by pin;
@@ -100,17 +100,17 @@ def main(path):
     u = comps.get("U201")
     check(u is not None, "U201 present")
     if u:
-        check(u["value"] == "LCMXO2-2000HC-4TG144C", f"U201 value {u['value']}")
+        check(u["value"] == "LCMXO2-4000HC-4TG144C", f"U201 value {u['value']} (C-30)")
         check(u["footprint"] == "Package_QFP:TQFP-144_20x20mm_P0.5mm", f"U201 footprint {u['footprint']}")
-        check(u["fields"].get("MPN") == "LCMXO2-2000HC-4TG144C", "U201 MPN field")
+        check(u["fields"].get("MPN") == "LCMXO2-4000HC-4TG144C", "U201 MPN field (C-30)")
 
     # ---------------------------------------------------------------- every package pin
     tab = all_pins()                                  # {pin: (function, bank, dual function)}
     check(sorted(tab) == list(range(1, 145)), "pinout file lists pins 1-144")
     assign, usable, spare, errors = pinplan.compute(REPO)
     check(not errors, f"pin plan errors: {errors}")
-    mig, _ = pinplan.migration(REPO, assign)
-    check(not mig, f"LCMXO2-4000HC fallback problems: {mig}")
+    mig, _ = pinplan.compat_2000(REPO, assign)
+    check(not mig, f"LCMXO2-2000HC (G-SHEET2 basis) pin compatibility problems: {mig}")
     by_pin = {p: s for s, p in assign.items()}
     classes = {}
     for p, (fn, bank, dfn) in sorted(tab.items()):
@@ -135,9 +135,10 @@ def main(path):
             classes[p] = "spare"
             check(unconnected("U201", p), f"U201.{p} (spare {fn}) unconnected, got {net_of('U201', p)}")
     count = {k: sum(1 for v in classes.values() if v == k) for k in ("power", "gnd", "nc", "config", "signal", "spare")}
-    check(count == {"power": 16, "gnd": 12, "nc": 4, "config": 8, "signal": 101, "spare": 3},
-          f"pin classes {count} (want 16 supply, 12 GND, 4 NC, 8 configuration/JTAG, 101 signals, 3 spare)")
-    check(sorted(p for p, c in classes.items() if c == "spare") == [23, 24, 67], "spare pins are 23, 24 and 67 (C-26)")
+    check(count == {"power": 16, "gnd": 12, "nc": 1, "config": 8, "signal": 101, "spare": 6},
+          f"pin classes {count} (want 16 supply, 12 GND, 1 NC, 8 configuration/JTAG, 101 signals, 6 spare)")
+    check(sorted(p for p, c in classes.items() if c == "spare") == [23, 24, 31, 63, 67, 103],
+          "spare pins are 23, 24, 67 (C-26) and the 4000HC-only pads 31, 63, 103 (C-30)")
     check(by_pin.get(65) == "LED_READY" and net_of("U201", 65) == "LED_READY", "LED_READY on pin 65 (C-26: the one FPGA LED)")
     check("LED_FAULT" not in nets, "no LED_FAULT net (C-26: FAULT LED on the RP2040)")
     # documented pin numbers of the configuration functions (sheet notes, LPF PROHIBIT)

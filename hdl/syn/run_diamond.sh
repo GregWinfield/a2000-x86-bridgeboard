@@ -8,7 +8,7 @@
 set -eu
 HERE="$(cd "$(dirname "$0")" && pwd)"
 WORK="${1:-${TMPDIR:-/tmp}/z2_diamond}"
-DEV="${2:-LCMXO2-2000HC-4TG144C}"
+DEV="${2:-LCMXO2-4000HC-4TG144C}"      # C-30: the Rev 1 device
 DIAMOND="${DIAMOND:-/c/lscc/diamond/3.14}"
 if [ -z "${LM_LICENSE_FILE:-}" ]; then
     LM_LICENSE_FILE="$(ls "$DIAMOND"/license/*.lic | head -1)"
