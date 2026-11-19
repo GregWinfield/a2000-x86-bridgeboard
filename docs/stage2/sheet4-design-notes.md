@@ -1,15 +1,16 @@
-# Sheet 4: RP2040 SPI and host interface (revision A2)
+# Sheet 4: RP2040 SPI and host interface (revision A3)
 
-**Status:** revision A2, 2026-11-19.
-- **G-SHEET4: conditional approval for design progression** (your review of PR #7). The architecture and digital logic are accepted.
+**Status:** revision A3, 2026-11-19.
+- **G-SHEET4: approved as a schematic baseline for continued design** (your review of rev A2), with the electrical qualifications open.
 - **C-30 approved**, and implemented (§0). Your review of PR #8 accepted the 4000HC implementation.
-- **S4-6:** the isolation requirement is approved, and the comparator-gated architecture provisionally accepted (PR #8). Revision A2 answers your two concerns:
-  - R424 is removed;
-  - U405 is a comparator with a guaranteed delay, at an earlier threshold.
+- **S4-6:** revision A2 is accepted as the preferred Rev 1 implementation. Revision A3 answers your three residual requirements:
+  - U406, a Schmitt-trigger buffer, gives U402's /OE a compliant edge. **This needs your confirmation.**
+  - The slope figures are relabelled as model-derived bounds.
+  - The GP24 HIGH-level margin is verified.
 
-  The analysis is in [sheet4-s46-isolation.md](sheet4-s46-isolation.md). **It needs your acceptance before final sheet-4 schematic approval.**
+  The analysis is in [sheet4-s46-isolation.md](sheet4-s46-isolation.md).
 - **Not validated.** Passing simulations, proofs, ERC, netlist audits and static timing do not prove electrical or timing correctness on hardware.
-- **Not a PCB-manufacture approval.** Every hardware gate stays open (§11).
+- **Not a PCB-manufacture approval.** Every hardware and manufacturing gate stays open (§11). Manufacturing approval requires the S4-6 electrical qualification M-16 (a)–(g) (§12).
 
 **Related files:**
 
@@ -50,8 +51,19 @@
 |---|---|---|
 | C-30 | Remains approved; the 4000HC implementation is accepted | – |
 | **S4-6 (1)** | R424 creates a reverse-current path (U402 IRQ_N → GP22 → R424 → GP24). Preferred: remove R424 and use GP22's internal pull-up, set by firmware before interrupts are enabled; verify the idle state in normal operation, boot, reset and carrier power loss | **R424 removed**; FW-6 sets the GP22 pull-up before GP24 rises and before the interrupt is enabled. GP24's net has no source on the carrier, so GP24 ≤ IOVDD at all times (audit). Idle state verified state by state ([sheet4-s46-isolation.md](sheet4-s46-isolation.md) §3) |
-| **S4-6 (2)** | The TLV7021's typical delay does not support the 2 µs budget. Rerun the power-down analysis with worst-case tolerances, derated capacitance, faster discharge, conservative delays and the RP2040's reset/brownout transitions; no claim for arbitrary rates without a guaranteed bound; consider an earlier threshold, another comparator or another arrangement | Rerun ([sheet4-s46-isolation.md](sheet4-s46-isolation.md) §4–§5):<br>• Rev A1 held VIH max only to about 18 V/ms, on typical delays. Its "any discharge rate" claim is withdrawn.<br>• **Rev A2:** U405 is a TLV3201 (tPD ≤ 55 ns guaranteed over −40 to 125 °C) driving Q401, in series with Q402 on GP24. The threshold is 0.940.<br>• Guaranteed safe up to **314 V/ms** (VIH max) and **1564 V/ms** (absolute maximum). The X4 worst case is estimated at ≤ 94 V/ms. Faster rates are not claimed.<br>• A lower U402 B supply was evaluated and not drawn (§6.3) |
-| Completion | Update the schematic, transient model, S4-6 document and M-16; keep the hardware gates open; no unrelated architectural change | Sheet 4 rev A2; `k4_transient.py`; [sheet4-s46-isolation.md](sheet4-s46-isolation.md); M-16 a–f (§12). Nothing outside the U402 enable circuit changed; netlist identical outside sheet 4 |
+| **S4-6 (2)** | The TLV7021's typical delay does not support the 2 µs budget. Rerun the power-down analysis with worst-case tolerances, derated capacitance, faster discharge, conservative delays and the RP2040's reset/brownout transitions; no claim for arbitrary rates without a guaranteed bound; consider an earlier threshold, another comparator or another arrangement | Rerun ([sheet4-s46-isolation.md](sheet4-s46-isolation.md) §4–§5):<br>• Rev A1 held VIH max only to about 18 V/ms, on typical delays. Its "any discharge rate" claim is withdrawn.<br>• **Rev A2:** U405 is a TLV3201 (tPD ≤ 55 ns datasheet maximum over −40 to 125 °C) driving Q401, in series with Q402 on GP24. The threshold is 0.940.<br>• Model-derived bounds (relabelled after your review of rev A2): **314 V/ms** (VIH max) and **1564 V/ms** (absolute maximum). The X4 worst case is estimated at ≤ 94 V/ms. Faster rates are not claimed.<br>• A lower U402 B supply was evaluated and not drawn (§6.3) |
+| Completion | Update the schematic, transient model, S4-6 document and M-16; keep the hardware gates open; no unrelated architectural change | Sheet 4 rev A2 (merged with PR #8); `k4_transient.py`; [sheet4-s46-isolation.md](sheet4-s46-isolation.md); M-16 a–f (§12). Nothing outside the U402 enable circuit changed; netlist identical outside sheet 4 |
+
+**Your review of revision A2 (2026-11-19):**
+
+| ID | Decision | Implemented in revision A3 |
+|---|---|---|
+| **S4-6** | **Rev A2 accepted** as the preferred Rev 1 schematic implementation: R424 removal, FW-6, TLV3201, Q401/Q402, the threshold and resistor values, the transient analysis and M-16 | Recorded (baseline, risk register) |
+| **Residual 1** | U402 /OE edge (about 37 ns/V) exceeds TI's recommended 5 ns/V. Evaluate a simple improvement that preserves the power-off isolation; if the circuit is unchanged, record the deviation and require electrical qualification before manufacturing approval | Five options evaluated ([sheet4-s46-isolation.md](sheet4-s46-isolation.md) §6).<br>**Drawn: U406 SN74AUP1G17** between the open-drain node (R429, Q401) and /OE, giving about 0.8 ns/V [E]. It is carrier-side only, specified from 0.8 V, with Ioff; the latency rises to 190 ns.<br>**For your confirmation.** The deviation stays recorded (F-14) in case you prefer rev A2 unchanged |
+| **Residual 2** | Keep M-16, including the falling-ramp comparator response and full translator disable time; label 314 V/ms a model-derived bound, not a manufacturer guarantee | Relabelled everywhere. Rev A3's bounds are **264 V/ms** (VIH max) and **1317 V/ms** (absolute maximum), both model-derived. M-16 (b) measures the comparator response and the time until every B output is Hi-Z |
+| **Residual 3** | Verify the GP24 HIGH-level margin against 0.940 × X4_3V3_REF under representative supply and operating conditions | Representative 0.186 V; worst ≥ 0.126 V with FW-1's drive, and ≥ 0.117 V at any drive. Dynamic contributors estimated. M-16 (g) added ([sheet4-s46-isolation.md](sheet4-s46-isolation.md) §9) |
+| G-SHEET4 | Approved as a schematic baseline for continued design, with the electrical qualifications open | Baseline updated; remaining schematic work proceeds |
+| Merge | Merge PR #8 after the documentation is updated | PR #8 was already merged (8d5a360). The documentation update and U406 are in a follow-up PR for your review |
 
 ## 1. The owner's mandatory requirements 1–9
 
@@ -63,7 +75,7 @@
 | 4 | SCK-to-MISO timing incl. clock insertion, translators, PCB, RP2040 input | [sheet4-timing-budget.md](sheet4-timing-budget.md): FPGA figures from STA (clock pad 1.163 ns, primary clock net 2.364 ns, worst total 15.371 ns), translator maxima [V S66], ribbon and RP2040 input [A]. **10 MHz closes with the standard launch (≥ 10.92 ns margin); 20 MHz needs the early launch (≥ 12.18 ns margin)** | STA (6 runs); tb_spi at those delays with the RP2040 sampling skew randomised to 16 ns | **M-15** (RP2040 sampling, both sides) |
 | 5 | Async FIFO safe with independent clock ratios, reset sequencing, interrupted frames, clock stoppage | Gray pointers through two-flop synchronisers; storage written only in the write domain; FWFT read | **Formal fv_afifo, multiclock:** wclk and rclk are independent free inputs (every ratio, every stoppage), reset asynchronous and arbitrary. Proven by k-induction: A1 Gray single-bit change, A2 no overflow/underflow, A3 conservative flags, A4 integrity and order, A5 drop semantics. Mutants detected. Simulation: tb_spi P5, P13, P14, P16 (interrupted frames, X4 power loss, FPGA reload, RP2040 reset), P15 (random rate) | – |
 | 6 | Preserve sheet 3's ordering and atomicity | One host-port transaction at a time, in order (H-1, H-3); response and ATTN only after the last `h_ack` (protocol §7, O-1 to O-5). z2_lbus unchanged. The z2_mbx timing changes are exact equivalences (§5.3) | fv_shm re-proven with z2_mbx M1–M7 and X1–X6 (arbitration, LD ownership, determinism X4); tb_shm through the real SPI link (127 checks × 4 seeds), including S3 determinism | – |
-| 7 | Unprogrammed FPGA, unpowered X4 and independent resets cannot back-power or cause false interrupts | §7: every power and reset state analysed. Defaults R401–R407 and R425; the RP2040's GP22 pull-up (FW-6); translator VCC isolation and Ioff; S4-6 rev A2 (U402 /OE through Q401/Q402 from comparator U405 and GP24); `PULLMODE=NONE` | tb_spi P0 (blank FPGA: ATTN low, no interrupt), P13 (X4 off), P14 (FPGA reload), P16 (RP2040 reset); always-on checkers for false interrupts and ATTN while blank; K4 model ([sheet4-s46-isolation.md](sheet4-s46-isolation.md)); audit_sheet4 (213 checks, 25 of 25 mutants) | M-14 extension, **M-16** |
+| 7 | Unprogrammed FPGA, unpowered X4 and independent resets cannot back-power or cause false interrupts | §7: every power and reset state analysed. Defaults R401–R407 and R425; the RP2040's GP22 pull-up (FW-6); translator VCC isolation and Ioff; S4-6 rev A3 (U402 /OE from buffer U406, whose input is pulled low only through Q401/Q402 from comparator U405 and GP24); `PULLMODE=NONE` | tb_spi P0 (blank FPGA: ATTN low, no interrupt), P13 (X4 off), P14 (FPGA reload), P16 (RP2040 reset); always-on checkers for false interrupts and ATTN while blank; K4 model ([sheet4-s46-isolation.md](sheet4-s46-isolation.md)); audit_sheet4 (220 checks, 29 of 29 mutants) | M-14 extension, **M-16** |
 | 8 | Re-run all Zorro timing and HDL verification | `run_checks.sh` on the final RTL: **ALL HDL CHECKS PASSED**, 39 testbench runs and 9 formal tasks. Diamond: 6 runs on the 4000HC; every Zorro budget re-derived | [sheet4-sta-results.md](sheet4-sta-results.md); [../hdl/verification-results.md](../hdl/verification-results.md) §5.8 | C-30 |
 | 9 | Versioned protocol | Major version in every frame's first byte (SYNC 0xA1, RSYNC 0x51); IDENTIFY returns major, minor, HDL_VER, MAX_WORDS, FIFO depth and FEATURES (incl. the MISO launch edge); rules for incompatible revisions (protocol §1) | tb_spi P1 (IDENTIFY fields), P7 (wrong major version rejected) | – |
 
@@ -80,7 +92,7 @@
       │ z2_spi_slave TX: byte 0 = static    │<──────── response RAM (written only while executing)   │
       │ register; bytes 1.. one ahead ──────┘   │ ATTN = idle & CS_N high; STATUS counters               │
       └─────────────────────────────────────┘   └───────────────────────────────────────────────────────┘
-    FPGA pin 4 MISO, pin 6 ATTN, pin 1 IRQ_N ─> U402 (A→B; /OE via Q401/Q402: GP24 > 0.94 × header 3.3 V) ─> R411–R413 ─> J401 ─> RP2040
+    FPGA pin 4 MISO, pin 6 ATTN, pin 1 IRQ_N ─> U402 (A→B; /OE via U406 and Q401/Q402: GP24 > 0.94 × header 3.3 V) ─> R411–R413 ─> J401 ─> RP2040
 
 **Resources (LCMXO2-4000HC, z2_top):**
 - 1090 slices (50 %), 2150 LUT4, 974 registers;
@@ -182,7 +194,7 @@ Result: 50 MHz slack from 0.731 ns to ≥ 2.21 ns over all six runs (R-43; [shee
 | 37, 35, 36 | GP14 TCK, GP15 TMS, GP26 TDI | U403 ch1–3 (B→A, /OE from the DIP, default isolated) → FPGA_TCK/TMS/TDI; pull-downs R421–R423 | RP2040 → FPGA (JTAG option, D-12) |
 | 38 | GP2 TDO | FPGA_TDO → U402 ch4 (A→B) → R414 33R | FPGA → RP2040 |
 | 27, 28, 26, 32 | GP16–GP19 | U404 ch1–4 (B→A) → LED_RP0–3 (LEDs on sheet 6); pull-downs R408–R410, R415 | RP2040 → carrier (C-26) |
-| **22** | **GP24** | **X4_GP24_EN → R426 → U405 IN+ (enable sense, S4-6 rev A2)**; R431 → Q402 gate; R430 100k to GND | RP2040 → carrier |
+| **22** | **GP24** | **X4_GP24_EN → R426 → U405 IN+ (enable sense, S4-6 rev A3)**; R431 → Q402 gate; R430 100k to GND | RP2040 → carrier |
 | 1, 17 | 3.3 V (P3V3_S) | X4_3V3_REF: VCCB of all four translators, U405 and its reference divider, decoupling, TP405. Microamp loads only (ER-3) | – |
 | 6, 9, 14, 20, 25, 30, 34, 39 | GND | GND | – |
 | 2, 4 | 5 V | Not connected (back-feed prevention) | – |
@@ -201,7 +213,7 @@ Four TI SN74AVC4T774PWR [V S66].
 | Ref | VCCA | VCCB | /OE | Channels |
 |---|---|---|---|---|
 | U401 | +3V3 | X4_3V3_REF | GND | SCK, CS_N, MOSI (B→A); ch4 spare (A→B, A tied low, B open) |
-| **U402** | +3V3 | X4_3V3_REF | **RP_EN_N** (R429 pull-up to VCCA; low only through Q401 and Q402) | IRQ_N, ATTN, MISO, TDO (all A→B) |
+| **U402** | +3V3 | X4_3V3_REF | **RP_EN_N** (from buffer U406; its input RP_EN_OD is pulled up by R429 and low only through Q401 and Q402) | IRQ_N, ATTN, MISO, TDO (all A→B) |
 | U403 | +3V3 | X4_3V3_REF | RP_JTAG_EN_N (R407 pull-up; DIP on sheet 6) | TCK, TMS, TDI (B→A); ch4 spare |
 | U404 | +3V3 | X4_3V3_REF | GND | LEDs GP16–GP19 (B→A) |
 
@@ -210,11 +222,11 @@ Four TI SN74AVC4T774PWR [V S66].
 - TI recommends a pull-up only where outputs must stay Hi-Z while a supply ramps [V S66 §8].
 - Here a ramp can only produce glitches:
   - U401: on FPGA inputs during an X4 power ramp. The result is a garbage frame, rejected by SYNC, length or CRC, and ignored before IDENTIFY anyway;
-  - (U402 is not tied: its /OE follows TI's recommendation, pulled up to VCCA and enabled only through Q401/Q402);
+  - (U402 is not tied: its /OE is held at VCCA while disabled, by U406 copying the R429 pull-up, and enabled only through Q401/Q402);
   - U404: LED flicker.
 - No glitch can back-power anything, because every output swings within its own VCC (§7).
 
-### 6.3 Decision S4-6: isolating the outputs toward the RP2040 (revision A2)
+### 6.3 Decision S4-6: isolating the outputs toward the RP2040 (revision A3)
 
 **Finding** (X4 schematic sheet 21, rendered and read [V S1]):
 - The RP2040's I/O supply (IOVDD1–6), its core-regulator input (VREG_VIN) and its SPI flash are on **P3V_RP**.
@@ -225,25 +237,26 @@ Four TI SN74AVC4T774PWR [V S66].
 
 **Requirement (approved):** every FPGA → RP2040 signal isolated whenever the RP2040's I/O supply is unavailable, without relying on an operating rule.
 
-**Revision A2 circuit** (analysis, options and bounds in [sheet4-s46-isolation.md](sheet4-s46-isolation.md)):
+**Revision A3 circuit** (rev A2, accepted, plus U406; analysis, options and bounds in [sheet4-s46-isolation.md](sheet4-s46-isolation.md)):
 1. **Every carrier → RP2040 output is on U402.** MISO moved from U401 and TDO from U403, as in revision A.
-2. **U402's /OE (RP_EN_N) is pulled up to VCCA by R429 (1 kΩ), and pulled low only through Q401 and Q402 (BSS138) in series:**
-   - **Q401** is switched by comparator U405 (TI TLV3201, supplied from X4_3V3_REF). U405 compares GP24 (through R426) with 0.940 × X4_3V3_REF (R427 6.34 kΩ / R428 100 kΩ). Its delay is guaranteed: tPD ≤ 55 ns over −40 to 125 °C [V S70].
+2. **U402's /OE (RP_EN_N) is driven by U406 (TI SN74AUP1G17, a Schmitt-trigger buffer on +3V3) from the open-drain node RP_EN_OD.** RP_EN_OD is pulled up to +3V3 by R429 (1 kΩ) and pulled low only through Q401 and Q402 (BSS138) in series:
+   - **Q401** is switched by comparator U405 (TI TLV3201, supplied from X4_3V3_REF). U405 compares GP24 (through R426) with 0.940 × X4_3V3_REF (R427 6.34 kΩ / R428 100 kΩ). Its delay has a datasheet maximum: tPD ≤ 55 ns over −40 to 125 °C [V S70].
    - **Q402** is switched by GP24 itself (through R431). Whenever GP24 is not driven, R430 holds it low and Q402 is off, whatever U405 does below its 2.7 V minimum supply.
+   - **U406** copies RP_EN_OD onto /OE with a push-pull edge (about 0.8 ns/V [E], within SCES693I's 5 ns/V). It is carrier-side only, specified from 0.8 V (below U402's 1.1 V minimum VCCA), with Ioff, so /OE still equals VCCA during carrier ramps while R429 holds its input high.
    - So U402 drives only while the RP2040 holds GP24 above the threshold. It is Hi-Z when the RP2040 is unpowered, browning out after K4, in reset or BOOTSEL, or before firmware starts.
-3. **Only the two MOSFET gates link the X4 domain to the carrier's /OE node**, so neither domain can back-feed the other. The audit checks this.
+3. **Only the two MOSFET gates link the X4 domain to the carrier's enable nodes** (RP_EN_OD, RP_EN_MID, /OE), so neither domain can back-feed the other. The audit checks this.
 4. **U402's VCCB is on X4_3V3_REF**, like the other translators.
 5. **B-side 100 kΩ pull-downs on every RP2040 → carrier input** (R418–R423, plus the C-26 LED pull-downs), unchanged.
 6. **RP2040-side defaults while U402 is disabled with the RP2040 running.** This is a normal state: the carrier off and the X4 on its own 12 V.
    - IRQ_N: the RP2040's own GP22 pull-up, which firmware enables before GP24 rises or the interrupt is enabled (FW-6). **R424 is removed:** it fed current from U402's IRQ_N output into GP24 (your review of PR #8).
    - ATTN: R425 100 kΩ to GND reads "not ready".
 
-**Why it is safe** (worst case, [sheet4-s46-isolation.md](sheet4-s46-isolation.md) §4–§7):
+**Why it is safe** (worst case, [sheet4-s46-isolation.md](sheet4-s46-isolation.md) §4–§9). **The figures are model-derived bounds** (datasheet maxima plus stated estimates and assumptions), not manufacturer guarantees:
 - **Nothing on the carrier can source current into GP24**, so GP24 ≤ IOVDD at all times. U402 can be enabled only while IOVDD is above the trip point: 0.9385–0.9422 × P3V3_S, −16.6/+6.6 mV.
-- After IOVDD falls through the trip point, U402 is Hi-Z within a guaranteed **160 ns**: datasheet maxima plus stated estimates.
-- The outputs therefore stay within **VIH max (IOVDD + 0.3 V) for IOVDD discharge rates ≤ 314 V/ms**, and within the absolute maximum (+0.5 V) for ≤ 1564 V/ms.
+- After IOVDD falls through the trip point, U402 is Hi-Z within **190 ns** (model-derived; rev A2 without U406: 160 ns).
+- The outputs therefore stay within **VIH max (IOVDD + 0.3 V) for IOVDD discharge rates ≤ 264 V/ms**, and within the absolute maximum (+0.5 V) for ≤ 1317 V/ms (model-derived bounds; rev A2: 314 and 1564 V/ms).
 - The X4's worst case is estimated at **≤ 94 V/ms** [E], from derated capacitance and maximum load. Faster collapses, such as a short on P3V_RP, are not claimed.
-- Normal-operation margin (GP24 above the trip point): ≥ 0.136 V.
+- GP24 HIGH-level margin above the trip point: ≥ 0.126 V worst case (FW-1 drive, 176 mA X4 load, all tolerances), 0.186 V representative.
 - **GP24 sources ≤ 36 µA**, plus ≤ 7.1 mA for under 100 ns on each edge.
 
 **Earlier revisions, withdrawn:**
@@ -255,13 +268,13 @@ Four TI SN74AVC4T774PWR [V S66].
   - the worst-case static excursion (0.291 V) left 8 mV of the 0.3 V budget, so the "any discharge rate" claim was wrong: about 18 V/ms on typical delays;
   - R424 back-fed GP24.
 - **Evaluated, not drawn:** U402's B side from a 2.5 V LDO.
-  - Most margin of all: 3892 V/ms guaranteed.
+  - Most margin of all: a 3892 V/ms model bound.
   - But it adds an IC and two capacitors, moves MISO into the 2.5 V timing column and cuts the RP2040's VIH margin to about 0.25 V.
 
 **Cost:**
 - one RP2040 GPIO (GP24);
-- U405 TLV3201 (BOM item 45) and Q401/Q402 BSS138 (item 46);
-- R425–R431 and C409 (8 passive parts);
+- U405 TLV3201 (BOM item 45), Q401/Q402 BSS138 (item 46) and U406 SN74AUP1G17 (item 47);
+- R425–R431, C409 and C410 (9 passive parts);
 - firmware rules FW-1 and FW-6 (§9).
 
 U402's delay is the original 3.3 V-column figure; the timing budget is unchanged.
@@ -282,12 +295,13 @@ U402's delay is the original 3.3 V-column figure; the timing budget is unchanged
 | R425 | 100k to GND | X4_GP27_ATTN | Not ready seen while U402 is disabled. IRQ_N uses the RP2040's own pull-up instead (FW-6; R424 removed in rev A2) |
 | R426 | 1k | X4_GP24_EN → RP_EN_SENSE | Comparator input (IN+) series resistor (RC ≤ 10 ns) |
 | R427, R428 | 6.34k, 100k (1 %) | X4_3V3_REF → RP_EN_REF → GND | Reference: 0.940 × X4_3V3_REF (≤ 34 µA) |
-| R429 | 1k to +3V3 | RP_EN_N | U402 /OE pull-up to VCCA: disabled unless Q401 and Q402 conduct (≤ 3.6 mA while enabled) |
+| R429 | 1k to +3V3 | RP_EN_OD | Pull-up of U406's input: U402 disabled unless Q401 and Q402 conduct (≤ 3.6 mA while enabled) |
 | R430 | 100k to GND | X4_GP24_EN | GP24 low, so Q402 off, while GP24 is not driven |
 | R431 | 1k | X4_GP24_EN → RP_EN_GATE | Q402 gate resistor (GP24 edge current ≤ 3.6 mA) |
-| U405 | TLV3201AIDBVR | VCC X4_3V3_REF; IN+ RP_EN_SENSE; IN− RP_EN_REF; OUT RP_EN_CMP | Threshold detector, tPD ≤ 55 ns guaranteed (S4-6 rev A2) |
-| Q401, Q402 | BSS138 (BSS138-7-F) | Q401: G RP_EN_CMP, D RP_EN_N, S RP_EN_MID. Q402: G RP_EN_GATE, D RP_EN_MID, S GND | /OE is pulled low only while both conduct. Their gates are the only link from the X4 domain to /OE |
-| C401–C409 | 100n | VCCA (4), X4_3V3_REF (5: four VCCB, U405) | One per supply pin |
+| U405 | TLV3201AIDBVR | VCC X4_3V3_REF; IN+ RP_EN_SENSE; IN− RP_EN_REF; OUT RP_EN_CMP | Threshold detector, tPD ≤ 55 ns datasheet maximum (S4-6 rev A2) |
+| Q401, Q402 | BSS138 (BSS138-7-F) | Q401: G RP_EN_CMP, D RP_EN_OD, S RP_EN_MID. Q402: G RP_EN_GATE, D RP_EN_MID, S GND | RP_EN_OD is pulled low only while both conduct. Their gates are the only link from the X4 domain to the enable nodes |
+| U406 | SN74AUP1G17DBVR | VCC +3V3; A RP_EN_OD; Y RP_EN_N (U402 /OE); pin 1 NC | Schmitt-trigger buffer: push-pull /OE edge (S4-6 rev A3) |
+| C401–C410 | 100n | +3V3 (5: four VCCA, U406), X4_3V3_REF (5: four VCCB, U405) | One per supply pin |
 | TP401–TP408 | – | RP_SCK, RP_MISO, RP_CS_N, RP_ATTN, X4_3V3_REF, GND, RP_EN_N, RP_EN_CMP | M-15, M-16 |
 
 **ER-3:**
@@ -297,19 +311,19 @@ U402's delay is the original 3.3 V-column figure; the timing budget is unchanged
 
 ### 6.5 Audit and mutation test
 
-`audit_sheet4.py` (213 checks, 0 failures) checks:
+`audit_sheet4.py` (220 checks, 0 failures) checks:
 - every J401 pin;
 - every translator's supplies, /OE and per-channel DIR, A and B nets;
 - the series resistors;
 - the S4-6 rules:
   - outputs only on U402;
-  - U402 /OE pulled low only through Q401 and Q402;
-  - the U405, Q401 and Q402 pins and nets;
+  - U402 /OE only from U406, whose input RP_EN_OD is pulled low only through Q401 and Q402;
+  - the U405, Q401, Q402 and U406 pins and nets (U406's NC pin open);
   - the reference divider and its 0.940 ratio;
   - R425–R431;
   - GP24's net has no source on the carrier (exactly J401, R426, R430, R431);
   - IRQ_N has no resistor;
-  - only the MOSFET gates bridge the X4 side and /OE;
+  - only the MOSFET gates bridge the X4 side and the enable nodes;
   - a pull-down on every input;
   - no RP_VIO;
 - the R-51 defaults;
@@ -317,9 +331,9 @@ U402's delay is the original 3.3 V-column figure; the timing budget is unchanged
 - the decoupling count per rail;
 - the test points and the complete parts list.
 
-`audit_sheet2.py` expects FPGA_TDO on U402 and, since C-30, the 4000HC pinout (1103 checks). The 3 added since rev A1 are the new net names RP_EN_CMP, RP_EN_GATE and RP_EN_MID, passing its "not reused on another sheet" check.
+`audit_sheet2.py` expects FPGA_TDO on U402 and, since C-30, the 4000HC pinout (1105 checks). The 5 added since rev A1 are the new sheet-4 net names (RP_EN_CMP, RP_EN_GATE, RP_EN_MID; RP_EN_OD and U406's unconnected NC pin in rev A3), passing its "not reused on another sheet" check.
 
-**Mutation test:** 25 of 25 injected faults are detected:
+**Mutation test:** 29 of 29 injected faults are detected:
 - U402 VCCB on the wrong supply;
 - U402 /OE tied low;
 - comparator inputs swapped;
@@ -331,6 +345,7 @@ U402's delay is the original 3.3 V-column figure; the timing budget is unchanged
 - Q402 bypassed; Q402's gate on the comparator; Q401's drain and source swapped;
 - a resistor from the X4 side onto /OE;
 - R429 or R426 at rev A1's 10 kΩ; U405 a TLV7021;
+- U406 bypassed; U406 supplied from the X4 3.3 V; R429 on /OE instead of U406's input; C410 moved to the X4 rail;
 - a missing or misplaced pull-down;
 - MISO and ATTN swapped;
 - wrong /OE on U401;
@@ -346,14 +361,14 @@ U402's delay is the original 3.3 V-column figure; the timing budget is unchanged
 | State | FPGA inputs | Outputs at the RP2040 | Back-power paths | Interrupts | Link | Evidence |
 |---|---|---|---|---|---|---|
 | Carrier +3V3 off, X4 running (Amiga off) | U401/U403 VCCA = 0: Hi-Z (VCC isolation); FPGA unpowered | U402 VCCA = 0: Hi-Z. IRQ_N reads high (the RP2040's pull-up, FW-6), ATTN low (R425) | **None:** Ioff ≤ 1 µA on every port. Only the Q401/Q402 gates link the X4 domain to /OE. Nothing on the carrier sources current into GP24 (R426, R430, R431 only) | **None** (pull-up) | Down; firmware sees ATTN low → LINK_DOWN after the §8 retries | Analysis; M-16 |
-| X4 off (P3V3_S = 0), carrier on | U401/U403/U404 VCCB = 0: A outputs Hi-Z; R401 CS_N high, R402/R403 SCK/MOSI low (`PULLMODE=NONE`) | U402 VCCB = 0: isolated; U405 unpowered, Q401/Q402 off (gates at 0 V), R429 holds /OE high | **None** (VCC isolation, Ioff; R429's current has no path: both channels off, body diodes reverse-biased) | None: the RP2040 is off | Idle, no frames | tb_spi P13 |
-| X4 on, **RP2040 unpowered by K4** (P3V3_S up, P3V_RP off) | B inputs pulled low (R418–R423): CS_N **asserted**, no clock. A frame opens, receives nothing, and is counted when firmware later drives CS_N high | **U402 disabled** ≤ 160 ns after GP24 (≤ IOVDD) falls below 0.94 × P3V3_S | **None** (S4-6 rev A2). Outputs are ≤ 0.25 V above IOVDD statically and ≤ 0.266 V at 100 V/ms, then Hi-Z. They stay within VIH max up to 314 V/ms (X4 estimate ≤ 94 V/ms). Otherwise only B inputs | None | No commit; FRAME_ERRORS + 1 afterwards | K4 model; tb_spi P16; **M-16** |
-| X4 on, RP2040 in reset or BOOTSEL (IOVDD on) | Its pads pull down [V S65]: CS_N asserted with no clock (as above) | GP24 low (pad pull-down, R430) → U402 disabled within ≤ 0.6 µs (GP24 reaches the trip point in ≤ 0.36 µs, then ≤ 160 ns); Q402 off within ≤ 11 µs | None | None | As above | tb_spi P16 |
+| X4 off (P3V3_S = 0), carrier on | U401/U403/U404 VCCB = 0: A outputs Hi-Z; R401 CS_N high, R402/R403 SCK/MOSI low (`PULLMODE=NONE`) | U402 VCCB = 0: isolated; U405 unpowered, Q402 off (GP24 at 0 V), R429 holds RP_EN_OD high, so U406 holds /OE high | **None** (VCC isolation, Ioff; R429's current has no path: both channels off, body diodes reverse-biased) | None: the RP2040 is off | Idle, no frames | tb_spi P13 |
+| X4 on, **RP2040 unpowered by K4** (P3V3_S up, P3V_RP off) | B inputs pulled low (R418–R423): CS_N **asserted**, no clock. A frame opens, receives nothing, and is counted when firmware later drives CS_N high | **U402 disabled** ≤ 190 ns (model-derived) after GP24 (≤ IOVDD) falls below 0.94 × P3V3_S | **None** (S4-6 rev A3). Outputs are ≤ 0.25 V above IOVDD statically and ≤ 0.269 V at 100 V/ms, then Hi-Z. Within VIH max up to a 264 V/ms model bound (X4 estimate ≤ 94 V/ms). Otherwise only B inputs | None | No commit; FRAME_ERRORS + 1 afterwards | K4 model; tb_spi P16; **M-16** |
+| X4 on, RP2040 in reset or BOOTSEL (IOVDD on) | Its pads pull down [V S65]: CS_N asserted with no clock (as above) | GP24 low (pad pull-down, R430) → U402 disabled within ≤ 0.6 µs (GP24 reaches the trip point in ≤ 0.36 µs, then ≤ 190 ns); Q402 off within ≤ 11 µs | None | None | As above | tb_spi P16 |
 | FPGA erased, configuring or failed configuration | Inputs ignored | Weak pull-down plus defaults: MISO low (R404), ATTN low (R406), IRQ_N high (R405: ≥ 2.46 V > VIH 2.0 V) | None (FPGA outputs Hi-Z; the defaults are to +3V3 or GND on the carrier) | **None** | ATTN low: firmware does not start frames | tb_spi P0, P14; checkers "no interrupt / no ATTN while blank"; **M-14** extension |
 | FPGA reload during a frame or command | – | ATTN low; IRQ_N high | None | None (checker) | Frame lost; power-on IDENTIFY response afterwards; one SRAM word may be undefined (H-5, R-45) | tb_spi P14 |
 | X4 power lost mid-frame | U401 isolates: CS_N goes high (R401) | – | None | None | Partial frame rejected; nothing commits | tb_spi P13 |
 | Amiga reset (/BUSRST) | – | – | – | Zorro-side enables and events cleared (sheet 3); host side unaffected | Unaffected (Q-7) | tb_shm |
-| Carrier and X4 power ramps | Glitches possible on FPGA inputs (U401 /OE = GND) | X4 ramp: U402 disabled (GP24 low, so Q402 off, whatever U405 does below 2.7 V). Carrier ramp with firmware running: enabled while VCCA ramps, glitches possible | None: every output swings within its own VCC, P3V3_S ≈ IOVDD | A glitch cannot form a valid frame without SYNC, length and CRC (~2⁻²⁴ per random frame), and frames before IDENTIFY are irrelevant | – | Analysis |
+| Carrier and X4 power ramps | Glitches possible on FPGA inputs (U401 /OE = GND) | X4 ramp: U402 disabled (GP24 low, so Q402 off, whatever U405 does below 2.7 V). Carrier ramp with GP24 low or the X4 off: U406 holds /OE at VCCA from 0.8 V up. Carrier ramp with firmware running: enabled while VCCA ramps, glitches possible | None: every output swings within its own VCC, P3V3_S ≈ IOVDD | A glitch cannot form a valid frame without SYNC, length and CRC (~2⁻²⁴ per random frame), and frames before IDENTIFY are irrelevant | – | Analysis |
 
 **C-29 (back-powering through FPGA input clamps), sheet 4 share:**
 - Every FPGA input from the X4 domain comes from a translator A output.
@@ -385,7 +400,7 @@ So no FPGA input is driven while +3V3 is off. **R-49 stays Open** for sheets 5�
 
 | # | Rule | Reason |
 |---|---|---|
-| FW-1 | After FW-6 and before any other host-link activity: GP24 output high with an 8 mA or 12 mA drive setting; wait ≥ 10 µs before reading ATTN, IRQ_N or MISO. Driving GP24 low isolates U402 on purpose | S4-6 rev A2: U402 is enabled only while U405 sees GP24 above 0.94 × the header 3.3 V and Q402 sees GP24 high (≤ 0.2 µs after GP24 rises). Static GP24 load ≤ 36 µA (pad drop ≤ 3 mV); each edge ≤ 7.1 mA for under 100 ns. Enable margin ≥ 0.136 V |
+| FW-1 | After FW-6 and before any other host-link activity: GP24 output high with an 8 mA or 12 mA drive setting; wait ≥ 10 µs before reading ATTN, IRQ_N or MISO. Driving GP24 low isolates U402 on purpose | S4-6 rev A2: U402 is enabled only while U405 sees GP24 above 0.94 × the header 3.3 V and Q402 sees GP24 high (≤ 0.3 µs after GP24 rises). Static GP24 load ≤ 36 µA (pad drop ≤ 3 mV); each edge ≤ 7.1 mA for under 100 ns. GP24 HIGH-level margin ≥ 0.126 V (≥ 0.117 V even at the 2 mA setting) |
 | FW-2 | GP9 (CS_N) as a SIO output **high** before enabling SPI on GP8/GP10/GP11; never use the PL022's SSPFSSOUT | S4-2; the FPGA sees CS_N asserted while GP9 is an input (§7) |
 | FW-3 | First transactions: IDENTIFY (check "Z2", major 1, HDL_VER, FEATURES), then RESET_LINK | A reset of either side can leave one counted frame error (§7) |
 | FW-4 | **SCK ≤ 10 MHz (the initial operating rate). 20 MHz is experimental** until M-15 qualifies it, and needs IDENTIFY to report FEATURES b2 = 1 (early-launch build) | Owner decision (review of PR #7); timing budget §2–§3 |
@@ -410,24 +425,25 @@ So no FPGA input is driven while +3V3 is off. **R-49 stays Open** for sheets 5�
 | F-10 | (Your review.) Revision A's S4-6 circuit: RP_VIO stays about 0.6 V above the collapsing IOVDD for 0.7–7.4 ms after K4 (only the RP2040's ESD diodes clamp it), and GP24 must source 31–49 mA at turn-on | Rev A1: comparator-gated /OE ([sheet4-s46-isolation.md](sheet4-s46-isolation.md)) |
 | F-11 | The 4000HC TQFP144 has three I/O pads the 2000HC lacks (31, 63, 103), and different pad names on 107 pins | Kept free (assignment unchanged); sheet 2 symbol regenerated from the 4000 pinout; no connection changed (netlist compared) |
 | F-12 | (Your review of PR #8.) R424 fed current from U402's IRQ_N output into GP24 and on into the collapsing IOVDD: ≤ 27 µA at the trip point, up to 0.29 mA as IOVDD collapses. It could also hold a released GP24 at 2.67–2.83 V, above a collapsed IOVDD | Removed; GP22 pull-up in firmware (FW-6); the audit checks that GP24's net has no source |
-| F-13 | (Your review of PR #8.) Revision A1's "≤ 0.29 V at any discharge rate" was wrong:<br>• the TLV7021's delay is typical only;<br>• with resistor drift and the comparator overdrive, the static excursion is 0.291 V, so VIH max held only to about 18 V/ms on typical delays;<br>• the X4's worst case is ≤ 94 V/ms [E] | Claim withdrawn. TLV3201 (guaranteed tPD) + Q401/Q402 at 0.940: ≤ 314 V/ms guaranteed for VIH max |
-| F-14 | U402's /OE rises through its pull-up as an RC edge: about 37 ns/V with R429 1 kΩ (rev A1's 10 kΩ was ten times slower). SCES693I recommends ≤ 5 ns/V on inputs. This is inherent in TI's pull-up recommendation, and was not flagged in rev A1 | Budgeted to VIH 2.0 V (≤ 160 ns). M-16 (b) records the edge and checks the outputs during it |
+| F-13 | (Your review of PR #8.) Revision A1's "≤ 0.29 V at any discharge rate" was wrong:<br>• the TLV7021's delay is typical only;<br>• with resistor drift and the comparator overdrive, the static excursion is 0.291 V, so VIH max held only to about 18 V/ms on typical delays;<br>• the X4's worst case is ≤ 94 V/ms [E] | Claim withdrawn. TLV3201 (datasheet-maximum tPD) + Q401/Q402 at 0.940: ≤ 314 V/ms (model-derived bound) for VIH max |
+| F-14 | U402's /OE rises through its pull-up as an RC edge: about 37 ns/V with R429 1 kΩ (rev A1's 10 kΩ was ten times slower). SCES693I recommends ≤ 5 ns/V on inputs. This is inherent in TI's pull-up recommendation, and was not flagged in rev A1 | Rev A2: budgeted to VIH 2.0 V (≤ 160 ns). **Rev A3 (your review of rev A2, residual 1): U406 Schmitt-trigger buffer**: about 0.8 ns/V [E], latency 190 ns. M-16 (b) records the edge. If you prefer rev A2 unchanged, this row records the deviation, and qualification is required before manufacturing approval |
+| F-15 | (Your review of rev A2, residuals 2 and 3.)<br>• The slope figures were labelled "guaranteed". They are model-derived bounds built on datasheet maxima plus estimates.<br>• The GP24 HIGH-level margin had been computed without X4 copper drop (0.136 V) | Relabelled everywhere. With a 10 mV copper allowance [E], the margin is ≥ 0.126 V worst case and 0.186 V representative. M-16 (f) and (g) measure it |
 
 ## 11. Concerns for review and open items (nothing closed)
 
 | ID | Item | Status |
 |---|---|---|
 | C-30 | LCMXO2-4000HC (D-02) | **Approved 2026-11-19** and implemented |
-| **S4-6** | Isolation requirement approved; comparator-gated architecture provisionally accepted (PR #8); **rev A2 circuit for your acceptance** before final sheet-4 schematic approval | Analysis: [sheet4-s46-isolation.md](sheet4-s46-isolation.md); hardware M-16 |
+| **S4-6** | **Rev A2 accepted** (your review of rev A2). Rev A3 adds U406 for residual 1: **for your confirmation**. Electrical qualification M-16 (a)–(g) is required before manufacturing approval | Analysis: [sheet4-s46-isolation.md](sheet4-s46-isolation.md); hardware M-16 |
 | C-26 | RP2040 LEDs | Sheet-4 part verified (§8); LED drivers on sheet 6 |
 | C-28 | Erased FPGA's I2C configuration port ACKs 0x40–0x43 | **Open** until sheet 5 is completed and reviewed (R-50) |
 | C-29 | Back-powering through input clamps | Sheet-4 share met by design (§7); **Open** until sheets 5–6 are completed and reviewed (R-49) |
 | R-43 | 50 MHz margin | ≥ 2.21 ns; keep tracking at every run |
 | R-44 | Host-request latency | Split transactions and ATTN implemented; rate on hardware (M-13, M-15) |
 | R-51 | Default resistors | Sheet 4 done; **Open** for sheets 5–6 |
-| R-52 | X4 switches the RP2040's I/O supply; the link depends on firmware driving GP24 (FW-1, FW-6) and on U405, Q401 and Q402 | Fail-safe if firmware does not (U402 disabled, link down). Mitigating; M-16 |
+| R-52 | X4 switches the RP2040's I/O supply; the link depends on firmware driving GP24 (FW-1, FW-6) and on U405, Q401, Q402 and U406 | Fail-safe if firmware does not (U402 disabled, link down). Mitigating; M-16 |
 | – | Ribbon length, series-resistor values | TBV at layout and M-15 |
-| G-SHEET4 | **Conditional approval for design progression** (2026-11-19) | Final schematic approval after S4-6 acceptance |
+| G-SHEET4 | **Approved as a schematic baseline for continued design** (your review of rev A2, 2026-11-19) | Electrical qualifications open: the /OE edge (rev A3, M-16 b), transient timing (M-16 a–c), GP24 margin (M-16 f, g) |
 | Hardware | G-STA (on hardware), G-PSU, G-ZEROWAIT, G-R05; M-1 to M-16; physical Zorro validation | All open |
 
 ## 12. Measurements to add
@@ -435,5 +451,5 @@ So no FPGA input is driven while +3V3 is off. **R-49 stays Open** for sheets 5�
 | ID | What | Where | Pass |
 |---|---|---|---|
 | **M-15** | Host-link SPI timing: t_IN and t_OUT at both ends; the RP2040's MISO capture window, setup side and hold side; error-free SRAM_READ bursts while sweeping SCK in both launch modes | TP401, TP402, X4 header pins | Error-free at the chosen rate with ≥ 25 % of the window in hand; early launch only if its hold condition is shown with margin ([sheet4-timing-budget.md](sheet4-timing-budget.md) §3.3) |
-| **M-16** | S4-6 on hardware (procedure in [sheet4-s46-isolation.md](sheet4-s46-isolation.md) §10):<br>(a) trip point, with GP24 and the header 3.3 V from the bench;<br>(b) latency, with a 100 mV step and 100 and 300 V/ms ramps;<br>(c) K4 held with the carrier on, FPGA configured then blank: P3V_RP, GP24, TP408, TP407 and IRQ_N/ATTN/MISO at the header;<br>(d) /OE high in reset, BOOTSEL, before firmware and through the X4 power-up;<br>(e) interrupt idle state through boot and carrier power cycles;<br>(f) no /OE glitch during 10 and 20 MHz traffic | TP407, TP408, X4 header pins | (a) 0.9385 × VS − 17 mV to 0.9422 × VS + 7 mV;<br>(b) ≤ 160 ns to TP407 = 2.0 V;<br>(c) IOVDD slope ≤ 94 V/ms, no RP2040 pin above IOVDD + 0.3 V, clean RP2040 power cycle;<br>(d)–(f) as stated |
+| **M-16** | S4-6 electrical qualification, required before manufacturing approval (procedure in [sheet4-s46-isolation.md](sheet4-s46-isolation.md) §12):<br>(a) trip points (falling and rising), with GP24 and the header 3.3 V from the bench;<br>(b) **falling-ramp comparator response and full translator disable time**: a 100 mV step and 100 and 300 V/ms ramps, measured at TP408, TP407 and every U402 B output under load;<br>(c) K4 held with the carrier on, FPGA configured then blank;<br>(d) /OE high in reset, BOOTSEL, before firmware and through both power-ups;<br>(e) interrupt idle state through boot and carrier power cycles;<br>(f) no false disable during 10 and 20 MHz traffic and X4 load steps;<br>(g) GP24 HIGH-level margin with the X4 idle and loaded, across temperature | TP407, TP408, X4 header pins | (a) 0.9385 × VS − 17 mV to 0.9422 × VS + 7 mV;<br>(b) every B output Hi-Z ≤ 190 ns after GP24 passes trip − 20 mV, /OE edge ≤ 5 ns/V, no chatter;<br>(c) IOVDD slope ≤ 94 V/ms, no RP2040 pin above IOVDD + 0.3 V, clean RP2040 power cycle;<br>(d)–(f) as stated;<br>(g) ≥ 0.126 V |
 | M-14 (extended) | Erased, configuring and failed-configuration FPGA with the X4 running: ATTN low and IRQ_N high at the RP2040; no RP2040 interrupt | X4 header pins | As stated |

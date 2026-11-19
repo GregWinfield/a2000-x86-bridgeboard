@@ -58,7 +58,7 @@ All recommended decisions D-01 to D-17 from the review §11.1 are adopted. Where
 | G-SHEET1 | Starting sheet 3 (SRAM) | Owner review of sheet 1 **revision B** and its open concerns ([stage2/sheet1-design-notes.md](stage2/sheet1-design-notes.md) §9). **Approved 2026-11-19 for design progression**, pending final hardware verification (change log) |
 | G-SHEET3 | Drawing sheet 2 (FPGA pinout) and sheet 4 (host link) | Owner review of sheet 3 and decision on the FPGA I/O plan C-17. **Approved 2026-11-19 for design progression**, conditional on the decisions being incorporated and verified: done in revision A1 ([stage2/sheet3-design-notes.md](stage2/sheet3-design-notes.md) §13). Not a PCB-manufacture approval |
 | G-SHEET2 | Drawing sheet 4 (host link) | Owner review of sheet 2 (FPGA pin assignment and configuration). **Approved 2026-11-19 for design progression**, subject to the hardware verification gates; revision A1 incorporates the review ([stage2/sheet2-design-notes.md](stage2/sheet2-design-notes.md) §0). Not a PCB-manufacture approval |
-| G-SHEET4 | Final sheet-4 schematic approval | **Conditional approval for design progression (owner, 2026-11-19):** the architectural and digital-logic portions of sheet 4 are accepted for continued development. C-30 approved, and its 4000HC implementation accepted (owner review of PR #8). The S4-6 isolation requirement is approved and the comparator-gated architecture provisionally accepted; the circuit (revision A2: TLV3201 with Q401/Q402, R424 removed, [stage2/sheet4-s46-isolation.md](stage2/sheet4-s46-isolation.md)) must be accepted before final sheet-4 schematic approval. Not a PCB-manufacture approval |
+| G-SHEET4 | Final sheet-4 schematic approval | **Approved as a schematic baseline for continued design (owner review of rev A2, 2026-11-19)**, with the electrical qualifications open:<br>• the U402 /OE transition rate: rev A3 adds U406, for confirmation; qualified by M-16 (b);<br>• transient timing: model-derived bounds, M-16 (a)–(c);<br>• GP24 HIGH-level margin: M-16 (f), (g).<br>S4-6 rev A2 accepted as the preferred Rev 1 implementation. C-30 approved and implemented. Not a PCB-manufacture approval; manufacturing approval requires M-16 (a)–(g) |
 | G-SIM | Freezing sheet 2 (FPGA pinout); any hardware bring-up | `bash hdl/run_checks.sh` reports `ALL HDL CHECKS PASSED`: lint, bus-functional and chain testbenches (random seeds and delay corners), netlist structure check, gate-level hazard test E1, formal prove/bmc/cover ([hdl/verification-matrix.md](hdl/verification-matrix.md)) |
 | G-STA | Freezing the FPGA choice and pinout | Lattice Diamond post-place-and-route analysis at the chosen pins, −4 grade (or the grade bought): every MAXDELAY path ≤ 18 ns at the slow corner (VCCIO min, TJ max), **both edges**, 10 pF load; minimum delays recorded and the hazard setup requirement S_req ≤ (M-7 slot setup − 3 ns) ([stage2/sheet1-timing-budget.md](stage2/sheet1-timing-budget.md) §9) |
 | G-PSU (ER-5) | Installing any powered prototype in an A2000 | PSU measurement record completed and reviewed |
@@ -92,9 +92,19 @@ All recommended decisions D-01 to D-17 from the review §11.1 are adopted. Where
   1. R424 back-fed GP24 from U402's IRQ_N output. R424 is removed, and firmware enables the GP22 pull-up (FW-6).
   2. The TLV7021's delay is typical only. The worst-case rerun found rev A1 within VIH max only to about 18 V/ms on typical delays, so the rev A1 claim "any discharge rate" is withdrawn.
 - **Rev A2:**
-  - U405 TLV3201 (tPD ≤ 55 ns guaranteed) switches Q401, in series with Q402 on GP24 (BSS138);
+  - U405 TLV3201 (tPD ≤ 55 ns datasheet maximum) switches Q401, in series with Q402 on GP24 (BSS138);
   - threshold 0.940 (R427 6.34 kΩ); R426 and R429 1 kΩ; R431 and TP408 added;
-  - guaranteed ≤ IOVDD + 0.3 V up to 314 V/ms and ≤ IOVDD + 0.5 V up to 1564 V/ms; X4 worst case ≤ 94 V/ms [E];
+  - ≤ IOVDD + 0.3 V up to 314 V/ms and ≤ IOVDD + 0.5 V up to 1564 V/ms (model-derived bounds, relabelled after the owner's review of rev A2); X4 worst case ≤ 94 V/ms [E];
   - M-16 revised (a–f).
 - ERC 51 expected entries (unchanged); audits 418/1103/159/213, 0 failures; 25 of 25 injected faults detected; netlist identical outside sheet 4.
 - For review; no PCB manufacture |
+| 2026-11-19 | **Owner review of sheet 4 rev A2; sheet 4 revision A3.**
+- **S4-6 rev A2 accepted** as the preferred Rev 1 schematic implementation: R424 removal, FW-6, TLV3201, Q401/Q402, the threshold and resistor values, the transient analysis and M-16.
+- **G-SHEET4 approved as a schematic baseline** for continued design, with the electrical qualifications open.
+- PR #8 had already been merged (8d5a360); the follow-up documentation is in a new PR.
+- **Rev A3, for confirmation:**
+  - **Residual 1:** U406 (SN74AUP1G17 Schmitt-trigger buffer, C410) between the open-drain node and U402 /OE. The /OE edge goes from about 37 ns/V to about 0.8 ns/V, against TI's 5 ns/V; the latency goes from 160 to 190 ns.
+  - **Residual 2:** every slope figure relabelled as a model-derived bound: 264 / 1317 V/ms with U406; M-16 (b) measures the falling-ramp comparator response and the full translator disable time.
+  - **Residual 3:** GP24 HIGH-level margin ≥ 0.126 V worst case, 0.186 V representative; M-16 (g) added.
+- ERC 51 expected entries (unchanged); audits 418/1105/159/220, 0 failures; 29 of 29 injected faults detected; netlist identical outside sheet 4.
+- Manufacturing approval requires M-16 (a)–(g). No PCB fabrication |
