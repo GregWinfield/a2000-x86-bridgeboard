@@ -181,7 +181,7 @@ This gives **102 signals**. Use the smaller FPGA only if complete design timing 
 **Recommendation.**
 - **Adopt C-17b if the extra spare pin is wanted.** The isolation follows the existing sheet-4 scheme and adds no new risk.
 - **Sheet 2 can take either choice without re-layout.** It assigns READY and FAULT to FPGA pins; under C-17b the FAULT pin simply becomes the third spare.
-- **Owner decision** (C-26).
+- **Owner decision C-26: approved 2026-11-19.** Implemented in sheet 2 revision A1 (pin 67 freed); the RP2040 side follows on sheets 4/6.
 
 ## 9. Verification summary
 
@@ -209,7 +209,7 @@ Defects found during this work are listed in [../hdl/verification-results.md](..
 | C-23 | 50 MHz register-path slack 2.7 ns at Stage 3 (START decision path) | Low–Medium | Watch at each sheet; if below 1 ns, pipeline the START decision (one extra clock, still deterministic) |
 | C-24 | Zero-wait SRAM cycles: thin margins in the model | Low | Stays disabled until G-ZEROWAIT |
 | C-25 | PiStorm/Emu68 and other non-68000 masters: address setup, strobe widths and cycle gaps unknown. The design assumes ≥ 1 clock of /AS negation between cycles for host progress, and slot setup ≥ S_req | Medium | New measurement M-12; risk R-41 (tracked, owner requirement 4) |
-| C-26 | Option C-17b: four LEDs moved to RP2040 GPIO through an isolating translator, one FPGA READY LED (§8.2) | Low | **Owner decision.** Feasible and recommended if the third spare pin is wanted. Sheet 2 is compatible with either choice |
+| C-26 | Option C-17b: four LEDs moved to RP2040 GPIO through an isolating translator, one FPGA READY LED (§8.2) | Low | **Approved 2026-11-19** (owner). Implemented in sheet 2 revision A1; RP2040 GPIO availability, LED drive current, reset state and power-off behaviour to be verified on sheets 4/6 |
 | C-27 | Byte order across a big-endian Amiga and little-endian RP2040/x86 | Medium | **Defined:** [byte-order-spec.md](../hdl/byte-order-spec.md). Shared memory is a byte array, multi-byte values are big-endian, SPI is MSB first. Vectors for BridgeDiag and firmware; hardware lanes checked by tb_shm S12 |
 
 ## 11. Open requirements carried from the G-SHEET1 approval

@@ -147,3 +147,12 @@ Earlier finding (Stage 2, same day): the exploratory STA had analysed most ports
 | Fallback device LCMXO2-4000HC-4TG144C | Diamond z2_top and `fit_top`, −4 C | 0 / 0 errors; worst 15.85 ns; slack ≥ 3.60 ns |
 | Schematic sheet 2 | `audit_sheet2.py` against the pinout data, the LPF and `fit_top.v` port directions | 1047 checks, 0 failures; mutation test 7 of 7 faults detected |
 | RTL | none changed; full `run_checks.sh` re-run on the final tree | **ALL HDL CHECKS PASSED**: 23 testbench runs (tb_z2 5 554 checks per run, tb_shm 127, tb_chain 18, tb_hazard) and 6 formal tasks |
+
+### 5.7 Sheet 2 revision A1 (owner review of PR #5), 2026-11-19
+
+| Change | Check | Result |
+|---|---|---|
+| C-26: `z2_top` exposes `LED_READY`; `fault_ind` internal; `fit_top`, card model, tb_z2 T3 updated | Full `run_checks.sh` | **ALL HDL CHECKS PASSED**: 23 testbench runs (tb_z2 5 554 checks per run, tb_shm 127, tb_chain 18, tb_hazard) and 6 formal tasks |
+| Pin 67 freed; assignment frozen against `tools/fpga/pins_gsheet2.csv` | `pinplan.py` freeze check, plus two mutants | 0 unexplained differences; both mutants detected |
+| STA at the rev A1 placement | Diamond: 2000HC z2_top and fit test at −4 C and −4 I; 4000HC both at −4 C | 0 / 0 errors in all six runs; worst Zorro path 14.910 ns; 50 MHz slack ≥ 3.11 ns; warning classes unchanged from rev A ([../stage2/sheet2-sta-results.md](../stage2/sheet2-sta-results.md)) |
+| Schematic (J201 polarized and labelled, LED_FAULT removed) | `audit_sheet2.py`; mutation test | 1046 checks, 0 failures; 8 of 8 faults detected |

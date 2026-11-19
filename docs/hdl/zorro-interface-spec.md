@@ -56,7 +56,7 @@
 | `RP_IRQ_N` | out | sheet 4 | Host-side interrupt (z2_mbx), registered, active low |
 | `clk_core` | in | (sheet 2) | 50 MHz [A] |
 | `DIP_MODE_B`, `DIP_INT6`, `DIP_DISABLE` | in | (sheet 6) | Sampled during /BUSRST and at power-on |
-| `LED[1:0]` | out | (sheet 2/6) | LED0 READY: off = not armed, slow blink = armed and unconfigured, steady = configured, fast blink = watchdog flag. LED1 FAULT: watchdog flag or an interrupt asserted. Each ORed with a CONTROL test bit |
+| `LED_READY` | out | (sheet 2/6) | READY (pin 65): off = not armed or FPGA blank, slow blink = armed and unconfigured, steady = configured, fast blink = watchdog flag; ORed with CONTROL b4. **C-26 (option C-17b):** the FAULT indication (watchdog flag or an enabled interrupt asserted, ORed with CONTROL b5) has no FPGA pin. It is `fault_ind` inside `z2_top`, for the sheet-4 host status word; the RP2040 drives the FAULT LED from it |
 
 ## 4. Clocking, reset and arming
 
@@ -228,7 +228,7 @@ $48 alone also configures. A /BERR during the configuring write cancels it.
 | $0000 | MAGIC | R | $4252 | "BR" |
 | $0002 | VERSION | R | $0A02 | [15:8] hardware revision, [7:0] HDL version (02 = Stage 3) |
 | $0004 | STATUS | R | – | b0 mode B; b1 INT_SEL; b2 zero-wait; b4 DIP mode B; b5 DIP INT6; b6 DIP disable; b8 watchdog tripped (sticky); **b9 EN_OK; b10 armed** |
-| $0006 | CONTROL | R/W | $0000 (b2 from DIP) | b0 ZERO_WAIT_EN (gate G-ZEROWAIT); b1 IRQ_EN; b2 INT_SEL; b5..4 LED test (FAULT, READY); b8 write 1 clears the watchdog flag (high byte) |
+| $0006 | CONTROL | R/W | $0000 (b2 from DIP) | b0 ZERO_WAIT_EN (gate G-ZEROWAIT); b1 IRQ_EN; b2 INT_SEL; b5..4 LED test (b5: FAULT indication to the RP2040 via the host status word, C-26; b4: READY pin); b8 write 1 clears the watchdog flag (high byte) |
 | $0008 / $000A | SCRATCH0 / 1 | R/W | $0000 at power-on | Byte lanes honoured; survive /BUSRST; TAS target for RMW tests |
 | $000C | ZCYCLES | R | 0 | Board-window cycles |
 | $000E | TICKS | R | 0 | clk/1024 |

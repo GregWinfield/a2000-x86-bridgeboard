@@ -5,7 +5,7 @@ Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-o
 4,Bus interface,Address/control input buffers (5V-tolerant),Texas Instruments or Nexperia,SN74LVC16244ADGGR / 74LVC16244ADGG,TSSOP-48,2,not checked,E,0.80,1.60,E,32 channels: 31 Zorro inputs + /BERR (rev B; CDAC no longer buffered)
 5,Bus interface,"/SLAVEn and /CFGOUTn driver at 5 V levels, ~OE = CARD_EN_N (rev B, C-03/C-04)",Texas Instruments,SN74LVC8T245PWR,TSSOP-24,1,not checked,S53,1.00,3.00,E,Sheet 1 U104. Replaces SN74LVC2T45 (no OE). 2 of 8 channels used; unused A/B tied to GND. Same part family as MNT VA2000 translators (S12)
 6,Bus interface,Open-drain /INT2 /INT6 XRDY (+DNP /OVR /DTACK),Texas Instruments or Nexperia,SN74LVC07APWR,TSSOP-14,1,not checked,E,0.30,0.80,E,5V-tolerant open-drain outputs (Ioff) [K]
-7,X4 isolation,RP2040 link / JTAG isolating translators,Texas Instruments,SN74AVC4T774PWR,TSSOP-16,3,USD 0.42-1.65,S26,0.65,2.60,Vs,B-side VCC = X4 header 3.3 V (P3V3_S)
+7,X4 isolation,RP2040 link / JTAG isolating translators,Texas Instruments,SN74AVC4T774PWR,TSSOP-16,4,USD 0.42-1.65,S26,0.65,2.60,Vs,"B-side VCC = X4 header 3.3 V (P3V3_S). Fourth device (U_d) for the C-26 RP2040 LEDs, all channels B->A"
 8,Power entry,12 V eFuse (OVLO/UVLO/ILIM/soft-start/reverse block),Texas Instruments,TPS25947 (variant TBD),VQFN-HR 2x2 mm,1,USD 1.29-2.17 (Mouser),S27,2.00,3.40,Vs,Variant choice: fixed 13.8 V clamp vs adjustable OVLO
 9,Power entry,12 V input fuse (about 5 A slow-blow),Littelfuse or equivalent,TBD (SMD Nano2 class or ATO + holder),TBD,1,not checked,E,1.00,4.00,E,Rating finalised on power sheet
 10,Power entry,12 V TVS,Littelfuse/Vishay/Bourns,SMBJ15A class,SMB,1,not checked,E,0.30,0.80,E,Clamp must stay below eFuse 28 V abs max
@@ -23,7 +23,7 @@ Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-o
 22,Connectors,FPGA JTAG header,Various,TBD (1x6 2.54 mm pin header),THT,1,not checked,E,0.50,1.50,E,"J201: 1 VREF, 2 GND, 3 TCK, 4 TDO, 5 TDI, 6 TMS (pin order is a project choice)"
 23,Connectors,Debug/expansion header (4 FPGA I/O + power),Various,TBD 1x8 2.54 mm,THT,1,not checked,E,0.30,0.50,E,Future plug-in USB-HS SPI bridge
 24,User I/O,4-position DIP switch,Various,TBD,SMD/THT,1,not checked,E,0.80,2.00,E,Mode / IRQ level / X4 auto-start / JTAG source
-25,User I/O,Status LED + resistor,Various,TBD,0805,3,not checked,E,0.17,0.33,E,3V3 power (hard-wired) + 2 FPGA-driven (READY + FAULT; C-17). Option C-17b: +4 RP2040-driven LEDs and one SN74AVC4T774 (sheet 4)
+25,User I/O,Status LED + resistor,Various,TBD,0805,6,not checked,E,0.17,0.33,E,"3V3 power (hard-wired) + 1 FPGA-driven READY + 4 RP2040-driven (C-26, option C-17b, approved 2026-11-19; GP16-GP19 via item 7's fourth translator, 100 kOhm B-side pull-downs in item 26). Drive current set on sheet 6"
 26,Passives,Decoupling and misc passives (about 80 parts),Various,TBD,0402/0603/0805,1,not checked,E,4.00,10.00,E,Remaining passives (sheets 4-6); the sheet lots in items 41-43 may overlap this estimate: re-base at sheet 6
 27,Passives,Test points (about 16; bare pads low / Keystone high),Keystone or pads,TBD,THT/SMD,1,not checked,E,0.00,3.00,E,
 28,Mechanical,M2.5 standoffs + screws for X4,Various,TBD (height >= 6 mm),hardware,4,not checked,E,0.75,1.50,E,Hole positions from STEP model (Stage 6)

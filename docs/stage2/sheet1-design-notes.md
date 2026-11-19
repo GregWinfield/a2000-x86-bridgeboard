@@ -232,7 +232,7 @@ Unchanged from revision A: 100 pads, 1.524 × 5.0 mm on 2.54 mm pitch, matching 
 | M-4 | No /BERR during AutoConfig or register access | TP113, BERR_EVENTS register | Never asserted |
 | M-5 | XRDY negation in XRDY-gated mode | TP111, TP101 | ≤ 60 ns; released for non-selected cycles |
 | M-6 | Power-up/down, unprogrammed FPGA | TP102, TP109, TP110, TP111, TP118 | No assertion of /SLAVEn, /INTx, XRDY; /CFGOUTn passes |
-| M-7 | Address setup to /AS at the slot (A16–A23) | J101 | **≥ 19.4 ns** (conservative STA S_req + 3 ns); 12.8–19.4 ns only on the same-corner basis |
+| M-7 | Address setup to /AS at the slot (A16–A23) | J101 | **≥ 19.3 ns** since sheet 2 rev A1 (was 19.4 ns with Diamond-placed pins). Measured minimum minus instrument uncertainty, against the envelope of every analysed placement (S_req 16.239 + 3, rounded up), re-derived for the bitstream under test ([sheet2-sta-results.md](sheet2-sta-results.md) §4). 13.0–19.3 ns only on the same-corner basis, recorded as such |
 | **M-8** | Backplane terminations, A2000 off, no cards: each slot's /CFGOUTn to GND and /SLAVEn to +5 V | J101 sockets | ≈ 1 kΩ each (RP607 / RP800) |
 | **M-9** | Power-on: +3V3, +5V_BUS, EN_OK, CARD_EN_N against /BUSRST | TP119, TP118, TP112 | CARD_EN_N falls only while /BUSRST is asserted; record the EN_OK delay and the A2000 reset length |
 | **M-10** | TAS on SCRATCH0 from the Amiga; logic analyser on /AS, /UDS//LDS, READ, DOE, XRDY, ZF_DBUF_OE_N, ZF_DBUF_DIR | TPs + FPGA debug header | B-port enable ends before READ falls; RMW_CYCLES increments; result correct |
