@@ -1,6 +1,12 @@
 # Sheet 2: FPGA pin assignment and configuration circuitry (revision A1)
 
-**Status:** revision A1, 2026-11-19.
+**Status:** revision A1, 2026-11-19. **Revision A2 (C-30, owner approval 2026-11-19):**
+- U201 is the **LCMXO2-4000HC-4TG144C**, generated from the MachXO2-4000 pinout.
+- The G-SHEET2 pin assignment is unchanged; the 4000HC-only pads 31, 63 and 103 are kept spare.
+- No connection changed (netlist compared).
+- Budget: 107 usable, 101 used, 6 spare ([../pin-assignment-matrix.md](../pin-assignment-matrix.md) §4).
+- STA with the complete design: [sheet4-sta-results.md](sheet4-sta-results.md).
+- The rest of this document describes revision A1 on the 2000HC.
 - **G-SHEET2 approved for design progression** (owner review of PR #5) and incorporated here (§0).
 - **Not validated.** An ERC-clean schematic, passing netlist audits and passing static timing do not prove electrical or timing correctness on hardware.
 - **Not a PCB-manufacture approval.** Every hardware gate stays open (§11).

@@ -190,3 +190,14 @@ The earlier runs (lint, tb_z2 random and delay corners, tb_z2 and tb_shm with th
 - an optimistic simulated MISO delay.
 
 Details: [../stage2/sheet4-design-notes.md](../stage2/sheet4-design-notes.md) §10.
+
+### 5.9 Sheet 4 revision A1 and sheet 2 revision A2 (owner review of PR #7), 2026-11-19
+
+| Change | Check | Result |
+|---|---|---|
+| No RTL or constraint-logic change (device and file headers only) | Full `run_checks.sh` | **ALL HDL CHECKS PASSED** (39 testbench runs, 9 formal tasks) |
+| C-30: pin plan on the MachXO2-4000 pinout; the 4000HC-only pads kept free | `pinplan.py`: freeze check, compatibility with the 2000HC pinout | 101 signals on their frozen pins; 0 problems; LPF LOCATEs unchanged; 6 spare |
+| C-30: sheet 2 U201 regenerated from the 4000 pinout | Netlist comparison of U201 before and after; `audit_sheet2.py` | No connected pin changed (only the names of the 6 unconnected spare pins); 1100 checks, 0 failures |
+| S4-6 rev A1: U402 /OE from comparator U405 | `audit_sheet4.py`; mutation test; ERC | 204 checks, 0 failures; 17 of 17 faults detected; 51 expected ERC entries |
+| S4-6 analysis | `tools/analysis/k4_transient.py` | Rev A: +0.6 V above IOVDD for 0.7–7.4 ms, 31–49 mA GPIO turn-on. Rev A1: ≤ +0.29 V, GP24 ≤ 0.36 mA ([../stage2/sheet4-s46-isolation.md](../stage2/sheet4-s46-isolation.md)) |
+| Diamond default device | `run_diamond.sh` without a device argument | LCMXO2-4000HC; reproduces the z2_top commercial figures exactly |

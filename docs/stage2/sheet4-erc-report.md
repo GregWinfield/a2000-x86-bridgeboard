@@ -1,10 +1,10 @@
-# ERC report: project with sheet 4 revision A
+# ERC report: project with sheet 4 revision A1 and sheet 2 revision A2
 
 **Run:** 2026-11-19, KiCad 10.0.8, `kicad-cli sch erc --severity-all` on the root schematic (all sheets). Raw report: [sheet4-erc-report.txt](sheet4-erc-report.txt). Schematic PDF of the whole project: [sheet4-schematic.pdf](sheet4-schematic.pdf) (sheet 4 is page 5).
 
 **An ERC result is not a validation.** It shows only that the remaining entries are the intended, documented ones. Connectivity is checked separately by the netlist audits, all with **0 failures**:
-- `tools/kicad/audit_sheet4.py`: **189 checks**. It detects 14 of 14 injected wiring and value faults (mutation test: [sheet4-design-notes.md](sheet4-design-notes.md) §6.5);
-- `tools/kicad/audit_sheet2.py`: **1098 checks** (FPGA_TDO now reaches U402, decision S4-6);
+- `tools/kicad/audit_sheet4.py`: **204 checks**. It detects 17 of 17 injected wiring and value faults (mutation test: [sheet4-design-notes.md](sheet4-design-notes.md) §6.5);
+- `tools/kicad/audit_sheet2.py`: **1100 checks** (FPGA_TDO reaches U402; since C-30, U201 is the LCMXO2-4000HC, checked against the 4000 pinout);
 - `tools/kicad/audit_sheet1.py`: **418 checks** (sheet 1 unchanged);
 - `tools/kicad/audit_sheet3.py`: **159 checks** (sheet 3 unchanged).
 
@@ -20,6 +20,10 @@
 - sheet 4 adds 5 open pins and 4 isolated labels toward sheet 6, and 2 spare-channel warnings.
 
 No other categories appear. In particular:
-- no `power_pin_not_driven`: X4_3V3_REF and RP_VIO, both fed through passive parts, carry a PWR_FLAG;
+- no `power_pin_not_driven`: X4_3V3_REF, fed through J401, carries a PWR_FLAG;
 - no duplicate references;
 - no annotation errors.
+
+**Revision A1 / A2 (2026-11-19):**
+- Re-run after S4-6 rev A1 (comparator U405, R426–R430, C409; R416, R417 and RP_VIO removed) and C-30 (U201 from the 4000HC pinout).
+- Same 51 entries in the same categories. U405's open-drain output on RP_EN_N, with the R429 pull-up, raises no ERC entry.

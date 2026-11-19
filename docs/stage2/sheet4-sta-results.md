@@ -18,7 +18,7 @@
 > **What this closes and what it does not.**
 > - **Closes:** the static-timing part of owner requirement 8 for this revision. Every Zorro path, the SRAM and local-bus outputs, the 50 MHz core and the new SCK domain meet their constraints at both grades, at the frozen pins, on the LCMXO2-4000HC.
 > - **Does not close:**
->   - **C-30:** the design no longer fits the LCMXO2-2000HC (§5). Adopting the 4000HC is an owner decision;
+>   - **C-30** (approved 2026-11-19): the design no longer fits the LCMXO2-2000HC (§5), so the 4000HC is the Rev 1 device;
 >   - the board-level SPI timing, which depends on assumptions about the ribbon and the RP2040 ([sheet4-timing-budget.md](sheet4-timing-budget.md), M-15);
 >   - every hardware measurement (M-1 to M-16) and every later re-run after an RTL or pin change.
 
@@ -117,7 +117,7 @@ Buffer-skew term 3.5 ns, as before.
 
 The host-link engine itself is about 461 FF / 866 LUT4 (Diamond area report). Fitting the 2000HC would need a smaller protocol engine (fewer commands, no ECHO, a smaller staging buffer) and gives no margin for sheets 5–6.
 
-**Recommendation (owner decision C-30):** adopt the **LCMXO2-4000HC-4TG144C**.
+**C-30, approved by the owner 2026-11-19:** the **LCMXO2-4000HC-4TG144C** is the Rev 1 device.
 - It is the documented migration path of D-02.
 - It is pin-compatible at every frozen pin; the sheet-2 migration check passes against the 4000HC pinout extract.
 - At ~50 % it leaves room for sheets 5–6.
@@ -141,3 +141,13 @@ Price and availability: TBV before BOM freeze ([../bom/bom-preliminary.csv](../b
 - Mutants of each are detected ([sheet4-design-notes.md](sheet4-design-notes.md) §5.2).
 
 **Lesson for requirement 8:** a stub that ties off a port also removes the logic behind it from timing. The host-side mailbox paths were never analysed until the real host interface existed.
+
+## 7. Revision A1 (2026-11-19): no re-run needed, one confirming run
+
+**Unchanged since the six runs above:**
+- RTL, LPF and pins (`pinplan.py` on the 4000HC data produces byte-identical LOCATEs);
+- the device.
+
+The S4-6 rev A1 circuit and the sheet-2 symbol change (C-30) are board-side and do not enter the FPGA timing. Their board-level effect is covered by the timing budget: U402 is back in the 3.3 V column.
+
+**Confirming run:** `run_diamond.sh` with no device argument now targets the LCMXO2-4000HC. On this tree it reproduces the z2_top commercial figures exactly: 0/0 errors, pad check PASS, 50 MHz slack 2.911 ns, RP_MISO 13.771 / 3.542 ns.

@@ -1,4 +1,4 @@
-ERC report (2026-11-19T15:20:14, Encoding UTF8)
+ERC report (2026-11-19T16:23:43, Encoding UTF8)
 Report includes: Errors, Warnings, Exclusions
 
 ***** Sheet /
@@ -79,16 +79,16 @@ Report includes: Errors, Warnings, Exclusions
     @(45.72 mm, 73.66 mm): Hierarchical Label 'I2C_SCL'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
-    @(45.72 mm, 325.12 mm): Hierarchical Label 'LED_READY'
+    @(45.72 mm, 327.66 mm): Hierarchical Label 'LED_READY'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
-    @(45.72 mm, 330.20 mm): Hierarchical Label 'DIP_MODE_B'
+    @(45.72 mm, 332.74 mm): Hierarchical Label 'DIP_MODE_B'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
-    @(45.72 mm, 332.74 mm): Hierarchical Label 'DIP_INT6'
+    @(45.72 mm, 335.28 mm): Hierarchical Label 'DIP_INT6'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
-    @(45.72 mm, 337.82 mm): Hierarchical Label 'DIP_DISABLE'
+    @(45.72 mm, 340.36 mm): Hierarchical Label 'DIP_DISABLE'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
     @(172.72 mm, 55.88 mm): Hierarchical Label 'DBG0'

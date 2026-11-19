@@ -1,6 +1,6 @@
 # Sheet 4: host-link SPI timing budget (owner requirement 4)
 
-**Revision A, 2026-11-19.** This document sets the board-level budget for the SCK-to-MISO path. It also covers MOSI capture, chip select and ATTN at the two SCK targets of decision S4-1: **10 MHz initial** and **20 MHz performance**.
+**Revision A1, 2026-11-19** (S4-6 revised: U402's B side back on the header 3.3 V). This document sets the board-level budget for the SCK-to-MISO path. It also covers MOSI capture, chip select and ATTN at the two SCK targets of decision S4-1: **10 MHz initial** and **20 MHz performance**.
 
 **Inputs:**
 - FPGA figures: Diamond STA at the frozen pins on the LCMXO2-4000HC ([sheet4-sta-results.md](sheet4-sta-results.md) §2);
@@ -10,7 +10,7 @@
 > **Status:**
 > - The budget closes on paper at both targets: 10 MHz with the standard MISO launch and 20 MHz with the early launch.
 > - It rests on one conservative assumption about the RP2040's input sampling [A], and on one unmeasured property for early launch (§3.3).
-> - **Hardware measurement M-15 decides the operating rate and the launch edge.** Until then: 10 MHz, standard launch.
+> - **Owner decision (review of PR #7): 10 MHz is the initial operating rate; 20 MHz stays experimental until M-15 establishes safe timing.** M-15 decides the launch edge.
 
 > **Rounding rule (owner refinement 4):** delays and requirements are rounded up; margins and minimum delays are rounded down.
 
@@ -22,7 +22,7 @@ All times are at the pins. "RP2040 pin" means the RP2040 package pin, at the X4 
 |---|---|---|---|
 | Ribbon + carrier traces, per direction | **1.0 ns** | 0 | [A]: ribbon ≤ 15 cm (D-07, about 5 ns/m) plus ≤ 5 cm of carrier trace. Layout and M-15 |
 | U401 B→A (SCK, MOSI, CS_N), VCCA = VCCB = 3.3 V ± 0.3 V | 2.8 ns | 0.1 ns | [V S66] |
-| U402 A→B (MISO), VCCA = 3.3 V ± 0.3 V, VCCB = RP_VIO | 2.9 ns | 0.1 ns | [V S66]. RP_VIO must stay ≥ 3.0 V for this column: §5, item 4 |
+| U402 A→B (MISO), VCCA = VCCB = 3.3 V ± 0.3 V | 2.9 ns | 0.1 ns | [V S66]. Since S4-6 rev A1 U402's B side is on the header 3.3 V again (its /OE is gated, §5 item 4) |
 | **t_IN**: RP2040 SCK pin → FPGA pin 5 | **3.8 ns** | 0.1 ns | 1.0 + 2.8 |
 | **t_OUT**: FPGA pin 4 → RP2040 MISO pin (incl. R411 33 Ω) | **3.9 ns** | 0.1 ns | 2.9 + 1.0 |
 | **t_FPGA**: SCK edge at pin 5 → MISO at pin 4 | 15.371 ns (default build), 14.120 ns (early build) | 3.349 ns (default), **3.200 ns** (early) | Diamond, worst of the runs; includes the SCK pad (1.163 ns), the primary clock net (2.364 ns), the flop, the multiplexer and the output pad at 15 pF |
@@ -127,7 +127,7 @@ The FPGA reports which build it is in IDENTIFY: FEATURES b2 = 1 for early launch
 | 1 | Ribbon and carrier-trace delay per direction | ≤ 1.0 ns | Layout (trace lengths), then M-15 (scope at both ends) |
 | 2 | RP2040 MISO sampling before its SCK↑ pin edge | ≤ 16 ns (setup side) | **M-15** |
 | 3 | RP2040 MISO sampling after its SCK↑ pin edge (early launch only) | ≤ 3.4 ns needed | **M-15** |
-| 4 | U402's B supply RP_VIO ≥ 3.0 V, so the 3.3 V ± 0.3 V delay column applies | Estimated ≥ 3.03 V [E]: P3V3_S ≥ 3.135 V (3.3 V − 5 % [A]); the GP24 driver drop at about 1.2 mA average (20 MHz MISO into about 20 pF) [E]; R416 47 Ω × 1.2 mA = 0.06 V. Not critical: in the VCCB = 2.5 V ± 0.2 V column, A→B is ≤ 3.3 ns, only 0.4 ns more [V S66 §5.10], which every margin in §2 absorbs | **M-16** (RP_VIO at TP407 under 20 MHz traffic) |
+| 4 | U402's B supply = X4_3V3_REF (P3V3_S, 3.135–3.465 V [A]) inside the 3.3 V ± 0.3 V column. *Revision A's GPIO-sourced RP_VIO, which needed this check, is withdrawn (S4-6 rev A1)* | – | P3V3_S tolerance: X4 measurement (M-16) |
 | 5 | RP2040 SCK-to-MOSI output skew | ≤ 2.0 ns | M-15 |
 | 6 | 15 pF STA output load covers pin 4 + U402 A input + trace | Conservative [A] | Layout |
 
@@ -141,9 +141,7 @@ The FPGA reports which build it is in IDENTIFY: FEATURES b2 = 1 for early launch
   - error-free at the chosen rate, with ≥ 25 % of W in hand;
   - the early launch is adopted only if its hold condition is shown with margin.
 
-**M-16:** RP_VIO and back-powering (also part of the requirement-7 checks in the design notes §7).
-- **Procedure:**
-  1. Measure RP_VIO at TP407 at idle and during 20 MHz bursts.
-  2. With the carrier powered, hold the X4's K4 key and repeat RP2040 resets.
-  3. Confirm that no current flows into the RP2040's pins: IRQ_N, ATTN, MISO and TDO at the RP2040 side stay ≤ IOVDD + 0.3 V.
-  4. Confirm that the RP2040 power-cycles cleanly.
+**M-16:** U402 output enable and back-powering (S4-6 rev A1; the requirement-7 checks in the design notes §7; procedure in [sheet4-s46-isolation.md](sheet4-s46-isolation.md) §5).
+- With the carrier powered, hold the X4's K4 key: /OE (TP407) must rise before IOVDD falls below X4_3V3_REF − 0.3 V.
+- No RP2040 pin (IRQ_N, ATTN, MISO, TDO) may go above IOVDD + 0.3 V.
+- The RP2040 must power-cycle cleanly.
