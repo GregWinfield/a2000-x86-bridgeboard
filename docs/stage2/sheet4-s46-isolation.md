@@ -8,7 +8,7 @@ Revision A3 answers the three residual requirements:
 
 | Residual requirement | Finding | Revision A3 |
 |---|---|---|
-| **1. U402 /OE transition rate** (about 37 ns/V against TI's ≤ 5 ns/V) | Five options evaluated (§6). Lowering R429 alone cannot reach 5 ns/V: Q401's output capacitance dominates. A PMOS active pull-up does not reach it with certainty | **U406, a TI SN74AUP1G17 Schmitt-trigger buffer**, between the open-drain node and U402's /OE. It gives an estimated 0.8 ns/V push-pull edge. It sits wholly on the carrier side, specified from 0.8 V, with Ioff, so the power-off isolation is preserved. The disable latency becomes 190 ns. **For your confirmation** (§6–§7) |
+| **1. U402 /OE transition rate** (about 37 ns/V against TI's ≤ 5 ns/V) | Five options evaluated (§6). Lowering R429 alone cannot reach 5 ns/V: Q401's output capacitance dominates. A PMOS active pull-up does not reach it with certainty | **U406, a TI SN74AUP1G17 Schmitt-trigger buffer**, between the open-drain node and U402's /OE. It gives an estimated 0.8 ns/V push-pull edge. It sits wholly on the carrier side, specified from 0.8 V, with Ioff, so the power-off isolation is preserved. The disable latency becomes 190 ns. **Accepted in your review of PR #9** (§6–§7) |
 | **2. Transient timing** | Agreed: the slope figures are model results, not manufacturer guarantees | **Relabelled throughout as model-derived bounds** that depend on stated assumptions (box below). New figures: **264 V/ms** (VIH max) and **1317 V/ms** (absolute maximum). M-16 keeps the falling-ramp comparator response and the full translator disable time (§12) |
 | **3. GP24 HIGH-level margin** against 0.940 × X4_3V3_REF | **≥ 0.126 V** in the worst static case (FW-1 8 mA drive, 3.135 V supply, maximum X4 load, all tolerances). 0.186 V in a representative case. ≥ 0.117 V even with the weakest 2 mA drive. Dynamic contributors (supply transients, ribbon crosstalk) are estimated, not bounded (§9) | No circuit change. M-16 (f) and (g) measure the margin under traffic and X4 load |
 
@@ -240,7 +240,7 @@ In revision A2, /OE rose through R429 into about 60 pF (Q401's output capacitanc
 - **One more active device in the disable path.** A U406 output stuck low would enable U402 whatever Q401 and Q402 do. That is a single-point fault, of the same kind a Q401 drain-source short already is for the fast path.
 - **The latency rises from 160 to 190 ns,** because the Schmitt threshold (≤ 0.764 × VCC) sits above U402's VIH (2.0 V). R429 680 Ω would recover most of it, at 5.2 mA.
 
-**Recommendation: U406 with R429 1 kΩ, drawn in revision A3, for your confirmation.** If you prefer the rev A2 circuit unchanged, the deviation is recorded here and in the design notes (F-14). Electrical qualification M-16 (b) is then required before manufacturing approval.
+**Decision (your review of PR #9): U406 with R429 1 kΩ, as drawn in revision A3, is accepted**, in preference to keeping the deviation. The rev A2 deviation remains recorded here and in the design notes (F-14) as history. Electrical qualification M-16 (b) is then required before manufacturing approval.
 
 ## 7. Revision A3 circuit (drawn on sheet 4)
 
@@ -403,7 +403,7 @@ In revision A2, /OE rose through R429 into about 60 pF (Q401's output capacitanc
 
 ## 13. Open items (nothing closed)
 
-- **Your confirmation of U406 (rev A3)** as the improvement for residual 1. Alternatively, keep rev A2 unchanged, with the deviation recorded (§6) and qualified.
+- U406 (rev A3) was **accepted** in your review of PR #9; its transition rate, disable latency and the GP24 margin are part of M-16.
 - **Electrical qualification M-16 (a)–(g)** before manufacturing approval.
 - **R-52** (Mitigating): the link depends on firmware driving GP24 and on U405, Q401, Q402 and U406. If firmware does not raise GP24, U402 stays disabled.
 - **Estimates to confirm on hardware:** C_eff and the P3V_RP load (§4.2); TLV3201 hysteresis; node capacitances; U406's VT+ at 3.3 V; the Q32 and copper drops; P3V3_S tolerance [A].

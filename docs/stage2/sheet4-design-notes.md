@@ -4,7 +4,7 @@
 - **G-SHEET4: approved as a schematic baseline for continued design** (your review of rev A2), with the electrical qualifications open.
 - **C-30 approved**, and implemented (§0). Your review of PR #8 accepted the 4000HC implementation.
 - **S4-6:** revision A2 is accepted as the preferred Rev 1 implementation. Revision A3 answers your three residual requirements:
-  - U406, a Schmitt-trigger buffer, gives U402's /OE a compliant edge. **This needs your confirmation.**
+  - U406, a Schmitt-trigger buffer, gives U402's /OE a compliant edge. **Accepted in your review of PR #9.**
   - The slope figures are relabelled as model-derived bounds.
   - The GP24 HIGH-level margin is verified.
 
@@ -59,7 +59,7 @@
 | ID | Decision | Implemented in revision A3 |
 |---|---|---|
 | **S4-6** | **Rev A2 accepted** as the preferred Rev 1 schematic implementation: R424 removal, FW-6, TLV3201, Q401/Q402, the threshold and resistor values, the transient analysis and M-16 | Recorded (baseline, risk register) |
-| **Residual 1** | U402 /OE edge (about 37 ns/V) exceeds TI's recommended 5 ns/V. Evaluate a simple improvement that preserves the power-off isolation; if the circuit is unchanged, record the deviation and require electrical qualification before manufacturing approval | Five options evaluated ([sheet4-s46-isolation.md](sheet4-s46-isolation.md) §6).<br>**Drawn: U406 SN74AUP1G17** between the open-drain node (R429, Q401) and /OE, giving about 0.8 ns/V [E]. It is carrier-side only, specified from 0.8 V, with Ioff; the latency rises to 190 ns.<br>**For your confirmation.** The deviation stays recorded (F-14) in case you prefer rev A2 unchanged |
+| **Residual 1** | U402 /OE edge (about 37 ns/V) exceeds TI's recommended 5 ns/V. Evaluate a simple improvement that preserves the power-off isolation; if the circuit is unchanged, record the deviation and require electrical qualification before manufacturing approval | Five options evaluated ([sheet4-s46-isolation.md](sheet4-s46-isolation.md) §6).<br>**Drawn: U406 SN74AUP1G17** between the open-drain node (R429, Q401) and /OE, giving about 0.8 ns/V [E]. It is carrier-side only, specified from 0.8 V, with Ioff; the latency rises to 190 ns.<br>**Accepted in your review of PR #9** (2026-11-20), in preference to keeping the deviation |
 | **Residual 2** | Keep M-16, including the falling-ramp comparator response and full translator disable time; label 314 V/ms a model-derived bound, not a manufacturer guarantee | Relabelled everywhere. Rev A3's bounds are **264 V/ms** (VIH max) and **1317 V/ms** (absolute maximum), both model-derived. M-16 (b) measures the comparator response and the time until every B output is Hi-Z |
 | **Residual 3** | Verify the GP24 HIGH-level margin against 0.940 × X4_3V3_REF under representative supply and operating conditions | Representative 0.186 V; worst ≥ 0.126 V with FW-1's drive, and ≥ 0.117 V at any drive. Dynamic contributors estimated. M-16 (g) added ([sheet4-s46-isolation.md](sheet4-s46-isolation.md) §9) |
 | G-SHEET4 | Approved as a schematic baseline for continued design, with the electrical qualifications open | Baseline updated; remaining schematic work proceeds |
@@ -434,7 +434,7 @@ So no FPGA input is driven while +3V3 is off. **R-49 stays Open** for sheets 5�
 | ID | Item | Status |
 |---|---|---|
 | C-30 | LCMXO2-4000HC (D-02) | **Approved 2026-11-19** and implemented |
-| **S4-6** | **Rev A2 accepted** (your review of rev A2). Rev A3 adds U406 for residual 1: **for your confirmation**. Electrical qualification M-16 (a)–(g) is required before manufacturing approval | Analysis: [sheet4-s46-isolation.md](sheet4-s46-isolation.md); hardware M-16 |
+| **S4-6** | **Rev A2 accepted** (your review of rev A2). Rev A3 (U406, residual 1) **accepted** (your review of PR #9). Electrical qualification M-16 (a)–(g) is required before manufacturing approval | Analysis: [sheet4-s46-isolation.md](sheet4-s46-isolation.md); hardware M-16 |
 | C-26 | RP2040 LEDs | Sheet-4 part verified (§8); LED drivers on sheet 6 |
 | C-28 | Erased FPGA's I2C configuration port ACKs 0x40–0x43 | **Open** until sheet 5 is completed and reviewed (R-50) |
 | C-29 | Back-powering through input clamps | Sheet-4 share met by design (§7); **Open** until sheets 5–6 are completed and reviewed (R-49) |
