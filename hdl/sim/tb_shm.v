@@ -167,6 +167,7 @@ module tb_shm;
     task hreg_wr8; input [3:0] i; input [15:0] d; reg [15:0] x; begin `HOST.xfer(1'b1, 1'b1, {14'd0, i}, 2'b01, d, x); end endtask
     task hreg_rd; input [3:0] i; output [15:0] d; begin `HOST.xfer(1'b1, 1'b0, {14'd0, i}, 2'b11, 16'h0, d); end endtask
     task hmem_wr; input [17:0] a; input [15:0] d; input [1:0] be; reg [15:0] x; begin `HOST.xfer(1'b0, 1'b1, a, be, d, x); end endtask
+    integer s9_err0;
     task hmem_rd; input [17:0] a; output [15:0] d; begin `HOST.xfer(1'b0, 1'b0, a, 2'b11, 16'h0, d); end endtask
 
     task zorro_reset;
@@ -378,7 +379,15 @@ module tb_shm;
         fpga_cfg = 1'b1; #(2000.0);
         hmem_rd(18'h01010, d); expect16("S9 neighbour word kept (1)", d, 16'h1010);
         hmem_rd(18'h01011, d); expect16("S9 neighbour word kept (2)", d, 16'h1111);
+`ifdef HOST_BFM
         hmem_rd(18'h01012, d);
+`else
+        // Through the SPI link: the word left undefined by the interrupted write is X in the SRAM
+        // model, and X poisons the FPGA's response CRC, so the BFM reports one invalid response. Real
+        // SRAM returns some value with a valid CRC (a model artefact); accept exactly that one failure.
+        s9_err0 = c.spi.errors; hmem_rd(18'h01012, d);
+        if (d === 16'hxxxx && c.spi.errors == s9_err0 + 1) c.spi.errors = s9_err0;
+`endif
         $display("S9 word written during the reconfiguration reads %h (any value is acceptable)", d);
         zorro_reset(20000.0); configure(8'hE9);
 

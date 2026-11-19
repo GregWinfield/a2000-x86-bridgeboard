@@ -23,7 +23,7 @@ module spi_master_bfm (
     real    half = 50.0, t_css = 100.0, t_csh = 100.0, t_csw = 1000.0, rx_skew = 16.0;
     real    attn_timeout = 1.0e6;                     // 1 ms (protocol §8)
     integer seed = 5, n_sram = 0, n_reg = 0, errors = 0, retries = 0, frames = 0;
-    real    max_lat = 0.0, sum_lat = 0.0;
+    real    max_lat = 0.0, sum_lat = 0.0, bt0 = 0.0;   // sum_lat / n_sram = time per word
     reg     busy = 1'b0;
     reg [7:0] seq = 8'h00;
     reg [7:0] txb [0:599];
@@ -31,6 +31,7 @@ module spi_master_bfm (
     reg [15:0] buf_w [0:127];
     reg [15:0] buf_r [0:127];
     reg     verbose = 1'b0;
+    initial if ($test$plusargs("spi_verbose")) verbose = 1'b1;
 
     function [15:0] crc_upd;
         input [15:0] c;
@@ -173,12 +174,12 @@ module spi_master_bfm (
         integer i;
         begin
             while (busy) #(20.0);
-            busy = 1'b1;
+            busy = 1'b1; bt0 = $realtime;
             txb[5] = {6'd0, addr[17:16]}; txb[6] = addr[15:8]; txb[7] = addr[7:0];
             for (i = 0; i < n; i = i + 1) begin txb[8 + 2 * i] = buf_w[i][15:8]; txb[9 + 2 * i] = buf_w[i][7:0]; end
             transact(8'h10, 3 + 2 * n, 0, ok, rc);
             if (ok && rc != 8'h00) begin errors = errors + 1; $display("%0t SPI BFM: burst write RCODE %02h", $realtime, rc); end
-            n_sram = n_sram + n; busy = 1'b0;
+            n_sram = n_sram + n; sum_lat = sum_lat + ($realtime - bt0); busy = 1'b0;
         end
     endtask
 
@@ -190,12 +191,12 @@ module spi_master_bfm (
         integer i;
         begin
             while (busy) #(20.0);
-            busy = 1'b1;
+            busy = 1'b1; bt0 = $realtime;
             txb[5] = {6'd0, addr[17:16]}; txb[6] = addr[15:8]; txb[7] = addr[7:0]; txb[8] = n[7:0];
             transact(8'h11, 4, 2 * n, ok, rc);
             for (i = 0; i < n; i = i + 1) buf_r[i] = {rxb[6 + 2 * i], rxb[7 + 2 * i]};
             if (ok && rc != 8'h00) begin errors = errors + 1; $display("%0t SPI BFM: burst read RCODE %02h", $realtime, rc); end
-            n_sram = n_sram + n; busy = 1'b0;
+            n_sram = n_sram + n; sum_lat = sum_lat + ($realtime - bt0); busy = 1'b0;
         end
     endtask
 
@@ -212,13 +213,18 @@ module spi_master_bfm (
     reg [4095:0] valid = 4096'd0;
     integer    j, nb;
     reg [11:0] off;
+    reg        allv;
     reg [15:0] d;
     always begin
         #(100.0);
         while (bg_en) begin
             off = $random(seed); nb = 1 + ($unsigned($random(seed)) % 16);
             if (off > 12'd4095 - nb) off = 12'd4095 - nb;
-            if ($random(seed) & 1) begin
+            allv = 1'b1;
+            for (j = 0; j < nb; j = j + 1) if (!valid[off + j]) allv = 1'b0;
+            // a never-written word reads as X in the SRAM model and poisons the response CRC (a model
+            // artefact, unlike real SRAM), so a range that is not fully defined is written, not read
+            if (($random(seed) & 1) || !allv) begin
                 for (j = 0; j < nb; j = j + 1) begin buf_w[j] = $random(seed); end
                 if (nb == 1) xfer(1'b0, 1'b1, bg_base + off, 2'b11, buf_w[0], d); else burst_wr(bg_base + off, nb);
                 for (j = 0; j < nb; j = j + 1) begin shadow[off + j] = buf_w[j]; valid[off + j] = 1'b1; end
