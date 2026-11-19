@@ -52,7 +52,7 @@ module card_model #(
     // ---------------- FPGA
     wire ZF_SLAVE_N_i, ZF_CFGOUT_N_i, ZF_INT2_N_i, ZF_INT6_N_i, ZF_XRDY_i;
     wire ZF_DBUF_DIR_i, ZF_DBUF_OE_N_i, ZF_ARM_i;
-    wire [1:0] led;
+    wire led_ready;
     wire [15:0] LD;
     m_bushold #(.W(16)) u_ld_hold (.bus(LD));   // U103 A-port bus-hold keeps the last level
     wire EN_OK;
@@ -68,7 +68,7 @@ module card_model #(
         .LD(LD),
         .SA(SA_i), .SRAM_CE_N(SRAM_CE_N_i), .SRAM_OE_N(SRAM_OE_N_i), .SRAM_WE_N(SRAM_WE_N_i),
         .SRAM_UB_N(SRAM_UB_N_i), .SRAM_LB_N(SRAM_LB_N_i), .RP_IRQ_N(RP_IRQ_N_i),
-        .DIP_MODE_B(dip_mode_b), .DIP_INT6(dip_int6), .DIP_DISABLE(dip_disable), .LED(led));
+        .DIP_MODE_B(dip_mode_b), .DIP_INT6(dip_int6), .DIP_DISABLE(dip_disable), .LED_READY(led_ready));
 
     // ---------------- sheet 3: SRAM pins (registered outputs, tCO) and U301
     wire [17:0] s_sa; wire s_ce, s_oe, s_we, s_ub, s_lb, s_irq;

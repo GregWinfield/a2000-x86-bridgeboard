@@ -46,7 +46,7 @@ module z2_top (
     input  wire        DIP_MODE_B,
     input  wire        DIP_INT6,
     input  wire        DIP_DISABLE,
-    output wire [1:0]  LED            // {FAULT, READY} (C-17)
+    output wire        LED_READY      // FPGA READY LED (C-26, option C-17b: FAULT and the other diagnostic LEDs are on the RP2040)
 );
     // power-on reset: 15 clocks after configuration (GSR has already set the INIT values)
     reg [3:0] por_cnt = 4'd0;
@@ -69,6 +69,12 @@ module z2_top (
     wire [1:0]  zr_be;
     wire [15:0] zr_wdata, zr_rdata;
     wire        zrst, busrst, configured, mode_b, en_ok_s;
+    // LEDs (C-26): z2_core still produces {fault indication, READY}, including the CONTROL b5..b4 test bits.
+    // Only READY has an FPGA pin. fault_ind is kept for the sheet-4 host status word; the RP2040 drives the
+    // FAULT LED from it, so READY alone works when the N100/RP2040 is unavailable.
+    wire [1:0]  led_w;
+    assign LED_READY = led_w[0];
+    wire        fault_ind = led_w[1];
 
     z2_core u_core (
         .clk(clk_core), .por(por),
@@ -79,7 +85,7 @@ module z2_top (
         .zf_slave_n(ZF_SLAVE_N), .zf_cfgout_n(ZF_CFGOUT_N), .zf_xrdy(ZF_XRDY),
         .zf_int2_n(ZF_INT2_N), .zf_int6_n(ZF_INT6_N),
         .zf_dbuf_dir(ZF_DBUF_DIR), .zf_dbuf_oe_n(ZF_DBUF_OE_N), .zf_arm(ZF_ARM),
-        .led(LED),
+        .led(led_w),
         .zq_addr(zq_addr), .zq_ce(zq_ce), .zq_oe(zq_oe), .zq_we(zq_we), .zq_ub(zq_ub), .zq_lb(zq_lb),
         .z_res(z_res), .z_quiet(z_quiet), .zs_drv(zs_drv), .h_quiet(h_quiet),
         .zr_we(zr_we), .zr_widx(zr_widx), .zr_be(zr_be), .zr_wdata(zr_wdata), .zr_ridx(zr_ridx),

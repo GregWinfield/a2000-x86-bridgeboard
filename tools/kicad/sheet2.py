@@ -107,8 +107,8 @@ def sym_ecs2520mv():
 def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts):
     REV2, DATE2, COMPANY, LICENCE = consts
     sch = Schematic("sheet2", "A2", "FPGA and configuration", REV2, DATE2,
-                    ["Sheet 2 of 6 (Stage 3, rev A). NOT VALIDATED: design review pending.",
-                     "LCMXO2-2000HC-4TG144C: 102 signals, 2 spare (C-17); 4000HC pin-compatible",
+                    ["Sheet 2 of 6, rev A1. G-SHEET2 approved for design progression; NOT VALIDATED",
+                     "LCMXO2-2000HC-4TG144C: 101 signals, 3 spare (C-17, C-26); 4000HC pin-compatible",
                      "Pins: tools/fpga/pinplan.py, Lattice pinout rev 1.2; FPGA-TN-02154-2.2",
                      f"Licence: {LICENCE}. See docs/stage2/sheet2-design-notes.md"],
                     COMPANY, f"/{root_uuid}/{sheet_uuid}")
@@ -245,11 +245,14 @@ def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts)
             else:
                 sch.label(net, (b[0], b[1] + 5.08), "right")
 
-    # ---------------- JTAG header J201 (1x6, 2.54 mm; pin order [A])
+    # ---------------- JTAG header J201 (1x6, 2.54 mm, polarized; project pin order, documented [A])
     J = std["CONN6"]
     jx, jy = 314.96, 182.88
-    j = sch.place(J, "J201", "JTAG", jx, jy, 0, footprint="Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical",
-                  props={"Spec": "1x6 2.54 mm: 1 VREF (+3V3), 2 GND, 3 TCK, 4 TDO, 5 TDI, 6 TMS [A]"},
+    j = sch.place(J, "J201", "JTAG", jx, jy, 0, footprint="Connector_Molex:Molex_KK-254_AE-6410-06A_1x06_P2.54mm_Vertical",
+                  props={"Spec": "1x6 2.54 mm polarized friction-lock header, Molex KK 254 family. Candidate 22-27-2061 "
+                                 "(KiCad library cross-reference; TBV against the Molex drawing before BOM freeze). "
+                                 "1 VREF (+3V3), 2 GND, 3 TCK, 4 TDO, 5 TDI, 6 TMS (project order [A])",
+                         "Silkscreen": "Name at every pin (VREF GND TCK TDO TDI TMS), pin-1 marker, legend JTAG 3V3"},
                   ref_at=(jx, jy - 10.0), val_at=(jx, jy + 12.0))
     for pn, net in (("1", "+3V3"), ("2", "GND"), ("3", "FPGA_TCK"), ("4", "FPGA_TDO"), ("5", "FPGA_TDI"), ("6", "FPGA_TMS")):
         pt = j.p(pn)
@@ -261,9 +264,13 @@ def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts)
             pwr(GNDS, end[0], end[1], 270)
         else:
             sch.hlabel(net, "bidirectional", end, "left")
-    sch.text("J201 JTAG (programming and boundary scan): VREF = carrier +3V3, so a programmer\n"
-             "never powers the board. The RP2040-driven JTAG option (D-12) joins these nets on sheet 4\n"
-             "through a translator whose enable is a DIP switch (sheet 6).", (330.2, 175.26), 1.27)
+    sch.text("J201 JTAG (programming, boundary scan). PROJECT PIN ORDER, not a vendor standard:\n"
+             "1 VREF (+3V3)  2 GND  3 TCK  4 TDO  5 TDI  6 TMS.\n"
+             "Polarized KK 254 header: the mating housing fits one way only. PCB silkscreen:\n"
+             "the signal name at every pin, a pin-1 marker and \"JTAG 3V3\".\n"
+             "VREF = carrier +3V3, so a programmer never powers the board. The RP2040 JTAG\n"
+             "option (D-12) joins these nets on sheet 4 via a translator enabled by a DIP\n"
+             "switch (sheet 6).", (330.2, 170.18), 1.27)
 
     # ---------------- 50 MHz oscillator
     xo = syms["ECS2520"]
@@ -277,7 +284,8 @@ def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts)
     sch.wire(oe, (oe[0] - 5.08, oe[1]))
     sch.label("VDD_OSC", (oe[0] - 5.08, oe[1]), "left")
     fb = sch.place(std["FB"], "FB201", "600R@100MHz", ox - 25.4, oy - 22.86, 0, footprint="Inductor_SMD:L_0603_1608Metric",
-                   props={"Spec": "0603 ferrite bead, 600 ohm at 100 MHz, >= 500 mA (FPGA-TN-02154 Figure 13.1); MPN TBD [A]"},
+                   props={"Spec": "0603 ferrite bead, 600 ohm at 100 MHz, >= 500 mA (FPGA-TN-02154 Figure 13.1); "
+                          "MPN to be selected and verified before BOM freeze (criteria: sheet2-design-notes section 5)"},
                    ref_at=(ox - 22.4, oy - 24.2), val_at=(ox - 22.4, oy - 21.6), ref_just="left", val_just="left")
     pwr(P3, *fb.p("1"))
     f2 = fb.p("2")
@@ -289,7 +297,7 @@ def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts)
               val_at=(fl[0] - 2.5, fl[1] + 5.2), ref_just="right", val_just="right")
     out = x2.p("3")
     r = sch.place(R, "R209", "33R", out[0] + 10.16, out[1], 90, footprint="Resistor_SMD:R_0603_1608Metric",
-                  props={"Spec": "0603 1%; series termination, value TBV at layout"},
+                  props={"Spec": "0603 1%; series termination. 33 ohm PROVISIONAL until layout and signal-integrity review"},
                   ref_at=(out[0] + 10.16, out[1] - 3.0), val_at=(out[0] + 10.16, out[1] + 3.0))
     sch.wire(out, r.p("1"))
     b = r.p("2")
@@ -327,18 +335,21 @@ def build_sheet2(repo: Path, root_uuid: str, sheet_uuid: str, syms, std, consts)
         "DESIGN NOTES (summary; full analysis in docs/stage2/sheet2-design-notes.md)\n"
         "1. Every signal pin comes from tools/fpga/pinplan.py (also the LPF LOCATEs and docs/stage2/sheet2-pin-assignment.md).\n"
         "   Bank 1 holds the whole /SLAVEn, XRDY and buffer-enable decode group (C-01/C-02 paths).\n"
-        "2. Owner decision C-17: 102 signals; PROGRAMN/INITN/DONE and JTAG kept; JTAGENB unused (C-19); 2 spare (pins 23, 24).\n"
+        "2. Owner decisions C-17 and C-26 (option C-17b): 101 signals; PROGRAMN/INITN/DONE and JTAG kept; JTAGENB unused (C-19);\n"
+        "   3 spare (pins 23, 24, 67). Only the READY LED is on the FPGA; FAULT and the other diagnostic LEDs are on the RP2040.\n"
         "   Fallback LCMXO2-4000HC-4TG144C: every assigned pin is an I/O in the same bank, and the configuration, JTAG, SN,\n"
         "   PCLKT0_1 and I2C pins are the same package pins (checked by tools/fpga/pinplan.py against the 4000 pinout file).\n"
-        "3. Post-place-and-route STA at these pins (both grades, 15 pF): every constraint met; worst Zorro path 15.09 ns of 18;\n"
-        "   /SLAVEn at the slot 20.7 ns of 35 (docs/stage2/sheet2-sta-results.md).\n"
+        "3. Post-place-and-route STA at these pins (rev A1, both grades, 15 pF): every constraint met; worst Zorro path\n"
+        "   14.91 ns of 18; /SLAVEn at the slot 20.40 ns of 35; M-7 slot setup criterion >= 19.3 ns (sheet2-sta-results.md).\n"
         "4. Interfaces: sheet 1 (ZB_*, ZF_*, EN_OK, LD*), sheet 3 (SA*, SRAM_*, LD*), sheet 4 (RP_*, FPGA_TCK/TMS/TDI/TDO),\n"
-        "   sheet 5 (I2C_*, INA_ALERT_N, X4_*), sheet 6 (LED_*, DIP_*, DBG*). Sheets 4-6 are not yet drawn.\n"
+        "   sheet 5 (I2C_*, INA_ALERT_N, X4_*), sheet 6 (LED_READY, DIP_*, DBG*). Sheets 4-6 are not yet drawn.\n"
         "5. Erased-device rules (FPGA-TN-02155 section 6): the I2C configuration port on pins 125/126 ACKs 7-bit\n"
         "   addresses 0x40-0x43, so no telemetry device on I2C_SDA/I2C_SCL may use them (sheet 5). SN is never driven low.\n"
         "   SDA/SCL are limited to -0.25..3.75 V (data sheet Table 3.1 note 5): I2C pull-ups to +3V3 only.\n"
         "6. Back-powering (FPGA-TN-02154 section 14): no FPGA input may be driven while +3V3 is off. Sheets 1 and 3 comply\n"
         "   (Ioff / VCC-isolated buffers, pull-ups to +3V3); sheets 4-6 must keep this rule (debug header, X4 sense lines).\n"
-        "7. Not yet validated: an ERC-clean result does not imply electrical or timing correctness.",
+        "7. Erased or unconfigured FPGA: every Zorro-side output is held inactive by its sheet-1 resistor and ZF_ARM is pulled\n"
+        "   low, so the card is disabled and the slot looks empty; SRAM deselected (R301/R302). Hardware check M-14.\n"
+        "8. Not yet validated: an ERC-clean result does not imply electrical or timing correctness.",
         (25.4, 355.6), 1.27)
     return sch, spare

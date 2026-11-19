@@ -5747,18 +5747,8 @@
 				(justify right)
 			)
 		)
-		(pin "LED_FAULT" bidirectional
-			(at 236.22 68.58 0)
-			(uuid "343e97ff-2b3c-5e89-b242-5e4b92092a23")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
 		(pin "LED_READY" bidirectional
-			(at 236.22 71.12 0)
+			(at 236.22 68.58 0)
 			(uuid "460d3828-6da8-53ba-b416-67edd807bb96")
 			(effects
 				(font
@@ -5768,7 +5758,7 @@
 			)
 		)
 		(pin "RP_ATTN" bidirectional
-			(at 236.22 73.66 0)
+			(at 236.22 71.12 0)
 			(uuid "3bcf93f5-07ba-580a-906e-c0f7da1aad56")
 			(effects
 				(font
@@ -5778,7 +5768,7 @@
 			)
 		)
 		(pin "RP_CS_N" bidirectional
-			(at 236.22 76.2 0)
+			(at 236.22 73.66 0)
 			(uuid "ca73c47c-9355-5127-99ff-372288c9c156")
 			(effects
 				(font
@@ -5788,7 +5778,7 @@
 			)
 		)
 		(pin "RP_IRQ_N" bidirectional
-			(at 236.22 78.74 0)
+			(at 236.22 76.2 0)
 			(uuid "f5abd20f-3479-56ca-8099-03afe940998e")
 			(effects
 				(font
@@ -5798,7 +5788,7 @@
 			)
 		)
 		(pin "RP_MISO" bidirectional
-			(at 236.22 81.28 0)
+			(at 236.22 78.74 0)
 			(uuid "616870da-ceb8-58f2-8e27-b5b61a6e5f28")
 			(effects
 				(font
@@ -5808,7 +5798,7 @@
 			)
 		)
 		(pin "RP_MOSI" bidirectional
-			(at 236.22 83.82 0)
+			(at 236.22 81.28 0)
 			(uuid "64d4a610-89e4-59d2-88cd-7f9d51c904e6")
 			(effects
 				(font
@@ -5818,7 +5808,7 @@
 			)
 		)
 		(pin "RP_SCK" bidirectional
-			(at 236.22 86.36 0)
+			(at 236.22 83.82 0)
 			(uuid "8d9250d5-765d-5b87-bcd3-82ea7e44db1f")
 			(effects
 				(font
@@ -5828,7 +5818,7 @@
 			)
 		)
 		(pin "X4_PWR_EN" bidirectional
-			(at 236.22 88.9 0)
+			(at 236.22 86.36 0)
 			(uuid "28fb999b-b1de-5fdd-bd22-a25211ab582e")
 			(effects
 				(font
@@ -5838,7 +5828,7 @@
 			)
 		)
 		(pin "X4_PWR_FLT_N" bidirectional
-			(at 236.22 91.44 0)
+			(at 236.22 88.9 0)
 			(uuid "c439dd4e-6028-5043-b12c-a904a8fc9c7b")
 			(effects
 				(font
@@ -5848,7 +5838,7 @@
 			)
 		)
 		(pin "X4_S0_SENSE" bidirectional
-			(at 236.22 93.98 0)
+			(at 236.22 91.44 0)
 			(uuid "e2e36a74-64f8-5d46-84dc-b9c3f4e183cc")
 			(effects
 				(font

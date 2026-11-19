@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 // FPGA pin-budget fit test (synthesis and place-and-route only, never a real design).
 // z2_top plus every FPGA signal still planned for sheets 4-6 (docs/pin-assignment-matrix.md section 4),
-// for the owner's C-17 plan (2026-11-19): 102 signals. /OVR and /DTACK are not routed to the FPGA; two
-// LEDs; PROGRAMN, INITN and DONE are configuration pins (SYSCONFIG); JTAG enabled; JTAGENB and SN
-// prohibited (z2_top.lpf). Each planned pin gets minimal logic so synthesis keeps it.
+// for the owner's C-17 plan (2026-11-19) with option C-17b (C-26): 101 signals. /OVR and /DTACK are not
+// routed to the FPGA; one FPGA LED (READY); PROGRAMN, INITN and DONE are configuration pins (SYSCONFIG);
+// JTAG enabled; JTAGENB prohibited; pins fixed by tools/fpga/pinplan.py (z2_top.lpf). Each planned pin gets minimal logic so synthesis keeps it.
 //   Z2_TOP=fit_top bash hdl/syn/run_diamond.sh <work dir>
 `default_nettype none
 module fit_top (
@@ -18,7 +18,7 @@ module fit_top (
     output wire        SRAM_CE_N, SRAM_OE_N, SRAM_WE_N, SRAM_UB_N, SRAM_LB_N,
     output wire        RP_IRQ_N,
     input  wire        DIP_MODE_B, DIP_INT6, DIP_DISABLE,
-    output wire [1:0]  LED,
+    output wire        LED_READY,
     // planned for sheet 4 (host link): SPI from the RP2040 and the ATTN line
     input  wire        RP_SCK, RP_CS_N, RP_MOSI,
     output wire        RP_MISO, RP_ATTN,
@@ -37,7 +37,7 @@ module fit_top (
         .ZF_INT2_N(ZF_INT2_N), .ZF_INT6_N(ZF_INT6_N), .ZF_XRDY(ZF_XRDY),
         .ZF_DBUF_DIR(ZF_DBUF_DIR), .ZF_DBUF_OE_N(ZF_DBUF_OE_N), .LD(LD), .SA(SA), .SRAM_CE_N(SRAM_CE_N),
         .SRAM_OE_N(SRAM_OE_N), .SRAM_WE_N(SRAM_WE_N), .SRAM_UB_N(SRAM_UB_N), .SRAM_LB_N(SRAM_LB_N),
-        .RP_IRQ_N(RP_IRQ_N), .DIP_MODE_B(DIP_MODE_B), .DIP_INT6(DIP_INT6), .DIP_DISABLE(DIP_DISABLE), .LED(LED));
+        .RP_IRQ_N(RP_IRQ_N), .DIP_MODE_B(DIP_MODE_B), .DIP_INT6(DIP_INT6), .DIP_DISABLE(DIP_DISABLE), .LED_READY(LED_READY));
 
     // placeholder logic: every planned input feeds a shift register that drives every planned output
     reg [7:0] sh = 8'd0;

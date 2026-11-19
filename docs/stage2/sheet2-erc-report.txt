@@ -1,4 +1,4 @@
-ERC report (2026-11-19T11:28:10, Encoding UTF8)
+ERC report (2026-11-19T12:13:04, Encoding UTF8)
 Report includes: Errors, Warnings, Exclusions
 
 ***** Sheet /
@@ -46,37 +46,34 @@ Report includes: Errors, Warnings, Exclusions
     @(236.22 mm, 66.04 mm): Hierarchical Sheet Pin 'INA_ALERT_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(236.22 mm, 68.58 mm): Hierarchical Sheet Pin 'LED_FAULT'
+    @(236.22 mm, 68.58 mm): Hierarchical Sheet Pin 'LED_READY'
 [pin_not_connected]: Pin not connected
     ; error
-    @(236.22 mm, 71.12 mm): Hierarchical Sheet Pin 'LED_READY'
+    @(236.22 mm, 71.12 mm): Hierarchical Sheet Pin 'RP_ATTN'
 [pin_not_connected]: Pin not connected
     ; error
-    @(236.22 mm, 73.66 mm): Hierarchical Sheet Pin 'RP_ATTN'
+    @(236.22 mm, 73.66 mm): Hierarchical Sheet Pin 'RP_CS_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(236.22 mm, 76.20 mm): Hierarchical Sheet Pin 'RP_CS_N'
+    @(236.22 mm, 76.20 mm): Hierarchical Sheet Pin 'RP_IRQ_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(236.22 mm, 78.74 mm): Hierarchical Sheet Pin 'RP_IRQ_N'
+    @(236.22 mm, 78.74 mm): Hierarchical Sheet Pin 'RP_MISO'
 [pin_not_connected]: Pin not connected
     ; error
-    @(236.22 mm, 81.28 mm): Hierarchical Sheet Pin 'RP_MISO'
+    @(236.22 mm, 81.28 mm): Hierarchical Sheet Pin 'RP_MOSI'
 [pin_not_connected]: Pin not connected
     ; error
-    @(236.22 mm, 83.82 mm): Hierarchical Sheet Pin 'RP_MOSI'
+    @(236.22 mm, 83.82 mm): Hierarchical Sheet Pin 'RP_SCK'
 [pin_not_connected]: Pin not connected
     ; error
-    @(236.22 mm, 86.36 mm): Hierarchical Sheet Pin 'RP_SCK'
+    @(236.22 mm, 86.36 mm): Hierarchical Sheet Pin 'X4_PWR_EN'
 [pin_not_connected]: Pin not connected
     ; error
-    @(236.22 mm, 88.90 mm): Hierarchical Sheet Pin 'X4_PWR_EN'
+    @(236.22 mm, 88.90 mm): Hierarchical Sheet Pin 'X4_PWR_FLT_N'
 [pin_not_connected]: Pin not connected
     ; error
-    @(236.22 mm, 91.44 mm): Hierarchical Sheet Pin 'X4_PWR_FLT_N'
-[pin_not_connected]: Pin not connected
-    ; error
-    @(236.22 mm, 93.98 mm): Hierarchical Sheet Pin 'X4_S0_SENSE'
+    @(236.22 mm, 91.44 mm): Hierarchical Sheet Pin 'X4_S0_SENSE'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
     @(45.72 mm, 45.72 mm): Hierarchical Label 'INA_ALERT_N'
@@ -98,9 +95,6 @@ Report includes: Errors, Warnings, Exclusions
 [isolated_pin_label]: Label connected to only one pin
     ; warning
     @(45.72 mm, 325.12 mm): Hierarchical Label 'LED_READY'
-[isolated_pin_label]: Label connected to only one pin
-    ; warning
-    @(45.72 mm, 327.66 mm): Hierarchical Label 'LED_FAULT'
 [isolated_pin_label]: Label connected to only one pin
     ; warning
     @(45.72 mm, 330.20 mm): Hierarchical Label 'DIP_MODE_B'
@@ -201,7 +195,7 @@ Report includes: Errors, Warnings, Exclusions
 
 ***** Sheet /6 Interrupts, diagnostics & programming/
 
- ** ERC messages: 58  Errors 25  Warnings 33
+ ** ERC messages: 56  Errors 24  Warnings 32
 
  ** Ignored checks:
     - Global label only appears once in the schematic

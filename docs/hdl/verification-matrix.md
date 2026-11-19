@@ -9,7 +9,7 @@
 
 | Requirement | Evidence | Pass criterion | Status |
 |---|---|---|---|
-| Entire combinational decode, /SLAVEn assertion and release | Diamond TRACE with [../../hdl/syn/z2_top.lpf](../../hdl/syn/z2_top.lpf), [../../hdl/syn/run_diamond.sh](../../hdl/syn/run_diamond.sh) | Every path ≤ 18 ns at the slow corner, both edges, 15 pF | **Pass at the sheet-2 pinout** (2026-11-19: worst 15.094 ns, both grades, z2_top and fit test; 4000HC fallback 15.85 ns): [../stage2/sheet2-sta-results.md](../stage2/sheet2-sta-results.md). Exploratory run: [../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md) |
+| Entire combinational decode, /SLAVEn assertion and release | Diamond TRACE with [../../hdl/syn/z2_top.lpf](../../hdl/syn/z2_top.lpf), [../../hdl/syn/run_diamond.sh](../../hdl/syn/run_diamond.sh) | Every path ≤ 18 ns at the slow corner, both edges, 15 pF | **Pass at the sheet-2 pinout** (rev A1, 2026-11-19: worst 14.910 ns, both grades, z2_top and fit test; 4000HC fallback 14.993 ns; rev A 15.094 ns): [../stage2/sheet2-sta-results.md](../stage2/sheet2-sta-results.md). Exploratory run: [../stage2/sheet1-sta-results.md](../stage2/sheet1-sta-results.md) |
 | Budget closes with real buffer delays | [../stage2/sheet1-timing-budget.md](../stage2/sheet1-timing-budget.md) §2 | ≤ 35 ns | **20.7 ns with STA** |
 | Simulation with the delay allocation | tb_z2 at FPGA_TMAX 18 and 7.24 ns, all-max/all-min corners (C5b, C5c) | No ASSERT-FAIL | **Pass** (2026-11-18) |
 | Shorter predecode if needed | Hazard analysis §6 (O1–O5) | Applied only if G-STA margin < 3 ns | Documented |
@@ -96,3 +96,5 @@ Evidence executed on 2026-11-19 ([verification-results.md](verification-results.
 | C-17 fallback: LCMXO2-4000HC at the same pins | `pinplan.py` migration check; Diamond z2_top and `fit_top` on the 4000HC −4 C | Same banks and dedicated pins; 0 timing errors | **Pass** (sheet 2) |
 | Canonical byte order (hardware lanes) | tb_shm S12, vectors V1–V4, V6 | Every view as in the byte-order spec | **Pass** |
 | Two-LED interface, READY blink code | tb_z2 T3 (CONTROL b5..b4, LED test) | Register and pins as specified | **Pass** |
+| C-26: one FPGA LED (READY pin) plus the internal fault indication | tb_z2 T3 checks `LED_READY` and `fault_ind`; pin freeze in `pinplan.py`; audit (LED_READY on pin 65, no LED_FAULT net) | As specified; only pin 67 changed from the approved assignment | **Pass** (rev A1) |
+| Fail-safe bus behaviour with an erased, configuring or failed FPGA | Sheet-1 design and chain simulation (S3); sheet-2 notes §8; hardware M-6 + **M-14** | Card absent, chain passes, SRAM deselected, READY off | Design/simulation **Pass**; hardware open |

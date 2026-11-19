@@ -26,7 +26,7 @@ REV = "B (draft)"
 DATE3 = "2026-11-19"
 REV3 = "A (draft)"
 DATE2 = "2026-11-19"
-REV2 = "A (draft)"
+REV2 = "A1"
 COMPANY = "A2000 x86 Bridgeboard project"
 LICENCE = "CERN-OHL-S-2.0"
 
