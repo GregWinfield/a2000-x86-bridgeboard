@@ -1,7 +1,7 @@
 # Pin-assignment matrix
 
-**Status:** maintained document. Revision C, 2026-11-18. Section 2 reflects sheet 1 rev B as built; sections 3 and 4 are still plans.
-- FPGA *package* pin numbers are assigned on KiCad sheet 2.
+**Status:** maintained document. Revision F, 2026-11-19 (sheet 2 revision A). Section 2 reflects sheet 1 rev B as built. Section 4 holds the owner's C-17 plan (102 signals) and, since revision F, the **physical FPGA pin assignment of sheet 2** (§4.1). Section 3 is still a plan.
+- FPGA *package* pin numbers are assigned on KiCad sheet 2 by `tools/fpga/pinplan.py`. Full pin table: [stage2/sheet2-pin-assignment.md](stage2/sheet2-pin-assignment.md).
 - Connector pin numbers below are verified [V].
 - Carrier connections are proposals pending review.
 
@@ -182,14 +182,20 @@ Header mapping: [V S1 sh.21], matches [V S5]. RP2040 alternate functions: [K S41
 | 39 | GND | GND | GND | – |
 | 40 | GP25 | Reserved | – | – |
 
+Not on the header: GP0/GP1 go to the N100's UART1 (R314/R315 0 Ω); GP23 also has an unfitted 0 Ω (R316, NC) to an N100 GPIO [V S1 sheet 21].
+
+**Option C-17b (owner decision pending).** LEDs on **GP16–GP19** (header pins 27, 28, 26, 32) through a fourth SN74AVC4T774, all channels B→A. See [stage2/sheet3-design-notes.md](stage2/sheet3-design-notes.md) §8.2.
+
 **Translator allocation** (3× SN74AVC4T774: A side = `+3V3`, B side = `X4_3V3_REF`):
 - **U_a:** SCK, CS_N, MOSI (B→A) and MISO (A→B).
 - **U_b:** IRQ_N and ATTN (A→B), plus 2 spare.
 - **U_c (JTAG):** TCK, TMS, TDI (B→A) and TDO (A→B). /OE comes from a DIP switch, so the external JTAG header has priority when the switch is off.
 
-## 4. FPGA I/O budget (LCMXO2-2000HC-4TG144C, 111 I/O)
+## 4. FPGA I/O budget (LCMXO2-2000HC-4TG144C)
 
-Revision B recount (sheet 1 rev B). The Stage 1 count omitted `ZF_OVR_N` and `ZF_DTACK_N`, which are FPGA nets on sheet 1; they are included now.
+> **Revision D correction (2026-11-19).** The MachXO2 datasheet counts **111 general-purpose I/O** for the 144 TQFP: banks 0–5 = 27/28/28/8/10/10, plus 1 pin reserved for configuration (Table 4.4 [V S49]). The 33 dual-function I/O within the 111 include **TMS, TCK, TDI and TDO**. With the JTAG port enabled, which this design needs, Diamond reserves them ("PIO sites used: n + 4(JTAG) out of 112" [V S62]). **The table below therefore needs 114 pins, not 110.** The JTAG pins are not dedicated, contrary to revision C. Recommended plan and Diamond fit tests: [stage2/sheet3-design-notes.md](stage2/sheet3-design-notes.md) §8. Decision C-17.
+
+Revision C table (sheet 1 rev B). The Stage 1 count omitted `ZF_OVR_N` and `ZF_DTACK_N`, which are FPGA nets on sheet 1; they are included.
 
 | Group | Pins |
 |---|---|
@@ -203,18 +209,37 @@ Revision B recount (sheet 1 rev B). The Stage 1 count omitted `ZF_OVR_N` and `ZF
 | RP2040 link (`RP_*`) | 6 |
 | X4 power/status | 3 |
 | I²C telemetry | 3 |
-| LEDs (5) + DIP (3) | 8 |
+| LEDs (5) + DIP (3) | 8 (rev E: 2 LEDs + 3 DIP = 5) |
 | Clock in | 1 |
 | Debug/expansion header | 4 |
 | **Subtotal** | **107** |
 | PROGRAMN, INITN, DONE (kept) | 3 |
-| **Total** | **110 of 111** |
+| **Total** | **110**, plus **4 JTAG = 114 of 111: does not fit** (rev D) |
+| **Rev E plan (owner decision C-17, 2026-11-19):** ZF_OVR_N, ZF_DTACK_N not routed; **2 LEDs**; PROGRAMN, INITN, DONE kept as configuration pins; JTAG kept | **102 signals; 111 − 4 JTAG − 3 configuration = 104 available; 2 spare.** Diamond fit test `fit_top`: 102 + 4 JTAG of 112 placed, 0 timing errors (JTAGENB and SN prohibited, so a conservative 103 available) |
+| Option C-17b: 4 LEDs on RP2040 GPIO, 1 FPGA READY LED | 101 signals, 3 spare (owner decision C-26) |
 
-**Concern C-14 (sheet 2).** One spare pin is too tight. Planned resolution, at no cost to Rev 1 function: do not route `ZF_OVR_N` and `ZF_DTACK_N` to the FPGA. R106/R107 already hold the U105 inputs high and R119/R120 (DNP) isolate the outputs, giving **108 of 111**. Alternative: LCMXO2-4000HC in the same package (I/O count TBV against the MachXO2 data sheet before relying on it).
+**Concern C-14 (sheet 2).** One spare pin is too tight. Planned resolution, at no cost to Rev 1 function: do not route `ZF_OVR_N` and `ZF_DTACK_N` to the FPGA. R106/R107 already hold the U105 inputs high and R119/R120 (DNP) isolate the outputs, giving **108 of 111**. Alternative: LCMXO2-4000HC in the same package (I/O count TBV against the MachXO2 data sheet before relying on it). *Revision F:* the sheet-2 assignment is pin-compatible with the LCMXO2-4000HC-4TG144C and meets timing on it ([stage2/sheet2-design-notes.md](stage2/sheet2-design-notes.md) §7).
 
-JTAG uses dedicated pins. Bank assignments (planned for sheet 2):
-- Zorro inputs and outputs grouped on banks nearest the edge connector;
-- `LD` and `SA` on the banks facing the SRAM;
-- RP2040 and JTAG signals towards the X4 connector.
+JTAG uses four of the general-purpose pins while the JTAG port is enabled. Pin rules for sheet 2 (sheet-3 notes §8.1):
+- PROGRAMN, INITN and DONE: configuration only.
+- JTAGENB: no signal (C-19).
+- **SN: never an externally driven input**, because it must not be low while the device is erased.
+- `clk_core` on a PCLK pin.
 
-All banks run at VCCIO = 3.3 V.
+### 4.1 Physical assignment (sheet 2 revision A, 2026-11-19)
+
+Generated by `tools/fpga/pinplan.py` from the Lattice pinout data [V S63]. The same computation writes the LPF LOCATEs and the schematic pins. `audit_sheet2.py` checks the netlist against the pinout data, the LPF and the HDL port directions.
+
+| Bank | Used / pads | Contents |
+|---|---|---|
+| 0 | 20 / 28 (8 reserved: PROGRAMN 119, INITN 110, DONE 109, JTAGENB 120, TMS 130, TCK 131, TDI 136, TDO 137) | clk_core on PCLKT0_1 (128); I2C_SDA 125, I2C_SCL 126 (primary I2C pins); INA_ALERT_N, X4_PWR_EN, X4_PWR_FLT_N, X4_S0_SENSE; ZB_A10–A15, ZB_E7M, ZB_BUSRST_N; ZF_INT2_N, ZF_INT6_N, ZF_DBUF_DIR, ZF_ARM, EN_OK |
+| 1 | 28 / 28 | /SLAVEn, XRDY and buffer-enable decode group: ZB_A16–A23, /AS, /BERR, DOE, READ, /UDS, /LDS, /CFGIN; ZF_SLAVE_N, ZF_XRDY, ZF_DBUF_OE_N, ZF_CFGOUT_N; ZB_A1–A9 |
+| 2 | 28 / 28 | SA0–SA17 (SA17 on SN, pin 70: an output, 4.7 kΩ pull-up), SRAM_CE_N/OE_N/WE_N/UB_N/LB_N, LED_READY, LED_FAULT, DIP_MODE_B, DIP_INT6, DIP_DISABLE |
+| 3 | 8 / 8 | LD0–LD7 |
+| 4 | 8 / 10 | LD8–LD15; **spare pins 23, 24** |
+| 5 | 10 / 10 | RP_SCK, RP_CS_N, RP_MOSI, RP_MISO, RP_IRQ_N, RP_ATTN, DBG0–DBG3 |
+
+- **Budget:** 104 usable (112 pads − 8 reserved, or equally 111 − 7, so C-19 does not affect it); 102 signals; **2 spare**. Under option C-17b, LED_FAULT's pin 67 becomes the third spare.
+- **Voltage:** every bank at VCCIO 3.3 V on the same supply as VCC; every port LVCMOS33 (Diamond pad check on every run).
+- **Fallback:** the assignment is valid unchanged on the LCMXO2-4000HC-4TG144C (same banks; configuration, JTAG, SN, PCLK and I2C on the same pins).
+- **Timing at these pins:** [stage2/sheet2-sta-results.md](stage2/sheet2-sta-results.md).

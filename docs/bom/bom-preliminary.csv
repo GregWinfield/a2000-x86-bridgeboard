@@ -1,6 +1,6 @@
 Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-off),Source,Unit AUD low,Unit AUD high,Status,Notes
-1,FPGA,Zorro/SRAM/SPI logic,Lattice,LCMXO2-2000HC-4TG144C,TQFP-144,1,"USD 6.29-6.53 (LCSC, low stock); EUR 16.28 (DigiKey DE)",S20,10.00,29.00,Vs,52-week factory lead time quoted; buy early. Migration: LCMXO2-4000HC-4TG144C (TBV)
-2,SRAM,Shared memory 512 KB,ISSI,IS61WV25616EDBLL-10TLI,TSOP-II-44,1,"USD 2.65 (LCSC, 869 stock); USD 6.17 (Farnell)",S24,4.00,10.00,Vs,256K x 16; 10 ns; 2.4-3.6 V
+1,FPGA,Zorro/SRAM/SPI logic,Lattice,LCMXO2-2000HC-4TG144C,TQFP-144,1,"USD 6.29-6.53 (LCSC, low stock); EUR 16.28 (DigiKey DE)",S20,10.00,29.00,Vs,52-week factory lead time quoted; buy early. Migration: LCMXO2-4000HC-4TG144C is pin-compatible with the sheet-2 assignment and meets timing at the same pins (sheet2-design-notes.md section 7)
+2,SRAM,Shared memory 512 KB,ISSI,IS61WV25616EDBLL-10TLI,TSOP-II-44,1,"USD 2.65 (LCSC, 869 stock); USD 6.17 (Farnell)",S24,4.00,10.00,Vs,256K x 16; 10 ns; 2.4-3.6 V. Sheet 3 U301; pinout and AC data verified (S61). Alternates TBV (C-20)
 3,Bus interface,D0-D15 5V<->3.3V transceiver with bus-hold (VCC isolation),Texas Instruments,SN74LVCH16T245DGGR,TSSOP-48,1,not checked; LVC16T245 (no bus-hold) USD 0.70-3.85 used as proxy,S26/S46,1.10,6.00,E,Sheet 1 U103. Bus-hold variant chosen because the Zorro data bus floats between cycles (TI: inputs must not float). VCCA=+3V3 (LD bus); VCCB=+5V_BUS
 4,Bus interface,Address/control input buffers (5V-tolerant),Texas Instruments or Nexperia,SN74LVC16244ADGGR / 74LVC16244ADGG,TSSOP-48,2,not checked,E,0.80,1.60,E,32 channels: 31 Zorro inputs + /BERR (rev B; CDAC no longer buffered)
 5,Bus interface,"/SLAVEn and /CFGOUTn driver at 5 V levels, ~OE = CARD_EN_N (rev B, C-03/C-04)",Texas Instruments,SN74LVC8T245PWR,TSSOP-24,1,not checked,S53,1.00,3.00,E,Sheet 1 U104. Replaces SN74LVC2T45 (no OE). 2 of 8 channels used; unused A/B tied to GND. Same part family as MNT VA2000 translators (S12)
@@ -16,15 +16,15 @@ Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-o
 15,Power entry,12 V bulk capacitor 100 uF 25 V polymer,Panasonic/Kemet or equivalent,TBD,SMD,2,not checked,E,0.50,1.50,E,
 16,Telemetry,12 V current/voltage monitor (I2C),Texas Instruments,INA226AIDGSR,VSSOP-10,1,not checked,E,2.30,4.70,E,Recommended on prototypes (D-11)
 17,Telemetry,Current shunt 10 mOhm 1% 1 W,Various,TBD,2512,1,not checked,E,0.40,1.00,E,
-18,Clock,50 MHz 3.3 V CMOS oscillator (optional; internal OSC alternative),Various,TBD,3.2x2.5 mm,1,not checked,E,0.00,2.50,E,Low = DNP
+18,Clock,"50 MHz CMOS oscillator, +/-50 ppm (X201, sheet 2)",ECS Inc.,ECS-2520MV-500-BN-TR,2.5x2.0 mm,1,not checked,S67,0.80,2.50,E,Specs verified (S67); price not checked. Supply filter FB201 + C225/C226 in item 43
 19,Connectors,"4-pin peripheral power PCB header (""Molex 8981"" style)",TE/Molex or equivalent,TBD,THT,1,not checked,E,1.00,3.00,E,Pin numbering TBV against A2000 harness
 20,Connectors,X4 GPIO: 2x20 2.54 mm box header + 40-way IDC ribbon (<=15 cm) with 2 sockets,Various,TBD,THT/cable,1,not checked,E,3.00,8.00,E,Ribbon keeps X4 swappable (D-07)
 21,Connectors,X4 power lead: 2-pin 2.54 mm crimp housing (>=3 A) + carrier header + 18-20 AWG wire,Molex KK 254 family (TBV) or equivalent,TBD,cable,1,not checked,E,2.00,5.00,E,Check J10 pitch on actual board (R-04)
-22,Connectors,FPGA JTAG header,Various,TBD (2x5 1.27 mm or 1x6 2.54 mm),THT/SMD,1,not checked,E,0.50,1.50,E,
+22,Connectors,FPGA JTAG header,Various,TBD (1x6 2.54 mm pin header),THT,1,not checked,E,0.50,1.50,E,"J201: 1 VREF, 2 GND, 3 TCK, 4 TDO, 5 TDI, 6 TMS (pin order is a project choice)"
 23,Connectors,Debug/expansion header (4 FPGA I/O + power),Various,TBD 1x8 2.54 mm,THT,1,not checked,E,0.30,0.50,E,Future plug-in USB-HS SPI bridge
 24,User I/O,4-position DIP switch,Various,TBD,SMD/THT,1,not checked,E,0.80,2.00,E,Mode / IRQ level / X4 auto-start / JTAG source
-25,User I/O,Status LED + resistor,Various,TBD,0805,6,not checked,E,0.17,0.33,E,3V3 power (hard-wired) + 5 FPGA-driven
-26,Passives,Decoupling and misc passives (about 80 parts),Various,TBD,0402/0603/0805,1,not checked,E,4.00,10.00,E,
+25,User I/O,Status LED + resistor,Various,TBD,0805,3,not checked,E,0.17,0.33,E,3V3 power (hard-wired) + 2 FPGA-driven (READY + FAULT; C-17). Option C-17b: +4 RP2040-driven LEDs and one SN74AVC4T774 (sheet 4)
+26,Passives,Decoupling and misc passives (about 80 parts),Various,TBD,0402/0603/0805,1,not checked,E,4.00,10.00,E,Remaining passives (sheets 4-6); the sheet lots in items 41-43 may overlap this estimate: re-base at sheet 6
 27,Passives,Test points (about 16; bare pads low / Keystone high),Keystone or pads,TBD,THT/SMD,1,not checked,E,0.00,3.00,E,
 28,Mechanical,M2.5 standoffs + screws for X4,Various,TBD (height >= 6 mm),hardware,4,not checked,E,0.75,1.50,E,Hole positions from STEP model (Stage 6)
 29,PCB,"Carrier PCB 4-layer, ENIG, bevelled gold fingers (share of 5-off order)",JLCPCB/PCBWay or equivalent,TBD (size TBD ~200x110 mm),PCB,1,not checked,E,25.00,50.00,E,Gold-finger + bevel options add cost
@@ -40,3 +40,5 @@ Item,Group,Function,Manufacturer,MPN (candidate),Package,Qty,Price snapshot (1-o
 39,Bus interface,Supervisor +5V_BUS via 95.3k/10k divider (VIT- 4.27 V) (U109),Texas Instruments,TPS3808G01DBVR,SOT-23-6,1,not checked,S56,1.20,3.50,E,Threshold TBV against the sheet-5 +5V_BUS tolerance
 40,User I/O,JP101 DISABLE jumper (1x2 header + shunt),Various,TBD,2.54 mm header,1,not checked,E,0.20,0.60,E,Fitted = card held off the bus (EN_OK low)
 41,Passives,"Rev B passives: R121-R124 10k, R125 95.3k 1%, R126 10k 1%, C118-C122 100 nF",Various,TBD,0603,1,not checked,E,0.30,1.00,E,Lot (11 parts)
+42,Passives,"Sheet 3: R301-R302 2.2k 1% (SRAM /CE and /WE safe state), C301-C302 100 nF, C303 10 uF",Various,TBD,0603/0805,1,not checked,E,0.15,0.50,E,Lot (5 parts)
+43,Passives,"Sheet 2: R201-R208, R210 (4.7k x8, 1k x1), R209 33R, C201-C216 100 nF, C225 100 nF, C226 1 uF, C217-C224 10 uF, FB201 600R@100MHz bead",Various,TBD (FB201 MPN TBD),0603/0805,1,not checked,E,0.60,2.00,E,Lot (37 parts). Values per MachXO2 Hardware Checklist (S64)

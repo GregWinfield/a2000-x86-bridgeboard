@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MIT
-// The bridgeboard as seen from a Zorro II slot: sheet-1 circuit (revision B) around the
-// FPGA RTL. Used by tb_z2 and tb_chain. Net names follow the schematic.
+// The bridgeboard as seen from a Zorro II slot: sheet-1 circuit (revision B) and sheet-3 shared
+// SRAM around the FPGA RTL. Used by tb_z2, tb_chain and tb_shm. Net names follow the schematics.
+// The host port inside the FPGA is the bus-functional model sim/models/hostif_bfm.v (dut.u_host).
 //
 //   slot -> U101/U102 -> ZB_* -> FPGA (z2_top) -> ZF_* -> U106/U107 gating -> U103/U104/U105 -> slot
 //   EN_OK = TPS3808 (+3V3) & TPS3808 (+5V_BUS) & no DISABLE jumper   (wired-AND)
 //   CARD_EN_N = NAND(EN_OK, ZF_ARM)  -> U104 /OE and ORed into U103 /OE, XRDY, /INT2, /INT6
+//   sheet 3: FPGA SA/SRAM_* (registered, tCO) -> U301 IS61WV25616EDBLL on LD; R301/R302 2.2k
+//   pull-ups on SRAM_CE_N/SRAM_WE_N hold the SRAM deselected while the FPGA is blank
 `timescale 1ns/1ps
-module card_sheet1 #(
+module card_model #(
     parameter integer SEED   = 1,
     parameter real    FPGA_TMIN = 3.0,    // FPGA pin-to-pin combinational delay range [A]
     parameter real    FPGA_TMAX = 18.0,   //   (18 ns = sheet-1 allocation, unproven until G-STA)
@@ -31,7 +34,9 @@ module card_sheet1 #(
     output wire        d_drv,        // U103 B port may be driving Z_D
     output wire        ld_conflict,  // FPGA and U103 may both be driving LD
     output wire        card_en_n,
-    output wire        en_ok
+    output wire        en_ok,
+    output wire        rp_irq_n,     // host-link interrupt (FPGA RP_IRQ_N)
+    output wire        sram_drv      // U301 driving LD
 );
     wire pwr_both = pwr3 & pwr5;
     wire fpga_on  = fpga_cfg & pwr3;
@@ -45,21 +50,56 @@ module card_sheet1 #(
         .y({ZB_AS_N, ZB_UDS_N, ZB_LDS_N, ZB_READ, ZB_DOE, ZB_E7M, ZB_CFGIN_N, ZB_BUSRST_N, ZB_BERR_N}));
 
     // ---------------- FPGA
-    wire ZF_SLAVE_N_i, ZF_CFGOUT_N_i, ZF_INT2_N_i, ZF_INT6_N_i, ZF_XRDY_i, ZF_OVR_N_i, ZF_DTACK_N_i;
+    wire ZF_SLAVE_N_i, ZF_CFGOUT_N_i, ZF_INT2_N_i, ZF_INT6_N_i, ZF_XRDY_i;
     wire ZF_DBUF_DIR_i, ZF_DBUF_OE_N_i, ZF_ARM_i;
-    wire [3:0] led;
+    wire [1:0] led;
     wire [15:0] LD;
     m_bushold #(.W(16)) u_ld_hold (.bus(LD));   // U103 A-port bus-hold keeps the last level
     wire EN_OK;
+    wire [17:0] SA_i; wire SRAM_CE_N_i, SRAM_OE_N_i, SRAM_WE_N_i, SRAM_UB_N_i, SRAM_LB_N_i, RP_IRQ_N_i;
     z2_top dut (
         .clk_core(clk_core),
         .ZB_A(ZB_A), .ZB_AS_N(ZB_AS_N), .ZB_UDS_N(ZB_UDS_N), .ZB_LDS_N(ZB_LDS_N), .ZB_READ(ZB_READ),
         .ZB_DOE(ZB_DOE), .ZB_E7M(ZB_E7M), .ZB_CFGIN_N(ZB_CFGIN_N), .ZB_BUSRST_N(ZB_BUSRST_N),
         .ZB_BERR_N(ZB_BERR_N), .EN_OK(EN_OK), .ZF_ARM(ZF_ARM_i),
         .ZF_SLAVE_N(ZF_SLAVE_N_i), .ZF_CFGOUT_N(ZF_CFGOUT_N_i), .ZF_INT2_N(ZF_INT2_N_i), .ZF_INT6_N(ZF_INT6_N_i),
-        .ZF_XRDY(ZF_XRDY_i), .ZF_OVR_N(ZF_OVR_N_i), .ZF_DTACK_N(ZF_DTACK_N_i),
+        .ZF_XRDY(ZF_XRDY_i),
         .ZF_DBUF_DIR(ZF_DBUF_DIR_i), .ZF_DBUF_OE_N(ZF_DBUF_OE_N_i),
-        .LD(LD), .DIP_MODE_B(dip_mode_b), .DIP_INT6(dip_int6), .DIP_DISABLE(dip_disable), .LED(led));
+        .LD(LD),
+        .SA(SA_i), .SRAM_CE_N(SRAM_CE_N_i), .SRAM_OE_N(SRAM_OE_N_i), .SRAM_WE_N(SRAM_WE_N_i),
+        .SRAM_UB_N(SRAM_UB_N_i), .SRAM_LB_N(SRAM_LB_N_i), .RP_IRQ_N(RP_IRQ_N_i),
+        .DIP_MODE_B(dip_mode_b), .DIP_INT6(dip_int6), .DIP_DISABLE(dip_disable), .LED(led));
+
+    // ---------------- sheet 3: SRAM pins (registered outputs, tCO) and U301
+    wire [17:0] s_sa; wire s_ce, s_oe, s_we, s_ub, s_lb, s_irq;
+    m_dly #(.W(24), .TMIN(TCO_MIN), .TMAX(TCO_MAX), .SEED(SEED + 20)) u_fpga_sram (
+        .a({SA_i, SRAM_CE_N_i, SRAM_OE_N_i, SRAM_WE_N_i, SRAM_UB_N_i, SRAM_LB_N_i, RP_IRQ_N_i}),
+        .y({s_sa, s_ce, s_oe, s_we, s_ub, s_lb, s_irq}));
+    // FPGA pins while blank or reconfiguring: they keep their level briefly (pin and trace
+    // capacitance), then the board pull-ups R301/R302 (2.2k, RC ~22 ns at ~10 pF) and the MachXO2
+    // weak pull-down (30-305 uA [V S49]: >= ~80 ns to VIL at ~10 pF) take over [E]. /CE and /WE
+    // therefore reach "deselected" before any other pin can drift.
+    wire [17:0] SA;
+    wire SRAM_CE_N, SRAM_OE_N, SRAM_WE_N, SRAM_UB_N, SRAM_LB_N, RP_IRQ_N;
+    reg  [17:0] f_sa = 18'd0;
+    reg  f_ce = 1'b1, f_we = 1'b1, f_oe = 1'b0, f_ub = 1'b0, f_lb = 1'b0;
+    // the float registers follow the driven values, so nothing glitches when the FPGA lets go
+    always @(fpga_on or s_sa or s_ce or s_oe or s_we or s_ub or s_lb)
+        if (fpga_on) begin f_sa = s_sa; f_ce = s_ce; f_oe = s_oe; f_we = s_we; f_ub = s_ub; f_lb = s_lb; end
+    always @(negedge fpga_on) begin
+        f_ce <= #(20.0) 1'b1;   f_we <= #(20.0) 1'b1;
+        f_sa <= #(100.0) 18'd0; f_oe <= #(100.0) 1'b0; f_ub <= #(100.0) 1'b0; f_lb <= #(100.0) 1'b0;
+    end
+    assign SA        = fpga_on ? s_sa : f_sa;
+    assign SRAM_CE_N = fpga_on ? s_ce : f_ce;
+    assign SRAM_OE_N = fpga_on ? s_oe : f_oe;
+    assign SRAM_WE_N = fpga_on ? s_we : f_we;
+    assign SRAM_UB_N = fpga_on ? s_ub : f_ub;
+    assign SRAM_LB_N = fpga_on ? s_lb : f_lb;
+    assign RP_IRQ_N  = fpga_on ? s_irq : 1'b1;     // pull-up at the translator input (sheet 4) [A]
+    assign rp_irq_n  = RP_IRQ_N;
+    m_sram_is61wv25616 u301 (.a(SA), .io(LD), .ce_n(SRAM_CE_N), .oe_n(SRAM_OE_N), .we_n(SRAM_WE_N),
+                             .ub_n(SRAM_UB_N), .lb_n(SRAM_LB_N), .pwr(pwr3), .drv(sram_drv));
 
     // Blank or configuring FPGA: I/O tri-stated (weak pull-down, overridden by the board
     // resistors). The design restarts from its power-on state when configuration completes.
@@ -115,11 +155,14 @@ module card_sheet1 #(
     m_od #(.SEED(SEED + 13)) u105_int2 (.a(INT2_G_N), .pwr(pwr3), .y(Z_INT2_N));
     m_od #(.SEED(SEED + 14)) u105_int6 (.a(INT6_G_N), .pwr(pwr3), .y(Z_INT6_N));
 
-    // ---------------- local-bus contention monitor: FPGA LD drive (tCO window) vs U103 A port
+    // ---------------- local-bus contention monitor: three possible LD drivers
+    //   FPGA (Zorro register read or host write; tCO window), U301 SRAM (enable to High-Z time),
+    //   U103 A port (write phase)
     wire fpga_ld_drv;
-    m_en_window #(.TMIN(TCO_MIN), .TMAX(TCO_MAX)) u_ldw (.en(dut.ld_oe & fpga_on), .w(fpga_ld_drv));
-    assign ld_conflict = fpga_ld_drv & a_drv;
+    m_en_window #(.TMIN(TCO_MIN), .TMAX(TCO_MAX)) u_ldw (.en((dut.ld_oe | dut.h_ld_oe) & fpga_on), .w(fpga_ld_drv));
+    assign ld_conflict = (fpga_ld_drv & a_drv) | (fpga_ld_drv & sram_drv) | (sram_drv & a_drv);
     always @(posedge ld_conflict)
         if ($realtime > 1.0)                 // ignore X resolution at time 0
-            $display("ASSERT-FAIL %0t LD contention: FPGA and U103 A port both enabled", $realtime);
+            $display("ASSERT-FAIL %0t LD contention: FPGA %b, SRAM %b, U103 A port %b", $realtime,
+                     fpga_ld_drv, sram_drv, a_drv);
 endmodule

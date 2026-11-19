@@ -15,9 +15,12 @@ if [ -z "${LM_LICENSE_FILE:-}" ]; then
 fi
 export LM_LICENSE_FILE
 export Z2_DEV="$DEV"
+export Z2_TOP="${Z2_TOP:-z2_top}"   # pin-budget fit test: Z2_TOP=fit_top
 rm -rf "$WORK" && mkdir -p "$WORK/rtl" "$WORK/syn" "$WORK/work"
 cp "$HERE"/../rtl/*.v "$WORK/rtl/"
-cp "$HERE/z2_top.lpf" "$HERE/diamond_sta.tcl" "$WORK/syn/"
+cp "$HERE/z2_top.lpf" "$HERE/diamond_sta.tcl" "$HERE"/*.v "$WORK/syn/"
+# the fit test also places the pins of sheets 4-6 (ports that exist only in fit_top)
+if [ "$Z2_TOP" = "fit_top" ]; then cat "$HERE/fit_top_extra.lpf" >> "$WORK/syn/z2_top.lpf"; fi
 ( cd "$WORK/work" && "$DIAMOND/bin/nt64/pnmainc.exe" ../syn/diamond_sta.tcl > ../pnmainc.log 2>&1 )
 grep -E "^(ERROR|WARNING) -" "$WORK/pnmainc.log" | sort | uniq -c | sort -rn | head -20 || true
 # I/O-standard check (added 2026-11-19 after the first exploratory run analysed unconstrained ports as
