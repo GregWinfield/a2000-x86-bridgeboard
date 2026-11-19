@@ -18,12 +18,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from kisch import (FP_VERSION, GEN_VERSION, LIB, PROJECT, Pin, Schematic, StdSymbol, SymbolDef, U, f, q,
                    write_symbol_lib)
+from sheet2 import build_sheet2, sym_ecs2520mv, sym_lcmxo2
 
 KICAD_SYM = Path(r"C:\Program Files\KiCad\10.0\share\kicad\symbols")
 DATE = "2026-11-18"
 REV = "B (draft)"
 DATE3 = "2026-11-19"
 REV3 = "A (draft)"
+DATE2 = "2026-11-19"
+REV2 = "A (draft)"
 COMPANY = "A2000 x86 Bridgeboard project"
 LICENCE = "CERN-OHL-S-2.0"
 
@@ -924,21 +927,19 @@ def build_placeholder(n, root_uuid, sheet_uuid, title):
     return sch
 
 
-def build_root(root_uuid, sheet_uuids, sheet1_pins, std, syms, sheet3_pins=None):
-    sch = Schematic("root", "A3", "A2000 x86 Bridgeboard: top level", REV, DATE3,
+def build_root(root_uuid, sheet_uuids, sheet1_pins, std, syms, sheet3_pins, sheet2_pins):
+    sch = Schematic("root", "A2", "A2000 x86 Bridgeboard: top level", REV, DATE2,
                     ["Zorro II bridgeboard carrying a removable x86 SBC (Rev 1: Radxa X4).",
-                     "Hierarchy follows the brief: sheets 1-6. Sheets 1 and 3 are drawn (Stages 2-3).",
+                     "Hierarchy follows the brief: sheets 1-6. Sheets 1, 2 and 3 are drawn (Stages 2-3).",
                      "TEMPORARY PWR_FLAGs on +3V3/+5V_BUS until sheet 5 exists.", f"Licence: {LICENCE}"],
                     COMPANY, f"/{root_uuid}")
     sch.uuid = root_uuid
-    # sheet 1 with pins
-    x0, y0, w = 50.8, 30.48, 71.12
-    h = 2.54 * (len(sheet1_pins) + 2)
-    pins = []
-    for i, (name, shape) in enumerate(sheet1_pins):
-        py = y0 + 2.54 * (i + 1)
-        pins.append(f"\t\t(pin {q(name)} {shape}\n\t\t\t(at {f(x0 + w)} {f(py)} 0)\n\t\t\t(uuid {q(U('root/pin/' + name))})\n"
-                    f"\t\t\t(effects\n\t\t\t\t(font\n\t\t\t\t\t(size 1.27 1.27)\n\t\t\t\t)\n\t\t\t\t(justify right)\n\t\t\t)\n\t\t)")
+
+    def pin_txt(key, name, shape, x, y, edge):
+        ang, just = (0, "right") if edge == "right" else (180, "left")
+        return (f"\t\t(pin {q(name)} {shape}\n\t\t\t(at {f(x)} {f(y)} {ang})\n\t\t\t(uuid {q(U(key + name))})\n"
+                f"\t\t\t(effects\n\t\t\t\t(font\n\t\t\t\t\t(size 1.27 1.27)\n\t\t\t\t)\n\t\t\t\t(justify {just})\n\t\t\t)\n\t\t)")
+
     def sheet_block(n, fname, title, x, y, ww, hh, pins_txt=""):
         return (f"\t(sheet\n\t\t(at {f(x)} {f(y)})\n\t\t(size {f(ww)} {f(hh)})\n\t\t(exclude_from_sim no)\n\t\t(in_bom yes)\n"
                 f"\t\t(on_board yes)\n\t\t(dnp no)\n\t\t(stroke\n\t\t\t(width 0.1524)\n\t\t\t(type solid)\n\t\t)\n"
@@ -952,34 +953,56 @@ def build_root(root_uuid, sheet_uuids, sheet1_pins, std, syms, sheet3_pins=None)
                 f"{pins_txt}"
                 f"\t\t(instances\n\t\t\t(project {q(PROJECT)}\n\t\t\t\t(path {q('/' + root_uuid)}\n"
                 f"\t\t\t\t\t(page {q(str(n + 1))})\n\t\t\t\t)\n\t\t\t)\n\t\t)\n\t)")
-    sch.raw(sheet_block(1, SHEETS[0][1], SHEETS[0][2], x0, y0, w, h, "\n".join(pins) + "\n"))
-    # sheet-1 LD pins: joined to sheet 3 with labels (the local bus is shared by U103 and U301)
+
+    not_routed = {"ZF_OVR_N", "ZF_DTACK_N"}        # C-17: not FPGA pins; held inactive on sheet 1
+    # sheet 1 (left), pins on its right edge: every pin gets a stub and a net label (or a no-connect flag)
+    x1, y1, w1 = 38.1, 30.48, 71.12
+    h1 = 2.54 * (len(sheet1_pins) + 2)
+    p1 = []
     for i, (name, shape) in enumerate(sheet1_pins):
-        if name.startswith("LD"):
-            py = y0 + 2.54 * (i + 1)
-            sch.wire((x0 + w, py), (x0 + w + 7.62, py))
-            sch.label(name, (x0 + w + 7.62, py), "right")
-    # sheet 3 with pins on its left edge
-    if sheet3_pins:
-        x3, y3, w3 = 165.1, 30.48, 45.72
-        h3 = 2.54 * (len(sheet3_pins) + 2)
-        p3 = []
-        for i, (name, shape) in enumerate(sheet3_pins):
-            py = y3 + 2.54 * (i + 1)
-            p3.append(f"\t\t(pin {q(name)} {shape}\n\t\t\t(at {f(x3)} {f(py)} 180)\n\t\t\t(uuid {q(U('root/pin3/' + name))})\n"
-                      f"\t\t\t(effects\n\t\t\t\t(font\n\t\t\t\t\t(size 1.27 1.27)\n\t\t\t\t)\n\t\t\t\t(justify left)\n\t\t\t)\n\t\t)")
-            if name.startswith("LD"):
-                sch.wire((x3, py), (x3 - 7.62, py))
-                sch.label(name, (x3 - 7.62, py), "left")
-        sch.raw(sheet_block(3, SHEETS[2][1], SHEETS[2][2], x3, y3, w3, h3, "\n".join(p3) + "\n"))
-    others = [t for t in SHEETS[1:] if not (sheet3_pins and t[0] == 3)]
-    for k, (n, fname, title) in enumerate(others):
-        sch.raw(sheet_block(n, fname, title, 279.4, 30.48 + 30.48 * k, 106.68, 20.32))
-    sch.text("Sheet-1 and sheet-3 interface pins to the FPGA are intentionally unconnected at this level until\n"
-             "sheet 2 (FPGA) is drawn; LD0-LD15 join sheet 1 (U103 A port) and sheet 3 (U301). ERC reports for the\n"
-             "open pins are expected and listed in docs/stage2/sheet3-erc-report.md.", (50.8, y0 + h + 7.62), 1.27)
+        py = y1 + 2.54 * (i + 1)
+        p1.append(pin_txt("root/pin/", name, shape, x1 + w1, py, "right"))
+        if name in not_routed:
+            sch.noconnect((x1 + w1, py))
+        else:
+            sch.wire((x1 + w1, py), (x1 + w1 + 7.62, py))
+            sch.label(name, (x1 + w1 + 7.62, py), "right")
+    sch.raw(sheet_block(1, SHEETS[0][1], SHEETS[0][2], x1, y1, w1, h1, "\n".join(p1) + "\n"))
+    # sheet 2 (centre): left edge = nets shared with sheets 1 and 3; right edge = nets of sheets 4-6 (open)
+    near = {n for n, _ in sheet1_pins} | {n for n, _ in sheet3_pins}
+    order = {n: i for i, (n, _) in enumerate(list(sheet1_pins) + list(sheet3_pins))}
+    left = sorted([t for t in sheet2_pins if t[0] in near], key=lambda t: order[t[0]])
+    right = sorted([t for t in sheet2_pins if t[0] not in near])
+    x2, y2, w2 = 175.26, 30.48, 60.96
+    h2 = 2.54 * (max(len(left), len(right)) + 2)
+    p2 = []
+    for i, (name, shape) in enumerate(left):
+        py = y2 + 2.54 * (i + 1)
+        p2.append(pin_txt("root/pin2/", name, shape, x2, py, "left"))
+        sch.wire((x2, py), (x2 - 7.62, py))
+        sch.label(name, (x2 - 7.62, py), "left")
+    for i, (name, shape) in enumerate(right):
+        py = y2 + 2.54 * (i + 1)
+        p2.append(pin_txt("root/pin2/", name, shape, x2 + w2, py, "right"))
+    sch.raw(sheet_block(2, SHEETS[1][1], SHEETS[1][2], x2, y2, w2, h2, "\n".join(p2) + "\n"))
+    # sheet 3 (right), pins on its left edge
+    x3, y3, w3 = 304.8, 30.48, 45.72
+    h3 = 2.54 * (len(sheet3_pins) + 2)
+    p3 = []
+    for i, (name, shape) in enumerate(sheet3_pins):
+        py = y3 + 2.54 * (i + 1)
+        p3.append(pin_txt("root/pin3/", name, shape, x3, py, "left"))
+        sch.wire((x3, py), (x3 - 7.62, py))
+        sch.label(name, (x3 - 7.62, py), "left")
+    sch.raw(sheet_block(3, SHEETS[2][1], SHEETS[2][2], x3, y3, w3, h3, "\n".join(p3) + "\n"))
+    for k, (n, fname, title) in enumerate([t for t in SHEETS if t[0] >= 4]):
+        sch.raw(sheet_block(n, fname, title, 381.0, 30.48 + 30.48 * k, 106.68, 20.32))
+    sch.text("Sheets 1, 2 and 3 are joined by net labels at every sheet pin. ZF_OVR_N and ZF_DTACK_N are not\n"
+             "FPGA pins (owner decision C-17): no-connect here, held inactive by R106/R107 on sheet 1.\n"
+             "Sheet-2 pins on its right edge belong to sheets 4-6 (not yet drawn) and are open until then;\n"
+             "ERC entries for them are listed in docs/stage2/sheet2-erc-report.md.", (38.1, 30.48 + max(h1, h2) + 12.7), 1.27)
     sch.text("+3V3 and +5V_BUS are sourced by sheet 5 (not yet drawn). TEMPORARY PWR_FLAGs on sheet 1\n"
-             "declare them driven so ERC can check sheets 1 and 3; remove them when sheet 5 exists.", (279.4, 238.76), 1.27)
+             "declare them driven so ERC can check sheets 1-3; remove them when sheet 5 exists.", (381.0, 238.76), 1.27)
     return sch
 
 
@@ -989,7 +1012,8 @@ def main(repo: Path):
     (kdir / "lib" / f"{LIB}.pretty").mkdir(parents=True, exist_ok=True)
     syms = {"LVC16244": sym_lvc16244(), "LVCH16T245": sym_lvch16t245(), "LVC8T245": sym_lvc8t245(),
             "LVC07A": sym_lvc07a(), "LVC1G00": sym_lvc1g00(), "LVC32A": sym_lvc32a(), "TPS3808": sym_tps3808(),
-            "ZORRO": sym_zorro(), "+5V_BUS": sym_power("+5V_BUS"), "IS61WV25616": sym_is61wv25616()}
+            "ZORRO": sym_zorro(), "+5V_BUS": sym_power("+5V_BUS"), "IS61WV25616": sym_is61wv25616(),
+            "LCMXO2": sym_lcmxo2(), "ECS2520": sym_ecs2520mv()}
     write_symbol_lib(kdir / "lib" / f"{LIB}.kicad_sym", list(syms.values()))
     write_zorro_footprint(kdir / "lib" / f"{LIB}.pretty" / "Zorro2_Edge_2x50_P2.54mm.kicad_mod")
     std = {"R": StdSymbol(KICAD_SYM / "Device.kicad_sym", "Device", "R"),
@@ -999,7 +1023,9 @@ def main(repo: Path):
            "+3V3": StdSymbol(KICAD_SYM / "power.kicad_sym", "power", "+3V3"),
            "GND": StdSymbol(KICAD_SYM / "power.kicad_sym", "power", "GND"),
            "FLAG": StdSymbol(KICAD_SYM / "power.kicad_sym", "power", "PWR_FLAG"),
-           "JP": StdSymbol(KICAD_SYM / "Jumper.kicad_sym", "Jumper", "Jumper_2_Open")}
+           "JP": StdSymbol(KICAD_SYM / "Jumper.kicad_sym", "Jumper", "Jumper_2_Open"),
+           "CONN6": StdSymbol(KICAD_SYM / "Connector_Generic.kicad_sym", "Connector_Generic", "Conn_01x06"),
+           "FB": StdSymbol(KICAD_SYM / "Device.kicad_sym", "Device", "FerriteBead")}
     root_uuid = U("root")
     sheet_uuids = {n: U(f"sheetblock{n}") for n, _, _ in SHEETS}
     s1 = build_sheet1(repo, root_uuid, sheet_uuids[1], syms, std)
@@ -1023,10 +1049,17 @@ def main(repo: Path):
             seen3.add(m.group(1))
             s3pins.append((m.group(1), m.group(2)))
     s3pins.sort(key=lambda n: (SHEET3_LABELS.index(n[0]), 0))
+    s2, spare2 = build_sheet2(repo, root_uuid, sheet_uuids[2], syms, std, (REV2, DATE2, COMPANY, LICENCE))
+    s2.write(kdir / "sheets" / SHEETS[1][1])
+    seen2, s2pins = set(), []
+    for m in re.finditer(r'\(hierarchical_label "([^"]+)"\n\t\t\(shape (\w+)\)', "\n".join(s2.items)):
+        if m.group(1) not in seen2:
+            seen2.add(m.group(1))
+            s2pins.append((m.group(1), m.group(2)))
     for n, fname, title in SHEETS[1:]:
-        if n != 3:
+        if n not in (2, 3):
             build_placeholder(n, root_uuid, sheet_uuids[n], title).write(kdir / "sheets" / fname)
-    root = build_root(root_uuid, sheet_uuids, s1pins, std, syms, s3pins)
+    root = build_root(root_uuid, sheet_uuids, s1pins, std, syms, s3pins, s2pins)
     root.write(kdir / f"{PROJECT}.kicad_sch", "\t(sheet_instances\n\t\t(path \"/\"\n\t\t\t(page \"1\")\n\t\t)\n\t)")
     (kdir / "sym-lib-table").write_text(
         f"(sym_lib_table\n\t(version 7)\n\t(lib (name \"{LIB}\") (type \"KiCad\") (uri \"${{KIPRJMOD}}/lib/{LIB}.kicad_sym\") "
@@ -1042,6 +1075,7 @@ def main(repo: Path):
     print("sheet-1 interface pins:", len(s1pins))
     print("placed symbols on sheet 1:", len(s1.placed))
     print("sheet-3 interface pins:", len(s3pins), "placed symbols on sheet 3:", len(s3.placed))
+    print("sheet-2 interface pins:", len(s2pins), "placed symbols on sheet 2:", len(s2.placed), "spare FPGA pins:", spare2)
 
 
 if __name__ == "__main__":
