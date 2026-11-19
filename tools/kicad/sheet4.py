@@ -195,6 +195,21 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
                       ref_at=(x + 1.8, y - 1.3), val_at=(x + 1.8, y + 1.3), ref_just="left", val_just="left")
         pwr(GNDS, *r.p("2"))
         sch.label(x4net[(uref, ch)], stub(r.p("1"), 0, -5.08), "right")
+    # RP2040-side defaults while U402 is isolated with the RP2040 running (carrier +3V3 off, X4 on its own
+    # 12 V): IRQ_N must read "no interrupt" whatever the RP2040's pad pull (its reset default is a pull-down
+    # [V S65]), so R424 10k pulls it up to RP_VIO (live only while the RP2040 drives GP24); ATTN reads
+    # "not ready" through R425 100k to GND
+    for i, (ref, val, top, bottom) in enumerate((("R424", "10k", "RP_VIO", "X4_GP22_IRQ_N"),
+                                                 ("R425", "100k", "X4_GP27_ATTN", None))):
+        x, y = 121.92 + 15.24 * i, 241.3
+        r = sch.place(R, ref, val, x, y, 0, footprint="Resistor_SMD:R_0603_1608Metric",
+                      props={"Spec": "0603 1%; RP2040-side default while U402 is isolated (S4-6)"},
+                      ref_at=(x + 1.8, y - 1.3), val_at=(x + 1.8, y + 1.3), ref_just="left", val_just="left")
+        sch.label(top, stub(r.p("1"), 0, -5.08), "right")
+        if bottom is None:
+            pwr(GNDS, *r.p("2"))
+        else:
+            sch.label(bottom, stub(r.p("2"), 0, 5.08), "right")
     # U402's B supply (S4-6): GP24 -> R416 -> RP_VIO, with C on the VCCB pin (above) and a 100k bleed, so
     # VCCB = 0 and U402 isolates whenever GP24 is not driven high (RP2040 unpowered, in reset or in BOOTSEL)
     x, y = 152.4 + 15.24 * 6, 241.3
@@ -240,6 +255,7 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
         "4. Default resistors (R-51): CS_N high, SCK/MOSI low, MISO/ATTN low (not ready), IRQ_N 2.2k pull-up, strong\n"
         "   enough against the blank FPGA's weak pull-down (305 uA max: 2.6 V). Host-link pins use PULLMODE=NONE in the LPF.\n"
         "5. R411-R414 33R source terminations on the ribbon drivers; R416 47R GP24 inrush limit (values TBV at layout, M-16).\n"
+        "   R424/R425: with the carrier off and the X4 running, U402 is isolated: IRQ_N reads high (no interrupt), ATTN low.\n"
         "6. Not yet validated: an ERC-clean result does not imply electrical or timing correctness.",
         (25.4, 300.0), 1.27)
     return sch

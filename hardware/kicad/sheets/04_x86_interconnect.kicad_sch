@@ -2458,7 +2458,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "DESIGN NOTES (summary; full analysis in docs/stage2/sheet4-design-notes.md)\n1. Every X4 signal passes an SN74AVC4T774 (A = carrier +3V3). VCC isolation + Ioff: no back-feed when a side is off (C-29).\n   U401/U403/U404 carry RP2040 -> carrier inputs only; B = X4_3V3_REF (header 3.3 V, reference only: uA; ER-3).\n2. U402 carries EVERY carrier -> RP2040 output (IRQ_N, ATTN, MISO, TDO). Its B supply is RP_VIO = RP2040 GP24, driven\n   high by firmware (S4-6): the X4's K4 key can cut the RP2040's IOVDD while the header 3.3 V stays up (Q32,\n   [V S1 sh.21]); no B output can then exceed the RP2040's own supply, and U402 isolates when GP24 is not high.\n3. U401 SPI (mode 0, GPIO chip select); U403 JTAG option (D-12: OE from a DIP switch, default isolated, so J201\n   on sheet 2 has priority); U404 four RP2040 LEDs (C-26). B-side 100k pull-downs on every RP2040 -> carrier input.\n4. Default resistors (R-51): CS_N high, SCK/MOSI low, MISO/ATTN low (not ready), IRQ_N 2.2k pull-up, strong\n   enough against the blank FPGA's weak pull-down (305 uA max: 2.6 V). Host-link pins use PULLMODE=NONE in the LPF.\n5. R411-R414 33R source terminations on the ribbon drivers; R416 47R GP24 inrush limit (values TBV at layout, M-16).\n6. Not yet validated: an ERC-clean result does not imply electrical or timing correctness."
+	(text "DESIGN NOTES (summary; full analysis in docs/stage2/sheet4-design-notes.md)\n1. Every X4 signal passes an SN74AVC4T774 (A = carrier +3V3). VCC isolation + Ioff: no back-feed when a side is off (C-29).\n   U401/U403/U404 carry RP2040 -> carrier inputs only; B = X4_3V3_REF (header 3.3 V, reference only: uA; ER-3).\n2. U402 carries EVERY carrier -> RP2040 output (IRQ_N, ATTN, MISO, TDO). Its B supply is RP_VIO = RP2040 GP24, driven\n   high by firmware (S4-6): the X4's K4 key can cut the RP2040's IOVDD while the header 3.3 V stays up (Q32,\n   [V S1 sh.21]); no B output can then exceed the RP2040's own supply, and U402 isolates when GP24 is not high.\n3. U401 SPI (mode 0, GPIO chip select); U403 JTAG option (D-12: OE from a DIP switch, default isolated, so J201\n   on sheet 2 has priority); U404 four RP2040 LEDs (C-26). B-side 100k pull-downs on every RP2040 -> carrier input.\n4. Default resistors (R-51): CS_N high, SCK/MOSI low, MISO/ATTN low (not ready), IRQ_N 2.2k pull-up, strong\n   enough against the blank FPGA's weak pull-down (305 uA max: 2.6 V). Host-link pins use PULLMODE=NONE in the LPF.\n5. R411-R414 33R source terminations on the ribbon drivers; R416 47R GP24 inrush limit (values TBV at layout, M-16).\n   R424/R425: with the carrier off and the X4 running, U402 is isolated: IRQ_N reads high (no interrupt), ATTN low.\n6. Not yet validated: an ERC-clean result does not imply electrical or timing correctness."
 		(exclude_from_sim no)
 		(at 25.4 300 0)
 		(effects
@@ -2467,7 +2467,7 @@
 			)
 			(justify left top)
 		)
-		(uuid "1adde191-01b4-562b-bf7a-53d2f89f831b")
+		(uuid "07e45cac-e21f-5a97-b470-803cfd83778c")
 	)
 	(no_connect
 		(at 350.52 116.84)
@@ -2539,7 +2539,7 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 266.7) (xy 304.8 270.51)
+			(xy 294.64 236.22) (xy 294.64 240.03)
 		)
 		(stroke
 			(width 0)
@@ -2709,6 +2709,16 @@
 	)
 	(wire
 		(pts
+			(xy 304.8 266.7) (xy 304.8 270.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1f2b80d5-76c7-5d26-80a3-0b8823fe4644")
+	)
+	(wire
+		(pts
 			(xy 138.43 191.77) (xy 143.51 191.77)
 		)
 		(stroke
@@ -2749,7 +2759,7 @@
 	)
 	(wire
 		(pts
-			(xy 274.32 266.7) (xy 274.32 270.51)
+			(xy 259.08 237.49) (xy 259.08 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3069,6 +3079,16 @@
 	)
 	(wire
 		(pts
+			(xy 320.04 266.7) (xy 320.04 270.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6ea0f40c-36d5-5eaf-96d7-5d9f6dbb4795")
+	)
+	(wire
+		(pts
 			(xy 363.22 144.78) (xy 370.84 144.78)
 		)
 		(stroke
@@ -3109,7 +3129,7 @@
 	)
 	(wire
 		(pts
-			(xy 320.04 266.7) (xy 320.04 270.51)
+			(xy 274.32 266.7) (xy 274.32 270.51)
 		)
 		(stroke
 			(width 0)
@@ -3169,7 +3189,7 @@
 	)
 	(wire
 		(pts
-			(xy 294.64 236.22) (xy 294.64 240.03)
+			(xy 243.84 245.11) (xy 243.84 250.19)
 		)
 		(stroke
 			(width 0)
@@ -3549,7 +3569,7 @@
 	)
 	(wire
 		(pts
-			(xy 243.84 237.49) (xy 243.84 232.41)
+			(xy 121.92 237.49) (xy 121.92 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3609,7 +3629,7 @@
 	)
 	(wire
 		(pts
-			(xy 279.4 236.22) (xy 279.4 240.03)
+			(xy 243.84 237.49) (xy 243.84 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3649,7 +3669,7 @@
 	)
 	(wire
 		(pts
-			(xy 289.56 266.7) (xy 289.56 270.51)
+			(xy 279.4 236.22) (xy 279.4 240.03)
 		)
 		(stroke
 			(width 0)
@@ -3669,7 +3689,17 @@
 	)
 	(wire
 		(pts
-			(xy 243.84 245.11) (xy 243.84 250.19)
+			(xy 289.56 266.7) (xy 289.56 270.51)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "db439db3-bc8e-5092-9a50-cc5388234c26")
+	)
+	(wire
+		(pts
+			(xy 121.92 245.11) (xy 121.92 250.19)
 		)
 		(stroke
 			(width 0)
@@ -3749,7 +3779,7 @@
 	)
 	(wire
 		(pts
-			(xy 259.08 237.49) (xy 259.08 232.41)
+			(xy 137.16 237.49) (xy 137.16 232.41)
 		)
 		(stroke
 			(width 0)
@@ -3867,8 +3897,8 @@
 		)
 		(uuid "102cf1be-374d-59e9-9404-9bb585cf6e50")
 	)
-	(label "X4_GP24_VIO"
-		(at 243.84 232.41 0)
+	(label "RP_VIO"
+		(at 121.92 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3917,8 +3947,8 @@
 		)
 		(uuid "1977e183-f659-5cfa-ba02-51086725c9db")
 	)
-	(label "RP_VIO"
-		(at 279.4 240.03 0)
+	(label "X4_GP24_VIO"
+		(at 243.84 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3977,6 +4007,16 @@
 		)
 		(uuid "28a9d42f-2439-5b14-b8cb-21ca3c08286c")
 	)
+	(label "RP_VIO"
+		(at 294.64 240.03 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2b5ac687-5b59-5eab-9056-10f4df982be5")
+	)
 	(label "X4_GP26_TDI"
 		(at 370.84 147.32 0)
 		(effects
@@ -3996,6 +4036,16 @@
 			(justify right bottom)
 		)
 		(uuid "3b40ed33-638c-59c6-b587-88e773096983")
+	)
+	(label "RP_VIO"
+		(at 259.08 232.41 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3bc50dce-8ffd-5344-a7a1-c10da8b0589c")
 	)
 	(label "X4_GP18_LED"
 		(at 254 185.42 0)
@@ -4017,8 +4067,8 @@
 		)
 		(uuid "43e01a40-c985-51ec-8d90-5268b4e11800")
 	)
-	(label "RP_VIO"
-		(at 259.08 232.41 0)
+	(label "X4_GP27_ATTN"
+		(at 137.16 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4098,7 +4148,7 @@
 		(uuid "6fc6bbc0-22aa-518b-b95e-5c0bef8eecaf")
 	)
 	(label "RP_VIO"
-		(at 294.64 240.03 0)
+		(at 243.84 250.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4287,6 +4337,16 @@
 		)
 		(uuid "cc677d42-f0af-5713-9cd0-462f068679e4")
 	)
+	(label "RP_VIO"
+		(at 279.4 240.03 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ceb3423c-3855-5cf3-90fd-14a23d24e372")
+	)
 	(label "X4_3V3_REF"
 		(at 325.12 92.71 0)
 		(effects
@@ -4327,8 +4387,8 @@
 		)
 		(uuid "e498ff1c-af76-5feb-8f94-e394d38f6d46")
 	)
-	(label "RP_VIO"
-		(at 243.84 250.19 0)
+	(label "X4_GP22_IRQ_N"
+		(at 121.92 250.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4378,6 +4438,17 @@
 		)
 		(uuid "0719d59d-0ce7-53dc-ad08-73dc4e221224")
 	)
+	(hierarchical_label "RP_ATTN"
+		(shape bidirectional)
+		(at 320.04 270.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0cbf845f-8ab6-5425-ba67-b4aafaceee12")
+	)
 	(hierarchical_label "LED_RP2"
 		(shape bidirectional)
 		(at 203.2 185.42 180)
@@ -4400,6 +4471,28 @@
 		)
 		(uuid "1946bb15-56c2-511a-8887-ab43642ae69f")
 	)
+	(hierarchical_label "RP_MISO"
+		(shape bidirectional)
+		(at 289.56 270.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "45ab534d-89b0-565f-8369-4d5a677172d7")
+	)
+	(hierarchical_label "RP_CS_N"
+		(shape bidirectional)
+		(at 304.8 270.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "4611e4a3-5314-57a3-9082-f45a451076ae")
+	)
 	(hierarchical_label "LED_RP3"
 		(shape bidirectional)
 		(at 203.2 187.96 180)
@@ -4410,17 +4503,6 @@
 			(justify right)
 		)
 		(uuid "4b64ed93-59f9-5b1c-b57c-9f703febb69a")
-	)
-	(hierarchical_label "RP_SCK"
-		(shape bidirectional)
-		(at 274.32 270.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "4b787838-7381-5c62-833d-ddf64d963801")
 	)
 	(hierarchical_label "RP_IRQ_N"
 		(shape bidirectional)
@@ -4476,17 +4558,6 @@
 			(justify right)
 		)
 		(uuid "78f90071-acec-5799-a722-60104e6d652c")
-	)
-	(hierarchical_label "RP_CS_N"
-		(shape bidirectional)
-		(at 304.8 270.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "8611311a-c986-5fef-94df-8a57013a813b")
 	)
 	(hierarchical_label "FPGA_TCK"
 		(shape bidirectional)
@@ -4609,9 +4680,9 @@
 		)
 		(uuid "e0ec7408-1b90-5e59-bb9f-b2989b048c47")
 	)
-	(hierarchical_label "RP_ATTN"
+	(hierarchical_label "RP_SCK"
 		(shape bidirectional)
-		(at 320.04 270.51 0)
+		(at 274.32 270.51 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4630,17 +4701,6 @@
 			(justify right)
 		)
 		(uuid "edc09296-d5b7-5b91-a76b-48957f788fd9")
-	)
-	(hierarchical_label "RP_MISO"
-		(shape bidirectional)
-		(at 289.56 270.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "f04fc85f-e5bf-5aca-bb5b-a141fff869e0")
 	)
 	(hierarchical_label "RP_SCK"
 		(shape bidirectional)
@@ -7070,7 +7130,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 335.28 266.7 0)
+		(at 259.08 245.11 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -7080,7 +7140,7 @@
 		(dnp no)
 		(uuid "302b4ed2-117c-58a4-bfca-bf0dab861841")
 		(property "Reference" "#PWR4068"
-			(at 335.28 269.7 0)
+			(at 259.08 248.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7091,7 +7151,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 335.28 271.7 0)
+			(at 259.08 250.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7102,7 +7162,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 335.28 266.7 0)
+			(at 259.08 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7113,7 +7173,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 335.28 266.7 0)
+			(at 259.08 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7124,7 +7184,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 335.28 266.7 0)
+			(at 259.08 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8472,6 +8532,98 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 137.16 241.3 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "51341518-806b-5ccc-96b6-e76941c6e201")
+		(property "Reference" "R425"
+			(at 138.96 240 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100k"
+			(at 138.96 242.6 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 137.16 241.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 137.16 241.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 137.16 241.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Spec" "0603 1%; RP2040-side default while U402 is isolated (S4-6)"
+			(at 137.16 241.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "50400bbe-dc5f-5a2e-b27a-2617e7209601")
+		)
+		(pin "2"
+			(uuid "aff91098-405b-5455-9ea9-a66558f21bf0")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "R425")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3V3")
 		(at 73.66 205.74 90)
 		(unit 1)
@@ -9355,40 +9507,40 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 259.08 245.11 0)
+		(lib_id "Device:R")
+		(at 121.92 241.3 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
 		(dnp no)
-		(uuid "718c3dc3-059b-5f6b-991b-d9e25c8872a0")
-		(property "Reference" "#PWR4067"
-			(at 259.08 248.11 0)
-			(hide yes)
+		(uuid "707c9adc-e656-53e4-8648-bfd55a9d382e")
+		(property "Reference" "R424"
+			(at 123.72 240 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
-		(property "Value" "GND"
-			(at 259.08 250.11 0)
-			(hide yes)
+		(property "Value" "10k"
+			(at 123.72 242.6 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
-		(property "Footprint" ""
-			(at 259.08 245.11 0)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 121.92 241.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9399,7 +9551,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 259.08 245.11 0)
+			(at 121.92 241.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9410,7 +9562,99 @@
 			)
 		)
 		(property "Description" ""
-			(at 259.08 245.11 0)
+			(at 121.92 241.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Spec" "0603 1%; RP2040-side default while U402 is isolated (S4-6)"
+			(at 121.92 241.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "43800a4c-5395-5eea-bc29-a46186b704b9")
+		)
+		(pin "2"
+			(uuid "7d7a02a9-a718-594f-a4be-c32702d25aee")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "R424")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 137.16 245.11 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "718c3dc3-059b-5f6b-991b-d9e25c8872a0")
+		(property "Reference" "#PWR4067"
+			(at 137.16 248.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 137.16 250.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 137.16 245.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 137.16 245.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 137.16 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -14255,6 +14499,84 @@
 			(project "a2000-bridgeboard"
 				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
 					(reference "#PWR4034")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 335.28 266.7 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "fbf0c674-1be4-57b8-8655-8b8db28cf9de")
+		(property "Reference" "#PWR4069"
+			(at 335.28 269.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 335.28 271.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 335.28 266.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 335.28 266.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 335.28 266.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0fd7afee-c5b6-5517-9d52-bb744cf3af18")
+		)
+		(instances
+			(project "a2000-bridgeboard"
+				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/af9050ec-e616-5aef-a7fc-e9ef6cacc591"
+					(reference "#PWR4069")
 					(unit 1)
 				)
 			)

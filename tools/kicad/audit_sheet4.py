@@ -8,7 +8,8 @@ the SN74AVC4T774 pinout and function table (TI SCES693I [V S66]: DIR high = A->B
 isolated), the host-link protocol idle levels and R-51 (docs/hdl/host-link-protocol.md sections 2, 11),
 ER-3 (the X4's header 3.3 V is a reference: only translator supplies, decoupling and a test point on it)
 and decision S4-6 (every carrier -> RP2040 output on U402, whose B supply RP_VIO is the RP2040's GP24, so
-no B output can exceed the RP2040's own IOVDD; B-side pull-downs on every RP2040 -> carrier input).
+no B output can exceed the RP2040's own IOVDD; B-side pull-downs on every RP2040 -> carrier input; IRQ_N
+and ATTN defined at the RP2040 while U402 is isolated).
 Every check prints FAIL on failure; exit code 1 on any failure.
 """
 from __future__ import annotations
@@ -118,8 +119,15 @@ def main(path):
     vio = members("RP_VIO")
     vio_caps = [m for m in vio if m[0].startswith("C4")]
     check(len(vio_caps) == 1 and sorted(set(vio) - set(vio_caps)) == sorted([("U402", "15"), ("R416", "2"), ("R417", "1"),
-                                                                                ("TP407", "1")]),
+                                                                                ("R424", "1"), ("TP407", "1")]),
           f"RP_VIO members {vio}")
+    # RP2040-side defaults while U402 is isolated (carrier off, X4 on): IRQ_N high (no interrupt), ATTN low
+    two_pin("R424", "10k", "RP_VIO", "X4_GP22_IRQ_N")
+    two_pin("R425", "100k", "X4_GP27_ATTN", "GND")
+    check(members("X4_GP22_IRQ_N") == sorted([("J401", "16"), ("R412", "2"), ("R424", "2")]),
+          f"X4_GP22_IRQ_N members {members('X4_GP22_IRQ_N')}")
+    check(members("X4_GP27_ATTN") == sorted([("J401", "18"), ("R413", "2"), ("R425", "1")]),
+          f"X4_GP27_ATTN members {members('X4_GP27_ATTN')}")
 
     # ---------------- FPGA side: the RP_* nets reach the FPGA pins of the plan (sheet 2)
     assign = pinplan.compute(HERE.parents[1])[0]
@@ -154,7 +162,7 @@ def main(path):
     for ref, net in (("TP401", "RP_SCK"), ("TP402", "RP_MISO"), ("TP403", "RP_CS_N"), ("TP404", "RP_ATTN"),
                      ("TP405", "X4_3V3_REF"), ("TP406", "GND"), ("TP407", "RP_VIO")):
         check(net_of(ref, "1") == net, f"{ref} on {net}, got {net_of(ref, '1')}")
-    known = ({"J401", "U401", "U402", "U403", "U404"} | {f"R{n}" for n in range(401, 424)} |
+    known = ({"J401", "U401", "U402", "U403", "U404"} | {f"R{n}" for n in range(401, 426)} |
              {f"C{n}" for n in range(401, 409)} | {f"TP{n}" for n in range(401, 408)})
     present = {r for r in comps if re.match(r"[A-Z]+4\d\d$", r)}
     check(present == known, f"sheet-4 parts: missing {sorted(known - present)}, unexpected {sorted(present - known)}")
