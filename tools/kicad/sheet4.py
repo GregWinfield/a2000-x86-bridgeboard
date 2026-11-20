@@ -44,6 +44,9 @@ EN_REF_RATIO = (6.34, 100.0)                              # R427 / R428 (kOhm): 
 # B outputs driving the ribbon: series source terminations
 SERIES = {("U402", 1): "R412", ("U402", 2): "R413", ("U402", 3): "R411", ("U402", 4): "R414"}
 # B-side 100k pull-downs: every RP2040 -> carrier input is defined while the RP2040 is unpowered or in reset
+# S6-5: U403 (RP2040 JTAG option) A outputs through 330R, so a J201 cable driving the same nets while SW601-4 is ON
+# meets <= 3.6 V / 330 R = 10.9 mA, inside U403's +/-12 mA rating [V S66]
+ASERIES = {("U403", 1): "R432", ("U403", 2): "R433", ("U403", 3): "R434"}
 BPULL = {("U401", 1): "R418", ("U401", 2): "R419", ("U401", 3): "R420", ("U403", 1): "R421", ("U403", 2): "R422",
          ("U403", 3): "R423", ("U404", 1): "R408", ("U404", 2): "R409", ("U404", 3): "R410", ("U404", 4): "R415"}
 PINS = {"A": {1: "3", 2: "4", 3: "5", 4: "6"}, "B": {1: "14", 2: "13", 3: "12", 4: "11"},
@@ -153,7 +156,7 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
             sch.label(J401_SIG[pn][0], stub(pt, side), "left" if side < 0 else "right")
     # X4_3V3_REF comes from the X4 through J401 (a passive pin): declare it driven
     fl = (jx - 30.48, jy - 38.1)
-    sch.label("X4_3V3_REF", stub(fl, 0, 3.81), "right")
+    sch.hlabel("X4_3V3_REF", "output", stub(fl, -7.62), "left")     # names the net; to sheet 5 (X4_S0_SENSE gate, S5-5)
     sch.place(FLAG, "#FLG4001", "PWR_FLAG", fl[0], fl[1], 0, ref_at=(fl[0], fl[1] - 8.0), val_at=(fl[0] - 1.27, fl[1] - 3.2),
               val_just="right")
     tp = sch.place(TP, "TP405", "TestPoint", fl[0] + 10.16, fl[1], 0, footprint="TestPoint:TestPoint_Pad_D1.5mm",
@@ -196,8 +199,24 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
                 pwr(GNDS, e[0], e[1], 270)
                 sch.noconnect(b)
                 continue
-            ea = stub(a, -10.16)
-            sch.hlabel(anet, "bidirectional", ea, "left")
+            if (uref, ch) in ASERIES:                       # S6-5: current-limited against a J201 cable
+                # fan out to a 5.08 mm pitch: channel 1 jogs first and highest, so no vertical crosses a horizontal
+                ya1 = u.p(PINS["A"][1])[1]
+                yt = round(ya1 - 6.35 + (ch - 1) * 5.08, 4)
+                xj = round(a[0] - 5.08 - 2.54 * ch, 4)
+                sch.wire(a, (xj, a[1]))
+                if yt != a[1]:
+                    sch.wire((xj, a[1]), (xj, yt))
+                rx = a[0] - 22.86
+                r = sch.place(R, ASERIES[(uref, ch)], "330R", rx, yt, 90, footprint="Resistor_SMD:R_0603_1608Metric",
+                              props={"Spec": "0603 1%; S6-5: limits JTAG contention with a J201 cable to <= 10.9 mA "
+                                             "(U403 +/-12 mA [V S66])"},
+                              ref_at=(rx - 3.2, yt - 1.8), val_at=(rx + 3.0, yt - 1.8))
+                sch.wire((xj, yt), r.p("2"))
+                sch.hlabel(anet, "bidirectional", stub(r.p("1"), -5.08), "left")
+            else:
+                ea = stub(a, -10.16)
+                sch.hlabel(anet, "bidirectional", ea, "left")
             if (uref, ch) in series:                        # B output driving the ribbon: series termination
                 # fan the four terminated outputs out to a 5.08 mm pitch so each resistor's text has room;
                 # the jogs alternate in x and no vertical crosses another channel's horizontal

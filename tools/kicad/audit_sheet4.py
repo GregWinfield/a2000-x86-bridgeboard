@@ -26,7 +26,7 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parents[0] / "fpga"))
 import netlist                                   # noqa: E402
 import pinplan                                   # noqa: E402
-from sheet4 import (BPULL, EN_REF_RATIO, J401_EN, J401_GND, J401_NC, J401_REF, J401_SIG, OE, PINS,  # noqa: E402
+from sheet4 import (ASERIES, BPULL, EN_REF_RATIO, J401_EN, J401_GND, J401_NC, J401_REF, J401_SIG, OE, PINS,  # noqa: E402
                     SERIES, VCCB, XLAT)
 
 fails = checks = 0
@@ -95,7 +95,12 @@ def main(path):
             if anet is None:
                 check(net_of(u, a) == "GND" and unconnected(u, b), f"{u} spare channel {ch}: A low, B open")
                 continue
-            check(net_of(u, a) == anet, f"{u} A{ch} on {anet}, got {net_of(u, a)}")
+            if (u, ch) in ASERIES:                     # S6-5: U403 JTAG-option outputs through 330R
+                r = ASERIES[(u, ch)]
+                two_pin(r, "330R", net_of(u, a), anet)
+                check(members(net_of(u, a)) == sorted([(u, a), (r, "2")]), f"{u} A{ch} reaches {anet} only through {r}")
+            else:
+                check(net_of(u, a) == anet, f"{u} A{ch} on {anet}, got {net_of(u, a)}")
             if (u, ch) in SERIES:
                 r = SERIES[(u, ch)]
                 two_pin(r, "33R", net_of(u, b), x4net[(u, ch)])
@@ -190,12 +195,15 @@ def main(path):
         two_pin(ref, val, net, rail)
 
     # ---------------- ER-3: only microamp loads on the X4's header 3.3 V
-    allowed = ({(u, "15") for u in XLAT} | {("U405", "5"), ("R427", "1"), ("TP405", "1"), ("J401", "1"), ("J401", "17")} |
+    # sheet 5 (S5-5): R518 100k into Q503's gate (R519 1M to GND): <= 3.3 V / 1.1 M = 3 uA (audit_sheet5 checks it)
+    allowed = ({(u, "15") for u in XLAT} | {("U405", "5"), ("R427", "1"), ("TP405", "1"), ("J401", "1"), ("J401", "17"),
+                                            ("R518", "1")} |
                {(c, p) for c, p in members("X4_3V3_REF") if re.match(r"C4\d\d$", c)})
     extra = [m for m in members("X4_3V3_REF") if m not in allowed]
-    check(not extra, f"X4_3V3_REF loaded only by VCCB, U405, the reference divider, decoupling, TP405: extra {extra}")
-    check([r for r, _ in members("X4_3V3_REF") if r.startswith("R")] == ["R427"],
-          "the only resistor on X4_3V3_REF is the reference divider R427 (3.3 V / 106.34 k = 31 uA; ER-3)")
+    check(not extra, f"X4_3V3_REF loaded only by VCCB, U405, the reference divider, decoupling, TP405, R518: extra {extra}")
+    check(sorted(r for r, _ in members("X4_3V3_REF") if r.startswith("R")) == ["R427", "R518"],
+          "the only resistors on X4_3V3_REF are the reference divider R427 (31 uA) and sheet 5's S0 gate resistor R518 "
+          "(3 uA): ER-3")
 
     # ---------------- decoupling: one 100 nF per supply pin (translators: VCCA and VCCB; U405, U406: VCC)
     caps = sorted(r for r in comps if re.match(r"C4\d\d$", r))
@@ -209,7 +217,7 @@ def main(path):
                      ("TP405", "X4_3V3_REF"), ("TP406", "GND"), ("TP407", "RP_EN_N"), ("TP408", "RP_EN_CMP")):
         check(net_of(ref, "1") == net, f"{ref} on {net}, got {net_of(ref, '1')}")
     known = ({"J401", "U401", "U402", "U403", "U404", "U405", "U406", "Q401", "Q402"} |
-             {f"R{n}" for n in range(401, 432) if n not in (416, 417, 424)} |
+             {f"R{n}" for n in range(401, 435) if n not in (416, 417, 424)} |
              {f"C{n}" for n in range(401, 411)} | {f"TP{n}" for n in range(401, 409)})
     present = {r for r in comps if re.match(r"[A-Z]+4\d\d$", r)}
     check(present == known, f"sheet-4 parts: missing {sorted(known - present)}, unexpected {sorted(present - known)}")

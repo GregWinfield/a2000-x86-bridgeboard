@@ -13,6 +13,10 @@ Licence: MIT (see [/LICENSES/MIT.txt](../../LICENSES/MIT.txt)).
 | `audit_sheet3.py` | Connectivity audit of sheet 3: every U301 pin against the ISSI pin table, the safe-state pull-ups, decoupling, test points, and the cross-sheet local bus LD0–LD15 (U103 A port ↔ U301 I/O), with one FPGA pin on every SA, SRAM and LD net. 159 checks since sheet 2 |
 | `sheet4.py` | Sheet 4 builder: X4 ribbon header J401, four SN74AVC4T774, U402's fail-safe output enable (TLV3201 comparator U405 switching Q401, in series with Q402 on GP24, with Schmitt-trigger buffer U406 driving /OE; S4-6 rev A3), default resistors, B-side pull-downs, decoupling, test points |
 | `audit_sheet4.py` | Connectivity audit of sheet 4: every J401 pin, every translator's supplies, /OE, DIR and channel nets, series resistors, the S4-6 rules (outputs only on U402; U402 /OE from U406, its input pulled low only through Q401/Q402; comparator and MOSFET pins, threshold divider; no source on GP24; only MOSFET gates cross from the X4 side to /OE; a pull-down on every input), the R-51 defaults, ER-3 and the parts list. 220 checks; 29 of 29 injected faults detected |
+| `sheet5.py` | Sheet 5 builder: TPS259470L eFuses U501 (X4 12 V) and U503 (5 V, OVLO), INA226 U502 at 0x44 with a Kelvin shunt, the fail-safe X4 enable stage (Q501/Q502, JP501), TLV76733 U504 (+3V3), the active-low S0 sense (Q503), bonded standoff pads; symbols from the TI pin tables and the TI RPW0010A footprint |
+| `audit_sheet5.py` | Connectivity audit of sheet 5: every part, value, footprint and pin; re-derives the ILIM band and UVLO/OVLO windows from the schematic values with `tools/analysis/sheet5_power.py`; C-28 address, C-29 pull-up domains, R-51, ER-3, rail drivers, +3V3 capacitance, J502 order (274 checks; 28 of 28 injected faults detected) |
+| `sheet6.py` | Sheet 6 builder: LEDs D601-D607, DIP SW601 (positions 1-3 to +3V3 with pull-downs, 4 to GND), debug header J601 through the SN74AVC4T774 U601 with a PTC + Schottky protected VREF, DIR straps, test points |
+| `audit_sheet6.py` | Connectivity audit of sheet 6: LED paths and currents (U404 budget), DIP levels and defaults, RP_JTAG_EN_N, U601 supplies, straps and series/pull resistors, J601 pinout, no direct header-to-FPGA path, DBG_VREF only via F601 + D608, U403's R432-R434 (189 checks; 26 of 26 injected faults detected) |
 | `pinmatrix_sheet1.py` | Generates the Zorro connector table in `docs/pin-assignment-matrix.md` from the netlist |
 
 ## Important: the KiCad files are authoritative
@@ -35,6 +39,8 @@ python -I tools/kicad/audit_sheet1.py /tmp/sheet1.net
 python -I tools/kicad/audit_sheet2.py /tmp/sheet1.net
 python -I tools/kicad/audit_sheet3.py /tmp/sheet1.net
 python -I tools/kicad/audit_sheet4.py /tmp/sheet1.net
+python -I tools/kicad/audit_sheet5.py /tmp/sheet1.net
+python -I tools/kicad/audit_sheet6.py /tmp/sheet1.net
 python -I tools/kicad/pinmatrix_sheet1.py /tmp/sheet1.net
 ```
 

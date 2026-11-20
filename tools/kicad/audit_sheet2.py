@@ -43,7 +43,9 @@ def check(cond, msg):
 CONFIG = {"PROGRAMN": "FPGA_PROGRAMN", "INITN": "FPGA_INITN", "DONE": "FPGA_DONE", "JTAGENB": "FPGA_JTAGENB",
           "TMS": "FPGA_TMS", "TCK": "FPGA_TCK", "TDI": "FPGA_TDI", "TDO": "FPGA_TDO"}
 DRIVER_TYPES = {"output", "tri_state", "open_collector", "open_emitter", "power_out", "bidirectional"}
-OPEN_NETS_PREFIX = ("I2C_", "INA_", "X4_", "LED_", "DIP_", "DBG")             # sheets 5-6, not yet drawn
+OPEN_NETS_PREFIX = ()                                                         # every sheet is drawn (2026-11-21)
+SHEET6_NETS = ("LED_", "DIP_", "DBG")                                          # sheet 6
+SHEET5_NETS = ("I2C_", "INA_", "X4_")                                          # sheet 5 (drawn 2026-11-20)
 
 
 def hdl_directions(path: Path):
@@ -172,29 +174,36 @@ def main(path):
         ext = [(r, q, t) for r, q, t in nets.get(net, []) if r != "U201"]
         drivers = [(r, q, t) for r, q, t in ext if t in DRIVER_TYPES]
         d = dirs.get(sig)
-        if net.startswith(OPEN_NETS_PREFIX):
+        if OPEN_NETS_PREFIX and net.startswith(OPEN_NETS_PREFIX):
             open_nets.append(net)
-            check(not ext, f"{net}: sheet 5-6 net expected open until drawn, has {ext}")
+            check(not ext, f"{net}: sheet-6 net expected open until drawn, has {ext}")
             continue
         if net == "CLK_50M":
             check(sorted((r, q) for r, q, _ in ext) == [("R209", "2"), ("TP204", "1")], f"CLK_50M members {ext}")
             continue
         sheet_refs = {m.group(1) for m in (re.match(r"[A-Z]+(\d)\d\d$", r) for r, _, _ in ext) if m}
         want = ({"1"} if net.startswith(("ZB_", "ZF_", "EN_OK")) else {"3"} if net.startswith(("SA", "SRAM_"))
-                else {"4"} if net.startswith("RP_") else {"1", "3"})
+                else {"4"} if net.startswith("RP_") else {"5"} if net.startswith(SHEET5_NETS)
+                else {"6"} if net.startswith(SHEET6_NETS) else {"1", "3"})
         check(want <= sheet_refs, f"{net}: reaches sheet(s) {sorted(want)}; members {ext}")
         if d == "in":
             oc = [x for x in drivers if x[2] == "open_collector"]
             if oc:   # wired-AND input: open-drain drivers plus a pull-up resistor
                 check(len(oc) == len(drivers) and any(r.startswith("R") for r, _, _ in ext), f"{net}: open-drain drivers need a pull-up: {ext}")
+            elif not drivers and net.startswith("DIP_"):        # sheet 6: switch to +3V3 through 1k, 10k pull-down
+                check(sum(1 for r, _, _ in ext if r.startswith("R")) == 2, f"{net}: series resistor and pull-down: {ext}")
+            elif not drivers and net.startswith(SHEET5_NETS):   # discrete open drain: a MOSFET drain plus a pull-up
+                check(any(r.startswith("Q") and q == "3" for r, q, _ in ext) and any(r.startswith("R") for r, _, _ in ext),
+                      f"{net}: discrete open-drain input needs a MOSFET drain and a pull-up: {ext}")
             else:
                 check(len(drivers) == 1, f"{net}: FPGA input needs exactly one external driver, has {drivers}")
         elif d == "out":
             check(not [x for x in drivers if x[2] != "bidirectional"], f"{net}: FPGA output contends with {drivers}")
-            check(any(t in ("input", "bidirectional") for _, _, t in ext), f"{net}: FPGA output has no load: {ext}")
+            check(any(t in ("input", "bidirectional") for _, _, t in ext) or (net == "LED_READY" and any(r.startswith("R") for r, _, _ in ext)),
+                  f"{net}: FPGA output has no load: {ext}")
         elif d == "inout":
-            check(all(t in ("bidirectional", "passive") for _, _, t in ext), f"{net}: bidirectional bus members {ext}")
-    check(len(open_nets) == 14, f"open sheet 5-6 signal nets: {len(open_nets)} (want 14, see the ERC report)")
+            check(all(t in ("bidirectional", "passive", "input") for _, _, t in ext), f"{net}: bidirectional bus members {ext}")
+    check(len(open_nets) == 0, f"open signal nets: {len(open_nets)} (want 0: every sheet is drawn)")
     for net in ("ZF_OVR_N", "ZF_DTACK_N"):         # owner decision C-17: not FPGA pins
         check(not [x for x in members(net) if x[0] == "U201"], f"{net} has no FPGA pin (C-17)")
 
@@ -209,10 +218,10 @@ def main(path):
             "FPGA_INITN": [("R202", "2"), ("TP202", "1"), ("U201", "110")],
             "FPGA_DONE": [("R203", "2"), ("TP203", "1"), ("U201", "109")],
             "FPGA_JTAGENB": [("R204", "2"), ("U201", "120")],
-            "FPGA_TCK": [("J201", "3"), ("R205", "1"), ("U201", "131"), ("U403", "3")],     # U403: sheet-4 JTAG option
+            "FPGA_TCK": [("J201", "3"), ("R205", "1"), ("R432", "1"), ("U201", "131")],     # R432-R434: U403 (sheet-4 JTAG option) via 330R (S6-5)
             "FPGA_TDO": [("J201", "4"), ("R210", "2"), ("U201", "137"), ("U402", "6")],     # U402 A4 (S4-6)
-            "FPGA_TDI": [("J201", "5"), ("R207", "2"), ("U201", "136"), ("U403", "5")],
-            "FPGA_TMS": [("J201", "6"), ("R206", "2"), ("U201", "130"), ("U403", "4")]}
+            "FPGA_TDI": [("J201", "5"), ("R207", "2"), ("R434", "1"), ("U201", "136")],
+            "FPGA_TMS": [("J201", "6"), ("R206", "2"), ("R433", "1"), ("U201", "130")]}
     for net, m in want.items():
         check(members(net) == sorted(m), f"{net} members {members(net)}")
     j = comps.get("J201")
