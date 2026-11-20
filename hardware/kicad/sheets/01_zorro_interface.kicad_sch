@@ -7082,7 +7082,7 @@
 		)
 		(uuid "7e0aa673-52ab-545f-a380-644aebdf55a4")
 	)
-	(text "TEMPORARY: remove these two PWR_FLAGs when sheet 5 (power) sources +3V3 / +5V_BUS."
+	(text "+3V3 and +5V_BUS are sourced by sheet 5 (U504 TLV76733, U503 eFuse)."
 		(exclude_from_sim no)
 		(at 365.76 28 0)
 		(effects
@@ -16448,83 +16448,6 @@
 		)
 	)
 	(symbol
-		(lib_id "a2000-bridgeboard:+5V_BUS")
-		(at 335.28 30.48 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files no)
-		(dnp no)
-		(uuid "2adc49de-fc15-511e-89de-1cabfd13ac4f")
-		(property "Reference" "#PWR0121"
-			(at 335.28 33.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+5V_BUS"
-			(at 328.78 29.48 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 335.28 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 335.28 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V_BUS\""
-			(at 335.28 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "672f9dd6-dae9-5def-b222-79d85fe98cc2")
-		)
-		(instances
-			(project "a2000-bridgeboard"
-				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/bbf301a1-7620-5067-8552-9ec8e0397bab"
-					(reference "#PWR0121")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 35.56 214.63 90)
 		(unit 1)
@@ -19655,83 +19578,6 @@
 			(project "a2000-bridgeboard"
 				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/bbf301a1-7620-5067-8552-9ec8e0397bab"
 					(reference "R119")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 335.28 30.48 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files no)
-		(dnp no)
-		(uuid "633ccaf8-1c20-54da-8ecc-e1e42621ade1")
-		(property "Reference" "#FLG0103"
-			(at 335.28 37.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 342.28 33.68 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 335.28 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 335.28 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 335.28 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "17f66040-15e0-5e45-a04b-402825c5d105")
-		)
-		(instances
-			(project "a2000-bridgeboard"
-				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/bbf301a1-7620-5067-8552-9ec8e0397bab"
-					(reference "#FLG0103")
 					(unit 1)
 				)
 			)
@@ -24936,83 +24782,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3V3")
-		(at 304.8 30.48 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files no)
-		(dnp no)
-		(uuid "aa56b408-531f-5934-87ee-70b8f821cb25")
-		(property "Reference" "#PWR0120"
-			(at 304.8 33.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 298.3 29.48 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 304.8 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 304.8 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 304.8 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "9fcc146d-e0e1-522a-a22d-250944e7ec7e")
-		)
-		(instances
-			(project "a2000-bridgeboard"
-				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/bbf301a1-7620-5067-8552-9ec8e0397bab"
-					(reference "#PWR0120")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "a2000-bridgeboard:+5V_BUS")
 		(at 444.5 113.03 0)
 		(unit 1)
@@ -26420,83 +26189,6 @@
 			(project "a2000-bridgeboard"
 				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/bbf301a1-7620-5067-8552-9ec8e0397bab"
 					(reference "#PWR0127")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 304.8 30.48 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files no)
-		(dnp no)
-		(uuid "c3735e19-8182-589a-a8f6-4555c71a4928")
-		(property "Reference" "#FLG0102"
-			(at 304.8 37.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 311.8 33.68 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 304.8 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 304.8 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 304.8 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "fbebc1d3-006f-5baf-b38e-acdc64b04e12")
-		)
-		(instances
-			(project "a2000-bridgeboard"
-				(path "/d39b100b-95e7-5bd7-a013-57e2f39bf9ef/bbf301a1-7620-5067-8552-9ec8e0397bab"
-					(reference "#FLG0102")
 					(unit 1)
 				)
 			)

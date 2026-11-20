@@ -191,7 +191,7 @@ Layout must keep these legible next to the connector, and the assembly drawing m
 | 1 and 3 | LD0–LD15 (U103 A port, U301, FPGA) | 16 |
 | 3 (SRAM) | SA0–SA17, SRAM_CE_N, SRAM_OE_N, SRAM_WE_N, SRAM_UB_N, SRAM_LB_N | 23 |
 | 4 (host link), not yet drawn | RP_SCK, RP_CS_N, RP_MOSI, RP_MISO, RP_IRQ_N, RP_ATTN; FPGA_TCK/TMS/TDI/TDO (RP2040 JTAG option, D-12) | 6 + 4 |
-| 5 (power), not yet drawn | I2C_SDA, I2C_SCL, INA_ALERT_N, X4_PWR_EN, X4_PWR_FLT_N, X4_S0_SENSE | 6 |
+| 5 (power), drawn 2026-11-20 (sheet 5 rev A) | I2C_SDA, I2C_SCL, INA_ALERT_N, X4_PWR_EN, X4_PWR_FLT_N, X4_S0_SENSE (active low) | 6 |
 | 6 (diagnostics), not yet drawn | LED_READY, DIP_MODE_B, DIP_INT6, DIP_DISABLE, DBG0–DBG3 | 8 |
 | Local | CLK_50M | 1 |
 
