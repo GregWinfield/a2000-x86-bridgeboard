@@ -138,7 +138,8 @@ def build_sheet5(root_uuid: str, sheet_uuid: str, syms, std, consts):
     QN, EF, INA, LDO = syms["BSS138"], syms["TPS259470"], syms["INA226"], syms["TLV767"]
     n_pwr = [0]
     HIER = {"X4_PWR_EN": "input", "X4_PWR_FLT_N": "output", "X4_S0_SENSE": "output", "INA_ALERT_N": "output",
-            "I2C_SDA": "bidirectional", "I2C_SCL": "input", "X4_3V3_REF": "input"}
+            "I2C_SDA": "bidirectional", "I2C_SCL": "input", "X4_3V3_REF": "input",
+            "X4_12V": "output"}           # S6-1: exported to sheet 6 for the X4-power LED (labels only)
 
     def pwr(sym, x, y, rot=0):
         n_pwr[0] += 1

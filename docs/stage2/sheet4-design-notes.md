@@ -289,6 +289,7 @@ U402's delay is the original 3.3 V-column figure; the timing budget is unchanged
 | R405 | 2.2k to +3V3 | RP_IRQ_N | No interrupt while the FPGA is blank: against the weak pull-down (≤ 305 µA [V S49]) the pin stays ≥ 3.135 V − 0.671 V = 2.46 V (+3V3 ≥ 3.135 V, −5 % [A]), above U402's VIH of 2.0 V [V S66] (R-51) |
 | R406 | 10k to GND | RP_ATTN | Not ready while the FPGA is blank |
 | R407 | 10k to +3V3 | RP_JTAG_EN_N | U403 isolated unless the DIP switch (sheet 6) enables the JTAG option |
+| R432–R434 | 330R in series with U403 A1–A3 | FPGA_TCK/TMS/TDI | Added with sheet 6 (S6-5): a J201 cable and the RP2040 JTAG option driving together meet ≤ 10.9 mA (U403 ±12 mA [V S66]); sheet6-design-notes §5 |
 | R408–R410, R415 | 100k to GND | X4_GP16–19_LED | C-26: LEDs defined off |
 | R411–R414 | 33R | MISO, IRQ_N, ATTN, TDO | Source terminations on the ribbon (values TBV at layout) |
 | R418–R423 | 100k to GND | SCK, CS_N, MOSI, TCK, TMS, TDI (B side) | Defined while the RP2040 is unpowered |

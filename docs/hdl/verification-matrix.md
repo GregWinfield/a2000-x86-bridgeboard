@@ -133,3 +133,14 @@ Evidence executed on 2026-11-19 ([verification-results.md](verification-results.
 | Netlist integrity | audit_sheet5 (274 checks), mutation 28 of 28; audits 1–4 unchanged results; netlist outside sheet 5 identical | 0 failures | **Pass** |
 | FPGA dynamic power | Diamond Power Calculator | Inside the 0.25 A +3V3 design maximum | **Open (P-1)**: the Tcl project mode did not load the NCD |
 
+## Sheet 6 (diagnostics, switches, debug header), revision A (owner decisions S6-1 to S6-5)
+
+| Requirement | Evidence | Pass criterion | Status |
+|---|---|---|---|
+| S6-1 LEDs, U404 budget, READY independent of the RP2040 | audit_sheet6 (currents, members, U404 <= 12 mA each, <= 100 mA total) | 0.5-2.5 mA per LED; READY only from pin 65 | **Pass** (netlist) [E]; **M-25** open |
+| S6-2 DIP polarity, levels, defaults, sampling | audit_sheet6; z2_core sampling (design notes §3) | ON >= 2.0 V, OFF 0 V; JTAG ON <= 0.7 V; all OFF = 64 KB, INT2, armed, isolated | **Pass** (netlist); **M-26** open; synchroniser recommended (R-59) |
+| S6-3 no auto-start switch, frozen pins | audit_sheet2 (pin plan) | Pin plan unchanged | **Pass** |
+| S6-4 debug-header isolation (conditional) | Design notes §4 (sysIO §9.1.5, Appendix D; data sheet Table 3.6; S66 Ioff/VCC isolation); audit_sheet6 (no direct header-to-FPGA path; DBG_VREF only via F601 + D608) | No path into an erased, configuring or unpowered FPGA; no back-feed through pin 1 | Design **Pass**; **M-27** open (required for final approval) |
+| S6-5 JTAG contention | audit_sheet4/6 (R432-R434 330R); design notes §5 | <= 12 mA per line with a cable and SW601-4 ON | Paper **Pass** (10.9 mA); **M-28** open; interlock open (R-58) |
+| Netlist integrity | audit_sheet6 189 checks, mutation 26 of 26; sheet 4 30 of 30; ERC 14 permanent entries | 0 failures | **Pass** |
+

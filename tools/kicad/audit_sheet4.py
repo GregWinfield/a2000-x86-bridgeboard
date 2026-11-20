@@ -26,7 +26,7 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parents[0] / "fpga"))
 import netlist                                   # noqa: E402
 import pinplan                                   # noqa: E402
-from sheet4 import (BPULL, EN_REF_RATIO, J401_EN, J401_GND, J401_NC, J401_REF, J401_SIG, OE, PINS,  # noqa: E402
+from sheet4 import (ASERIES, BPULL, EN_REF_RATIO, J401_EN, J401_GND, J401_NC, J401_REF, J401_SIG, OE, PINS,  # noqa: E402
                     SERIES, VCCB, XLAT)
 
 fails = checks = 0
@@ -95,7 +95,12 @@ def main(path):
             if anet is None:
                 check(net_of(u, a) == "GND" and unconnected(u, b), f"{u} spare channel {ch}: A low, B open")
                 continue
-            check(net_of(u, a) == anet, f"{u} A{ch} on {anet}, got {net_of(u, a)}")
+            if (u, ch) in ASERIES:                     # S6-5: U403 JTAG-option outputs through 330R
+                r = ASERIES[(u, ch)]
+                two_pin(r, "330R", net_of(u, a), anet)
+                check(members(net_of(u, a)) == sorted([(u, a), (r, "2")]), f"{u} A{ch} reaches {anet} only through {r}")
+            else:
+                check(net_of(u, a) == anet, f"{u} A{ch} on {anet}, got {net_of(u, a)}")
             if (u, ch) in SERIES:
                 r = SERIES[(u, ch)]
                 two_pin(r, "33R", net_of(u, b), x4net[(u, ch)])
@@ -212,7 +217,7 @@ def main(path):
                      ("TP405", "X4_3V3_REF"), ("TP406", "GND"), ("TP407", "RP_EN_N"), ("TP408", "RP_EN_CMP")):
         check(net_of(ref, "1") == net, f"{ref} on {net}, got {net_of(ref, '1')}")
     known = ({"J401", "U401", "U402", "U403", "U404", "U405", "U406", "Q401", "Q402"} |
-             {f"R{n}" for n in range(401, 432) if n not in (416, 417, 424)} |
+             {f"R{n}" for n in range(401, 435) if n not in (416, 417, 424)} |
              {f"C{n}" for n in range(401, 411)} | {f"TP{n}" for n in range(401, 409)})
     present = {r for r in comps if re.match(r"[A-Z]+4\d\d$", r)}
     check(present == known, f"sheet-4 parts: missing {sorted(known - present)}, unexpected {sorted(present - known)}")

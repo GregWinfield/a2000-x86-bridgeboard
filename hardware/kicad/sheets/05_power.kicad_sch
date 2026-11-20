@@ -4960,16 +4960,6 @@
 		)
 		(uuid "01be3ad6-e015-515f-9743-a06e319db495")
 	)
-	(label "X4_12V"
-		(at 373.38 66.04 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "06595fe2-5c39-5194-938b-399d293816f0")
-	)
 	(label "X4_EN_UVLO"
 		(at 436.88 135.89 0)
 		(effects
@@ -4999,16 +4989,6 @@
 			(justify left bottom)
 		)
 		(uuid "0ba1e2ee-be93-504c-90aa-2cede520c3f1")
-	)
-	(label "X4_12V"
-		(at 355.6 55.88 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "116d9074-1110-5517-b519-82c060fd2062")
 	)
 	(label "+5V_F"
 		(at 111.76 210.82 0)
@@ -5049,16 +5029,6 @@
 			(justify right bottom)
 		)
 		(uuid "1d9b8e4a-f6f0-549c-b9ee-50ab64a131bf")
-	)
-	(label "X4_12V"
-		(at 322.58 55.88 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "20903993-98e8-52d4-ad3b-95e9b5671fb2")
 	)
 	(label "+12V_F"
 		(at 76.2 71.12 0)
@@ -5140,26 +5110,6 @@
 		)
 		(uuid "3ec6cb14-7249-506f-bcf9-7e85b6d434e3")
 	)
-	(label "X4_12V"
-		(at 223.52 72.39 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "3fa50985-f3b2-5f3f-b3be-0f979d67344b")
-	)
-	(label "X4_12V"
-		(at 259.08 68.58 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "528b4be4-3254-56bf-b5b4-ed94ea8dbaeb")
-	)
 	(label "X4_12V_EF"
 		(at 185.42 55.88 0)
 		(effects
@@ -5179,16 +5129,6 @@
 			(justify left bottom)
 		)
 		(uuid "559f4a12-7c7b-54c9-b9ca-6ac64bfd76b7")
-	)
-	(label "X4_12V"
-		(at 345.44 55.88 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "55ab5613-6213-52cb-9b6b-91146af9f7bd")
 	)
 	(label "X4_OVLO"
 		(at 45.72 139.7 0)
@@ -5540,16 +5480,6 @@
 		)
 		(uuid "d072464a-1038-5c31-b389-37dbe1c40dc2")
 	)
-	(label "X4_12V"
-		(at 335.28 55.88 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d12d717e-1397-57d6-918c-3565d0c4d557")
-	)
 	(label "X5_OVLO"
 		(at 45.72 292.1 0)
 		(effects
@@ -5619,16 +5549,6 @@
 			(justify left bottom)
 		)
 		(uuid "dfa86820-da79-524e-b531-ec55ff41458e")
-	)
-	(label "X4_12V"
-		(at 421.64 135.89 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e12f4664-2f20-54e1-90ef-1c020db9388f")
 	)
 	(label "X4_SH_N"
 		(at 233.68 66.04 0)
@@ -5700,6 +5620,17 @@
 		)
 		(uuid "ff517adc-3dc6-5e6a-b1c7-bb598119726c")
 	)
+	(hierarchical_label "X4_12V"
+		(shape output)
+		(at 373.38 66.04 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "0ce8ef64-d932-5a4a-b0c2-26e21e4ef1c1")
+	)
 	(hierarchical_label "I2C_SDA"
 		(shape bidirectional)
 		(at 299.72 58.42 0)
@@ -5710,6 +5641,17 @@
 			(justify left)
 		)
 		(uuid "0efb0cba-fd47-58d0-a93a-756ed8e4790d")
+	)
+	(hierarchical_label "X4_12V"
+		(shape output)
+		(at 345.44 55.88 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "15a7833b-15fe-52c3-94a3-b3fa323a66f2")
 	)
 	(hierarchical_label "INA_ALERT_N"
 		(shape output)
@@ -5744,6 +5686,17 @@
 		)
 		(uuid "27df80c8-239b-5f2c-82d0-ee091295a512")
 	)
+	(hierarchical_label "X4_12V"
+		(shape output)
+		(at 259.08 68.58 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "2942ee8a-5944-561f-b5b7-cc9c2d827b9a")
+	)
 	(hierarchical_label "X4_PWR_EN"
 		(shape input)
 		(at 261.62 132.08 180)
@@ -5766,6 +5719,17 @@
 		)
 		(uuid "2d026faf-e9e6-55ff-81f3-cb3be2b7e246")
 	)
+	(hierarchical_label "X4_12V"
+		(shape output)
+		(at 223.52 72.39 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "57b06d7f-5ef4-54ce-b406-ea48af5b7c4d")
+	)
 	(hierarchical_label "X4_S0_SENSE"
 		(shape output)
 		(at 251.46 273.05 0)
@@ -5777,6 +5741,17 @@
 		)
 		(uuid "5be77e85-737e-55ef-b60b-f5cb17071ef3")
 	)
+	(hierarchical_label "X4_12V"
+		(shape output)
+		(at 355.6 55.88 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "6c2659a1-b8a5-56ba-ac05-8ba728c9abb2")
+	)
 	(hierarchical_label "INA_ALERT_N"
 		(shape output)
 		(at 386.08 139.7 0)
@@ -5787,6 +5762,28 @@
 			(justify left)
 		)
 		(uuid "74d98920-80d3-5dda-80a7-cca3b12e1e0b")
+	)
+	(hierarchical_label "X4_12V"
+		(shape output)
+		(at 335.28 55.88 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7628e671-3f05-53f2-bc9b-3ab5218df78d")
+	)
+	(hierarchical_label "X4_12V"
+		(shape output)
+		(at 322.58 55.88 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7e310908-7014-5f61-bd66-0dd32a447ac8")
 	)
 	(hierarchical_label "X4_S0_SENSE"
 		(shape output)
@@ -5820,6 +5817,17 @@
 			(justify left)
 		)
 		(uuid "9f0211c6-5b07-5717-98d5-e0e9472934e4")
+	)
+	(hierarchical_label "X4_12V"
+		(shape output)
+		(at 421.64 135.89 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ca39a1c3-b6df-5d45-b045-5128b333fc87")
 	)
 	(hierarchical_label "I2C_SDA"
 		(shape bidirectional)
