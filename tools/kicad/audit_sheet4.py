@@ -190,12 +190,15 @@ def main(path):
         two_pin(ref, val, net, rail)
 
     # ---------------- ER-3: only microamp loads on the X4's header 3.3 V
-    allowed = ({(u, "15") for u in XLAT} | {("U405", "5"), ("R427", "1"), ("TP405", "1"), ("J401", "1"), ("J401", "17")} |
+    # sheet 5 (S5-5): R518 100k into Q503's gate (R519 1M to GND): <= 3.3 V / 1.1 M = 3 uA (audit_sheet5 checks it)
+    allowed = ({(u, "15") for u in XLAT} | {("U405", "5"), ("R427", "1"), ("TP405", "1"), ("J401", "1"), ("J401", "17"),
+                                            ("R518", "1")} |
                {(c, p) for c, p in members("X4_3V3_REF") if re.match(r"C4\d\d$", c)})
     extra = [m for m in members("X4_3V3_REF") if m not in allowed]
-    check(not extra, f"X4_3V3_REF loaded only by VCCB, U405, the reference divider, decoupling, TP405: extra {extra}")
-    check([r for r, _ in members("X4_3V3_REF") if r.startswith("R")] == ["R427"],
-          "the only resistor on X4_3V3_REF is the reference divider R427 (3.3 V / 106.34 k = 31 uA; ER-3)")
+    check(not extra, f"X4_3V3_REF loaded only by VCCB, U405, the reference divider, decoupling, TP405, R518: extra {extra}")
+    check(sorted(r for r, _ in members("X4_3V3_REF") if r.startswith("R")) == ["R427", "R518"],
+          "the only resistors on X4_3V3_REF are the reference divider R427 (31 uA) and sheet 5's S0 gate resistor R518 "
+          "(3 uA): ER-3")
 
     # ---------------- decoupling: one 100 nF per supply pin (translators: VCCA and VCCB; U405, U406: VCC)
     caps = sorted(r for r in comps if re.match(r"C4\d\d$", r))

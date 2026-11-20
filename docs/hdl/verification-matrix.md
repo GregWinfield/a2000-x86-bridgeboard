@@ -117,3 +117,19 @@ Evidence executed on 2026-11-19 ([verification-results.md](verification-results.
 | Req. 7 back-powering and false interrupts | Design-notes §7 state table; S4-6 rev A3 worst-case analysis and K4 model ([../stage2/sheet4-s46-isolation.md](../stage2/sheet4-s46-isolation.md)); audit_sheet4 (S4-6 rules incl. no source on GP24 and gate-only domain crossing, R-51 defaults, ER-3; 29 of 29 mutants); tb_spi P0, P13, P14, P16 and always-on checkers | No path; no RP2040 pin above IOVDD + 0.3 V (model-derived bound: IOVDD slopes ≤ 264 V/ms; X4 estimate ≤ 94 V/ms); no false interrupt or ATTN | Design/simulation **Pass**; S4-6 rev A3 accepted (owner review of PR #9); hardware **M-14** (extended), **M-16** open |
 | Req. 8 re-run timing and HDL | run_checks.sh; Diamond 6 runs (+1 confirming run, rev A1) | All pass | **Pass** on the LCMXO2-4000HC (C-30 approved) |
 | Req. 9 versioning | tb_spi P1, P7 | IDENTIFY fields; wrong major rejected | **Pass** |
+
+## Sheet 5 (power and X4 power control), revision A (owner decisions S5-1 to S5-9)
+
+| Requirement | Evidence | Pass criterion | Status |
+|---|---|---|---|
+| S5-2 current limit, start-up, coordination | `tools/analysis/sheet5_power.py` §1–§5; audit_sheet5 re-derives ILIM from R506 | ILIM_min ≥ 1.05 × 2.5 A, ILIM_max ≤ 3.4 A; start-up margin ≥ 20 °C in cases A, B, E | Model **Pass** (2.65–3.36 A; worst margin 25 °C) [E]; hardware **M-17**, **M-18** open |
+| S5-2 UVLO/OVLO windows | sheet5_power.py §6; audit_sheet5 (from schematic values) | 11.4–12.6 V and 4.75–5.25 V inside; R1 ≥ 350 kΩ; pins ≤ 6.5 V at the clamp | **Pass** (paper); **M-18** open |
+| S5-3/S5-9 default off, interlock safe during configuration | Proposal §5.1 state table; audit_sheet5 (enable chain membership, Q502 bias, R510) | U501 off unless X4_PWR_EN high | Design **Pass**; RTL PM-1 to PM-10 not written; **M-20** open |
+| S5-4 INA226 0x44, I²C domains (C-28, C-29) | audit_sheet5; audit_sheet2 | Address 0x44; pull-ups on +3V3 only | **Pass** (netlist); **M-19** open |
+| S5-5 S0 sense active low, ER-3 | audit_sheet5; audit_sheet4 (ER-3) | Q503 drain + +3V3 pull-up; ≤ 3.5 µA from X4_3V3_REF | **Pass** (netlist); **M-24** open |
+| S5-6 5 V margin | sheet5_power.py §7; audit_sheet5 (U503 window ≤ 6.10 V, U504 = TLV76733) | +5V_BUS ≤ 6.0 V in slow and fast overvoltage; regulator survives 12.6 V | Model **Pass** [E]; **M-23** open |
+| S5-7 thermal | sheet5_power.py §8 | TJ ≤ 125 °C at 60 °C ambient | Model **Pass** (≤ 101 °C) [E]; **M-22** open |
+| S5-8 ground return (conditional) | `tools/analysis/sheet5_ground.py`; audit_sheet5 (H501–H504 on GND, J502 order) | ΔG ≤ 50 mV in normal operation; currents within the derived requirements | Model **Pass** (≤ 33 mV; ≤ 2.8 mV with bonded standoffs) [E]; ratings **TBV** (R-56); **M-21** open |
+| Netlist integrity | audit_sheet5 (274 checks), mutation 28 of 28; audits 1–4 unchanged results; netlist outside sheet 5 identical | 0 failures | **Pass** |
+| FPGA dynamic power | Diamond Power Calculator | Inside the 0.25 A +3V3 design maximum | **Open (P-1)**: the Tcl project mode did not load the NCD |
+

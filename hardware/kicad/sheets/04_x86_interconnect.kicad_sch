@@ -4044,7 +4044,7 @@
 	)
 	(wire
 		(pts
-			(xy 325.12 88.9) (xy 325.12 92.71)
+			(xy 325.12 88.9) (xy 317.5 88.9)
 		)
 		(stroke
 			(width 0)
@@ -5232,16 +5232,6 @@
 		)
 		(uuid "d0c7dd90-d722-5d98-b3b3-14fd0932f0f9")
 	)
-	(label "X4_3V3_REF"
-		(at 325.12 92.71 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d1b98b69-bfa2-57a7-b129-b9d52609684b")
-	)
 	(label "X4_GP26_TDI"
 		(at 106.68 232.41 0)
 		(effects
@@ -5607,6 +5597,17 @@
 			(justify right)
 		)
 		(uuid "fcaf1640-6ded-5f1d-9ac2-ab226b11a089")
+	)
+	(hierarchical_label "X4_3V3_REF"
+		(shape output)
+		(at 317.5 88.9 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ff00b96f-71db-5053-9518-69479bab5a98")
 	)
 	(symbol
 		(lib_id "power:GND")

@@ -153,7 +153,7 @@ def build_sheet4(root_uuid: str, sheet_uuid: str, syms, std, consts):
             sch.label(J401_SIG[pn][0], stub(pt, side), "left" if side < 0 else "right")
     # X4_3V3_REF comes from the X4 through J401 (a passive pin): declare it driven
     fl = (jx - 30.48, jy - 38.1)
-    sch.label("X4_3V3_REF", stub(fl, 0, 3.81), "right")
+    sch.hlabel("X4_3V3_REF", "output", stub(fl, -7.62), "left")     # names the net; to sheet 5 (X4_S0_SENSE gate, S5-5)
     sch.place(FLAG, "#FLG4001", "PWR_FLAG", fl[0], fl[1], 0, ref_at=(fl[0], fl[1] - 8.0), val_at=(fl[0] - 1.27, fl[1] - 3.2),
               val_just="right")
     tp = sch.place(TP, "TP405", "TestPoint", fl[0] + 10.16, fl[1], 0, footprint="TestPoint:TestPoint_Pad_D1.5mm",
